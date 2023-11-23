@@ -1,0 +1,4 @@
+# .prettierignore for vite + react + typescript + mui + tailwindcss + eslint + prettier
+
+dist
+node_modules

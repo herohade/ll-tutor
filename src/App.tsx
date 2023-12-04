@@ -33,20 +33,20 @@ export default function App() {
     onEmptyConnect: state.onEmptyConnect,
   });
   const {
-    minPage,
-    maxPage,
+    // minPage,
+    // maxPage,
     page,
-    open,
-    emptyNodeTypes,
-    emptyEdgeTypes,
-    emptyNodes,
-    emptyEdges,
-    toggleOpen,
-    setEmptyNodes,
-    setEmptyEdges,
-    onEmptyNodesChange,
-    onEmptyEdgesChange,
-    onEmptyConnect,
+    // open,
+    // emptyNodeTypes,
+    // emptyEdgeTypes,
+    // emptyNodes,
+    // emptyEdges,
+    // toggleOpen,
+    // setEmptyNodes,
+    // setEmptyEdges,
+    // onEmptyNodesChange,
+    // onEmptyEdgesChange,
+    // onEmptyConnect,
   } = useBoundStore(selector, shallow);
 
   const prefersLightMode = useMediaQuery("(prefers-color-scheme: light)");

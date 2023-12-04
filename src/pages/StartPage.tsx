@@ -8,7 +8,7 @@ It contains a short introduction of the webtutor
 and the logos of vite and react.
 */
 function StartPage() {
-  let content = (
+  return (
     <>
       <div>
         <a href="https://vitejs.dev" target="_blank" rel="noopener noreferrer">
@@ -29,7 +29,6 @@ function StartPage() {
       )}
     </>
   );
-  return content;
 }
 
 export default StartPage;

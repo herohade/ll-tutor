@@ -36,7 +36,6 @@ export default function App() {
     // minPage,
     // maxPage,
     page,
-    // open,
     // emptyNodeTypes,
     // emptyEdgeTypes,
     // emptyNodes,
@@ -69,12 +68,12 @@ export default function App() {
     default:
       content = (
         <>
-          <div className="h-full w-1/3 bg-red-600 bg-gradient-to-b from-green-600">
+          <div className="mr-1 h-full w-1/3 overflow-scroll rounded-lg border-2 border-solid bg-red-600 bg-gradient-to-b from-green-600 p-2 text-left hover:from-green-400 hover:to-green-600">
             <Typography variant="h4" component="h1" gutterBottom>
               Error:
             </Typography>
           </div>
-          <div className="h-full w-2/3 bg-green-600 bg-gradient-to-b from-red-600">
+          <div className="h-full w-2/3 rounded-lg border-2 border-solid bg-green-600 bg-gradient-to-b from-red-600 p-2 hover:from-red-400 hover:to-red-600">
             <Typography variant="h4" component="h1" gutterBottom>
               Page {page} not found
             </Typography>
@@ -96,7 +95,7 @@ export default function App() {
             className="flex h-screen flex-col"
             sx={{
               flexGrow: 1,
-              overflow: "auto",
+              // overflow: "auto",
             }}
           >
             <Toolbar />

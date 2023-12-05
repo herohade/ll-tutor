@@ -6,9 +6,10 @@ import Step from "@mui/material/Step";
 import StepContent from "@mui/material/StepContent";
 import Tyoography from "@mui/material/Typography";
 import Toolbar from "@mui/material/Toolbar";
+import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
-import { shallow } from "zustand/shallow";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
 import { NavigationSlice } from "../types";
 
@@ -40,14 +41,20 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-const steps: { label: string; content: string }[] = [
-  { label: "Select Grammar", content: "Select Grammar" },
+const steps: { label: string; content: string[] }[] = [
+  {
+    label: "Select Grammar",
+    content: [
+      "Enter a production\nof form A -> α.",
+      "Select the start symbol\nfrom the nonterminals.",
+    ],
+  },
   {
     label: "Calculate Empty Attributes",
-    content: "Calculate Empty Attributes",
+    content: ["TODO", "TODO"],
   },
-  { label: "Calculate First Sets", content: "Calculate First Sets" },
-  { label: "Calculate Follow Sets", content: "Calculate Follow Sets" },
+  { label: "Calculate First Sets", content: ["TODO", "TODO"] },
+  { label: "Calculate Follow Sets", content: ["TODO", "TODO"] },
 ];
 
 function ProgressDrawerComponent() {
@@ -72,13 +79,25 @@ function ProgressDrawerComponent() {
           <ChevronLeftIcon />
         </IconButton>
       </Toolbar>
-      <Stepper activeStep={page} orientation="vertical">
+      <Divider />
+      <Stepper
+        // Math.floor(page / 2) is the same as page >> 1. We can do this since
+        // there are always two pages per step. So we only need to dynamically
+        // change the Task description (StepContent) between the two pages.
+        activeStep={page >> 1}
+        orientation="vertical"
+        className="pl-3 pt-3 sm:pl-5 sm:pt-5"
+      >
         {steps.map(({ label, content }, index) => (
-          <Step key={label + index}>
-            <StepLabel>{label}</StepLabel>
-            <StepContent>
-              <Tyoography>{content}</Tyoography>
-            </StepContent>
+          <Step key={label + index} className="whitespace-pre">
+            <StepLabel>{open && label}</StepLabel>
+            {open && (
+              <StepContent>
+                <Tyoography className="text-start">
+                  {content[page % 2]}
+                </Tyoography>
+              </StepContent>
+            )}
           </Step>
         ))}
       </Stepper>

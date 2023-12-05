@@ -48,9 +48,10 @@ function HeaderComponent() {
           aria-label="open drawer"
           onClick={toggleOpen}
           sx={{
-            marginRight: "36px",
             ...(open && { display: "none" }),
           }}
+          // 36px
+          className="mr-9"
         >
           <MenuIcon />
         </IconButton>

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .hs-screen {
+    height: 100svh;
+  }
+}
+
 #root {
   /* max-width: 1280px; */
   /* margin: 0 auto; */

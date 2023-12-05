@@ -92,10 +92,10 @@ export default function App() {
           <ProgressDrawerComponent />
           <Box
             component="main"
-            className="flex h-screen flex-col"
+            className="flex hs-screen flex-col"
             sx={{
               flexGrow: 1,
-              // overflow: "auto",
+              overflow: "auto",
             }}
           >
             <Toolbar />

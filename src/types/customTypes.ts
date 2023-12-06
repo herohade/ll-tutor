@@ -14,17 +14,9 @@ export type NavigationSlice = {
   maxPage: number;
   page: number;
   open: boolean;
-  backButtonFailed: boolean;
-  nextButtonFailed: boolean;
-  backButtonTimeout: number | undefined;
-  nextButtonTimeout: number | undefined;
   previousPage: () => void;
   nextPage: () => void;
   toggleOpen: () => void;
-  setBackButtonFailed: (failed: boolean) => void;
-  setNextButtonFailed: (failed: boolean) => void;
-  setBackButtonTimeout: (timeout: number | undefined) => void;
-  setNextButtonTimeout: (timeout: number | undefined) => void;
 };
 
 export type EmptyNodeSlice = {

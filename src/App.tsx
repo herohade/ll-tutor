@@ -6,6 +6,9 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import CloseIcon from "@mui/icons-material/Close";
+import { SnackbarProvider, closeSnackbar } from "notistack";
 import { useMemo } from "react";
 import { shallow } from "zustand/shallow";
 import { StartPage } from "./pages";
@@ -16,36 +19,11 @@ import useBoundStore from "./store/store";
 export default function App() {
   const selector = (state: NavigationSlice & EmptyNodeSlice) => ({
     // NavigationSlice
-    minPage: state.minPage,
-    maxPage: state.maxPage,
     page: state.page,
-    open: state.open,
-    toggleOpen: state.toggleOpen,
     // EmptyNodeSlice
-    emptyNodeTypes: state.emptyNodeTypes,
-    emptyEdgeTypes: state.emptyEdgeTypes,
-    emptyNodes: state.emptyNodes,
-    emptyEdges: state.emptyEdges,
-    setEmptyNodes: state.setEmptyNodes,
-    setEmptyEdges: state.setEmptyEdges,
-    onEmptyNodesChange: state.onEmptyNodesChange,
-    onEmptyEdgesChange: state.onEmptyEdgesChange,
-    onEmptyConnect: state.onEmptyConnect,
   });
   const {
-    // minPage,
-    // maxPage,
     page,
-    // emptyNodeTypes,
-    // emptyEdgeTypes,
-    // emptyNodes,
-    // emptyEdges,
-    // toggleOpen,
-    // setEmptyNodes,
-    // setEmptyEdges,
-    // onEmptyNodesChange,
-    // onEmptyEdgesChange,
-    // onEmptyConnect,
   } = useBoundStore(selector, shallow);
 
   const prefersLightMode = useMediaQuery("(prefers-color-scheme: light)");
@@ -62,7 +40,7 @@ export default function App() {
 
   let content;
   switch (page) {
-    case 1:
+    case 0:
       content = <StartPage />;
       break;
     default:
@@ -87,20 +65,33 @@ export default function App() {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <Box sx={{ display: "flex" }}>
-          <CssBaseline />
-          <HeaderComponent />
-          <ProgressDrawerComponent />
-          <Box
-            component="main"
-            className="flex hs-screen flex-col"
-            sx={{
-              flexGrow: 1,
-              overflow: "auto",
-            }}
+          <CssBaseline />{" "}
+          <SnackbarProvider
+            action={(snackbarId) => (
+              <IconButton
+                size="small"
+                aria-label="close"
+                color="inherit"
+                onClick={() => closeSnackbar(snackbarId)}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            )}
           >
-            <Toolbar />
-            <Container className="my-4 flex flex-grow">{content}</Container>
-          </Box>
+            <HeaderComponent />
+            <ProgressDrawerComponent />
+            <Box
+              component="main"
+              className="hs-screen flex flex-col"
+              sx={{
+                flexGrow: 1,
+                overflow: "auto",
+              }}
+            >
+              <Toolbar />
+              <Container className="my-4 flex flex-grow">{content}</Container>
+            </Box>
+          </SnackbarProvider>
         </Box>
       </ThemeProvider>
     </StyledEngineProvider>

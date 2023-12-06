@@ -1,5 +1,8 @@
-import reactLogo from "../assets/react.svg";
-import viteLogo from "/vite.svg";
+import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import InfoIcon from "@mui/icons-material/Info";
+import { ScrollableDialogComponent } from "../components";
 
 /*
 This is the first page of the webtutor.
@@ -9,25 +12,40 @@ and the logos of vite and react.
 */
 function StartPage() {
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank" rel="noopener noreferrer">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank" rel="noopener noreferrer">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <Box
+      className="flex h-full flex-col"
+      sx={{
+        flexGrow: 1,
+      }}
+    >
+      <Typography variant="h1">LL Tutor</Typography>
+
+      <ScrollableDialogComponent
+        DisplayButton={(props) => (
+          <Button
+            variant="outlined"
+            // size="small"
+            color="info"
+            endIcon={<InfoIcon />}
+            className="self-center"
+            aria-label="info"
+            {...props}
+          >
+            What is LL Tutor?
+          </Button>
+        )}
+        title={"What is LL Tutor?"}
+        content={
+          'LL Tutor is a webtutor for the lecture "Compiler Construction" at the Technical University of Munich.'
+        }
+      />
+
       {window.innerWidth < window.innerHeight && (
-        <p className="read-the-docs">
+        <Typography variant="body1" className="my-auto opacity-50">
           Consider using landscape mode for the best experience!
-        </p>
+        </Typography>
       )}
-    </>
+    </Box>
   );
 }
 

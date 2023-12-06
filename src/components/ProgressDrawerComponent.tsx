@@ -84,7 +84,8 @@ function ProgressDrawerComponent() {
         // Math.floor(page / 2) is the same as page >> 1. We can do this since
         // there are always two pages per step. So we only need to dynamically
         // change the Task description (StepContent) between the two pages.
-        activeStep={page >> 1}
+        // We exclude the StartPage (page 0) from this calculation (page - 1).
+        activeStep={(page - 1) >> 1}
         orientation="vertical"
         className="pl-3 pt-3 sm:pl-5 sm:pt-5"
       >

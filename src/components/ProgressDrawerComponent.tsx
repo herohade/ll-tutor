@@ -95,7 +95,7 @@ function ProgressDrawerComponent() {
             {open && (
               <StepContent>
                 <Tyoography className="text-start">
-                  {content[page % 2]}
+                  {content[(page - 1) % 2]}
                 </Tyoography>
               </StepContent>
             )}

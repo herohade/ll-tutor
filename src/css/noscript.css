@@ -14,7 +14,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100svh;
+  height: 100vh; /* Fallback for browsers that do not support dvh */
+  height: 100dvh;
   background-color: #121212;
   color: #fff;
   width: 100%;

@@ -23,7 +23,7 @@ function StartPage() {
       <ScrollableDialogComponent
         DisplayButton={(props) => (
           <Button
-            variant="outlined"
+            variant="contained"
             // size="small"
             color="info"
             endIcon={<InfoIcon />}

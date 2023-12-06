@@ -1,15 +1,19 @@
 import { createWithEqualityFn } from "zustand/traditional";
 
 import { createNavigationSlice } from "./navigationSlice";
+import { createGrammarSlice } from "./grammarSlice";
+import { createGrammarSetupSlice } from "./grammarSetupSlice";
 import { createEmptyNodeSlice } from "./emptyNodeSlice";
 
-import { NavigationSlice, EmptyNodeSlice } from "../types";
+import { NavigationSlice, EmptyNodeSlice, GrammarSlice, GrammarSetupSlice } from "../types";
 
 // this is our useStore hook that we can use in our components to get parts of the store and call actions
-const useBoundStore = createWithEqualityFn<EmptyNodeSlice & NavigationSlice>(
+const useBoundStore = createWithEqualityFn<NavigationSlice & GrammarSlice & GrammarSetupSlice & EmptyNodeSlice>(
   (...args) => ({
-    ...createEmptyNodeSlice(...args),
     ...createNavigationSlice(...args),
+    ...createGrammarSlice(...args),
+    ...createGrammarSetupSlice(...args),
+    ...createEmptyNodeSlice(...args),
   }),
 );
 

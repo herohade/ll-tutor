@@ -4,7 +4,8 @@
 
 @layer utilities {
   .hs-screen {
-    height: 100svh;
+    height: 100vh; /* Fallback for browsers that do not support dvh */
+    height: 100dvh;
   }
 }
 
@@ -13,6 +14,17 @@
   /* margin: 0 auto; */
   /* padding: 2rem; */
   text-align: center;
+}
+
+/* Add commas after each list item except the last one */
+.commaList li:not(:last-child)::after {
+  content: ", ";
+}
+/* Add a space after each list item except the last one
+Use in combination with comma List to add space between
+the element and the comma */
+.listSpace li:not(:last-child)::after {
+  margin-left: 0.25em;
 }
 
 /* :root {

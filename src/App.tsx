@@ -13,16 +13,17 @@ import { useMemo } from "react";
 import { shallow } from "zustand/shallow";
 import { StartPage } from "./pages";
 import { HeaderComponent, ProgressDrawerComponent } from "./components";
-import { EmptyNodeSlice, NavigationSlice } from "./types";
+import { NavigationSlice } from "./types";
 import useBoundStore from "./store/store";
+import ReadGrammarPage from "./pages/ReadGrammarPage";
 
 export default function App() {
-  const selector = (state: NavigationSlice & EmptyNodeSlice) => ({
+  const selector = (state: NavigationSlice) => ({
     // NavigationSlice
     page: state.page,
-    // EmptyNodeSlice
   });
   const {
+    // NavigationSlice
     page,
   } = useBoundStore(selector, shallow);
 
@@ -42,6 +43,9 @@ export default function App() {
   switch (page) {
     case 0:
       content = <StartPage />;
+      break;
+    case 1:
+      content = <ReadGrammarPage />;
       break;
     default:
       content = (

@@ -1,13 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=New+Tegomin&display=swap");
-
-* {
+#no-script * {
   box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  font-family: "New Tegomin", serif !important;
 }
 
 #no-script {
@@ -19,6 +11,7 @@ body {
   background-color: #121212;
   color: #fff;
   width: 100%;
+  font-family: "New Tegomin", serif !important;
 }
 
 #no-script-box {

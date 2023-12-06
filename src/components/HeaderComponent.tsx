@@ -195,8 +195,7 @@ function HeaderComponent() {
             component="h2"
             align="center"
             noWrap
-            // sx={{ flexGrow: 1 }}
-            className="mx-auto lg:pl-6"
+            className="xs:block mx-auto hidden lg:pl-6"
           >
             LL-Webtutor
           </Typography>
@@ -210,21 +209,22 @@ function HeaderComponent() {
             aria-label="previous step"
             color="inherit"
             startIcon={<NavigateBefore />}
+            className="box-content min-w-[20px] sm:box-border sm:min-w-[64px] [&>*]:mx-0 sm:[&>.MuiButton-startIcon]:ml-[-4px] sm:[&>.MuiButton-startIcon]:mr-2"
             onClick={handlePreviousNavigation}
             disabled={page === minPage}
           >
-            Prev
+            <span className="hidden sm:block">Prev</span>
           </Button>
           <Button
             variant="outlined"
             aria-label="next step"
             color="inherit"
             endIcon={<NavigateNext />}
-            className="ml-2"
+            className="ml-1 box-content min-w-[20px] sm:ml-2 sm:box-border sm:min-w-[64px] [&>*]:mx-0 sm:[&>.MuiButton-endIcon]:ml-2 sm:[&>.MuiButton-endIcon]:mr-[-4px]"
             onClick={handleNextNavigation}
             disabled={page === maxPage}
           >
-            Next
+            <span className="hidden sm:block">Next</span>
           </Button>
         </Box>
       </Toolbar>

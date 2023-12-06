@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import defaultTheme from 'tailwindcss/defaultTheme';
+
 export default {
   content: [
     "./index.html",
@@ -8,6 +10,10 @@ export default {
   ],
   important: '#root',
   theme: {
+    screens: {
+      'xs': '320px',
+      ...defaultTheme.screens,
+    },
     extend: {},
   },
   corePlugins: {

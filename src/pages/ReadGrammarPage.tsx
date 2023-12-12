@@ -9,8 +9,11 @@ import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import TextField from "@mui/material/TextField";
+
 import { useState } from "react";
+
 import { VariantType, useSnackbar } from "notistack";
+
 import useBoundStore from "../store/store";
 import { shallow } from "zustand/shallow";
 
@@ -124,7 +127,7 @@ function ReadGrammarPage() {
   const showSnackbar = (
     message: string,
     variant: VariantType,
-    preventDuplicate?: boolean,
+    preventDuplicate: boolean,
   ) => {
     // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
@@ -136,11 +139,11 @@ function ReadGrammarPage() {
   // check if the production is valid, else tell the user
   const validProduction = (production: string): boolean => {
     if (production === "") {
-      showSnackbar("Please enter a production!", "error");
+      showSnackbar("Please enter a production!", "error", true);
       return false;
     }
     if (!production.includes("->")) {
-      showSnackbar("Please enter a production of form A->...", "error");
+      showSnackbar("Please enter a production of form A->...", "error", true);
       return false;
     }
 
@@ -149,6 +152,7 @@ function ReadGrammarPage() {
       showSnackbar(
         "The left side of the production must be a single nonterminal!",
         "error",
+        true,
       );
       return false;
     }
@@ -156,6 +160,7 @@ function ReadGrammarPage() {
       showSnackbar(
         "The left side of the production must be a nonterminal!",
         "error",
+        true,
       );
       return false;
     }
@@ -165,6 +170,7 @@ function ReadGrammarPage() {
         showSnackbar(
           "The right side of the production must only contain allowed symbols!",
           "error",
+          true,
         );
         return false;
       }
@@ -244,7 +250,7 @@ function ReadGrammarPage() {
           {productions.map((production, index) => (
             <ListItem key={index} className="py-0">
               <IconButton
-                role="remove production"
+                aria-label="remove production"
                 size="small"
                 color="error"
                 className="mr-1"
@@ -283,7 +289,7 @@ function ReadGrammarPage() {
               >
                 <RemoveCircleOutlineIcon />
               </IconButton>
-              <ListItemText primary={production.representation} />
+              <ListItemText className="flex-none" primary={production.representation} />
             </ListItem>
           ))}
         </List>
@@ -312,7 +318,7 @@ function ReadGrammarPage() {
         />
         <br />
         <Button
-          role="remove all productions"
+          aria-label="remove all productions"
           variant="contained"
           color="error"
           className="mr-2"
@@ -359,7 +365,7 @@ function ReadGrammarPage() {
           Clear All
         </Button>
         <Button
-          role="add new production"
+          aria-label="add new production"
           variant="contained"
           endIcon={<AddCircleOutlineIcon />}
           onClick={() => {

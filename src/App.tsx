@@ -8,24 +8,82 @@ import Container from "@mui/material/Container";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import { SnackbarProvider, closeSnackbar } from "notistack";
+
+import {
+  SnackbarProvider,
+  VariantType,
+  closeSnackbar,
+  useSnackbar,
+} from "notistack";
+
+import ReactFlow, {
+  Background,
+  BackgroundVariant,
+  ReactFlowProvider,
+} from "reactflow";
+
 import { useMemo } from "react";
-import { shallow } from "zustand/shallow";
-import { StartPage } from "./pages";
-import { HeaderComponent, ProgressDrawerComponent } from "./components";
-import { NavigationSlice } from "./types";
+
 import useBoundStore from "./store/store";
-import ReadGrammarPage from "./pages/ReadGrammarPage";
+import { shallow } from "zustand/shallow";
+
+import {
+  PrepareEmptyAlgorithmPage,
+  ReadGrammarPage,
+  SelectStartSymbolPage,
+  StartPage,
+} from "./pages";
+
+import {
+  ConnectionLine,
+  CustomControls,
+  HeaderComponent,
+  ProgressDrawerComponent,
+} from "./components";
+
+import { EmptyNodeSlice, NavigationSlice } from "./types";
+
+import "reactflow/dist/style.css";
 
 export default function App() {
-  const selector = (state: NavigationSlice) => ({
+  const selector = (state: NavigationSlice & EmptyNodeSlice) => ({
     // NavigationSlice
     page: state.page,
+    // EmptyNodeSlice
+    emptyNodeTypes: state.emptyNodeTypes,
+    emptyEdgeTypes: state.emptyEdgeTypes,
+    emptyNodes: state.emptyNodes,
+    emptyEdges: state.emptyEdges,
+    onEmptyNodesChange: state.onEmptyNodesChange,
+    onEmptyEdgesChange: state.onEmptyEdgesChange,
+    onEmptyConnect: state.onEmptyConnect,
   });
   const {
     // NavigationSlice
     page,
+    // EmptyNodeSlice
+    emptyNodeTypes,
+    emptyEdgeTypes,
+    emptyNodes,
+    emptyEdges,
+    onEmptyNodesChange,
+    onEmptyEdgesChange,
+    onEmptyConnect,
   } = useBoundStore(selector, shallow);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const showSnackbar = (
+    message: string,
+    variant: VariantType,
+    preventDuplicate: boolean,
+  ) => {
+    // variant could be success, error, warning, info, or default
+    enqueueSnackbar(message, {
+      variant,
+      preventDuplicate,
+    });
+  };
 
   const prefersLightMode = useMediaQuery("(prefers-color-scheme: light)");
 
@@ -39,6 +97,29 @@ export default function App() {
     [prefersLightMode],
   );
 
+  // ReactFlow canvas, stays the same between pages
+  const emptyGraphCanvas = (
+    <ReactFlowProvider>
+      <ReactFlow
+        nodes={emptyNodes}
+        edges={emptyEdges}
+        onNodesChange={onEmptyNodesChange}
+        onEdgesChange={onEmptyEdgesChange}
+        connectionLineComponent={ConnectionLine}
+        onConnect={onEmptyConnect(showSnackbar)}
+        onNodeDragStop={undefined}
+        nodeTypes={emptyNodeTypes}
+        edgeTypes={emptyEdgeTypes}
+        fitView={true}
+        zoomOnDoubleClick={false}
+        selectNodesOnDrag={false}
+      >
+        <CustomControls />
+        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+      </ReactFlow>
+    </ReactFlowProvider>
+  );
+
   let content;
   switch (page) {
     case 0:
@@ -46,6 +127,12 @@ export default function App() {
       break;
     case 1:
       content = <ReadGrammarPage />;
+      break;
+    case 2:
+      content = <SelectStartSymbolPage />;
+      break;
+    case 3:
+      content = <PrepareEmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />;
       break;
     default:
       content = (
@@ -69,7 +156,7 @@ export default function App() {
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <Box sx={{ display: "flex" }}>
-          <CssBaseline />{" "}
+          <CssBaseline />
           <SnackbarProvider
             action={(snackbarId) => (
               <IconButton

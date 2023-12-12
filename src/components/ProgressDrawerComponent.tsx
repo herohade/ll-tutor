@@ -51,7 +51,10 @@ const steps: { label: string; content: string[] }[] = [
   },
   {
     label: "Calculate Empty Attributes",
-    content: ["TODO", "TODO"],
+    content: [
+      "Set up the dependency\ngraph for calculating\nthe empty sets.",
+      "TODO",
+    ],
   },
   { label: "Calculate First Sets", content: ["TODO", "TODO"] },
   { label: "Calculate Follow Sets", content: ["TODO", "TODO"] },

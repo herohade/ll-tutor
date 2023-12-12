@@ -8,6 +8,8 @@ import {
   EdgeTypes,
 } from "reactflow";
 
+import { VariantType } from "notistack";
+
 export { Terminal, Nonterminal, Production };
 export type { printable };
 
@@ -106,6 +108,9 @@ class Production implements printable {
   }
 }
 
+// Type for the layout algorithm (ELK)
+export type ElkDirectionType = "RIGHT" | "LEFT" | "UP" | "DOWN";
+
 // Types for the zustand store
 export type NavigationSlice = {
   minPage: number;
@@ -142,17 +147,76 @@ export type GrammarSetupSlice = {
   setPreparedFirst: (prepared: boolean) => void;
 };
 
+export enum NodeColor {
+  none = "grey",
+  thisTurn = "lightblue",
+  lastTurn = "blue",
+  older = "darkblue",
+}
+
+export type NodeData = {
+  name: string;
+  changed: boolean;
+  empty: boolean;
+  color: NodeColor;
+  labelSize?: { width: number; height: number };
+  groupNodeDeletable?: boolean;
+};
+
+export enum EdgePathType {
+  Straight = "straight",
+  Smoothstep = "smoothstep",
+  Bezier = "bezier",
+}
+
+export type EdgeData = {
+  pathType: EdgePathType;
+  isGroupEdge: boolean; // wether this edge connects group nodes or not
+  name: string;
+};
+
 export type EmptyNodeSlice = {
   emptyIdCounter: number;
   emptyNodeTypes: NodeTypes;
   emptyEdgeTypes: EdgeTypes;
-  emptyNodes: Node[];
-  emptyEdges: Edge[];
+  emptySetupComplete: boolean;
+  emptyNodes: Node<NodeData>[];
+  emptyEdges: Edge<EdgeData>[];
   getEmptyNodeId: () => string;
   getEmptyEdgeId: () => string;
-  setEmptyNodes: (nodes: Node[]) => void;
-  setEmptyEdges: (edges: Edge[]) => void;
+  setEmptySetupComplete: (complete: boolean) => void;
+  setEmptyNodes: (nodes: Node<NodeData>[]) => void;
+  setEmptyEdges: (edges: Edge<EdgeData>[]) => void;
   onEmptyNodesChange: OnNodesChange;
   onEmptyEdgesChange: OnEdgesChange;
-  onEmptyConnect: OnConnect;
+  onEmptyConnect: (
+    showSnackbar: (
+      message: string,
+      variant: VariantType,
+      preventDuplicate: boolean,
+    ) => void,
+  ) => OnConnect;
+  toggleEmptyDeletableAndConnectable: (
+    deletable: boolean,
+    connectable: boolean,
+  ) => void;
+};
+
+export type EmptyAlgorithmSlice = {
+  emptyNonterminalMap: [string, boolean][];
+  emptyTerminalMap: [string, boolean][];
+  emptyProductionMap: [string, boolean][];
+  finishedEmptyStep: boolean;
+  emptyUserFixpoint: boolean;
+  emptyFixpoint: boolean;
+  emptyWorkList: Production[];
+  finishedEmpty: boolean;
+  setEmptyNonterminalMap: (map: [string, boolean][]) => void;
+  setEmptyTerminalMap: (map: [string, boolean][]) => void;
+  setEmptyProductionMap: (map: [string, boolean][]) => void;
+  setFinishedEmptyStep: (finished: boolean) => void;
+  setEmptyUserFixpoint: (fixpoint: boolean) => void;
+  setEmptyFixpoint: (fixpoint: boolean) => void;
+  setEmptyWorkList: (workList: Production[]) => void;
+  setFinishedEmpty: (finished: boolean) => void;
 };

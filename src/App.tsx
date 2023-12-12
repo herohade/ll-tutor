@@ -180,7 +180,7 @@ export default function App() {
               }}
             >
               <Toolbar />
-              <Container className="my-4 flex flex-grow">{content}</Container>
+              <Container className="my-4 flex flex-grow overflow-hidden">{content}</Container>
             </Box>
           </SnackbarProvider>
         </Box>

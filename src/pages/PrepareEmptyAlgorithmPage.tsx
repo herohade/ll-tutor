@@ -1,3 +1,6 @@
+import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
+
 import { Edge, MarkerType, Node } from "reactflow";
 
 import { VariantType, useSnackbar } from "notistack";
@@ -355,44 +358,66 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
   return (
     <>
       {/* left side, task description and information */}
-      <div className="mr-1 h-full w-1/3 overflow-scroll rounded-lg border-2 border-solid p-2 text-left">
-        <div className="grammarDiv">
-          <p>
-            <span>
-              <b>Task: </b>
-            </span>
-            Set up the dependency graph for calculating the empty sets of the
-            grammar.
-          </p>
-          <p>The Nonterminals of the grammar are:</p>
-          <ul className="nonterminalList">
-            {nonTerminals.map((nonterminal, index) => (
-              <li key={index}>
-                {nonterminal.representation}
-                {import.meta.env.DEV && " " + nonterminal.references}
-              </li>
-            ))}
-          </ul>
-          <p>The Terminals of the grammar are:</p>
-          <ul className="terminalList">
-            {terminals.map((terminal, index) => (
-              <li key={index}>
-                {terminal.representation}
-                {import.meta.env.DEV && " " + terminal.references}
-              </li>
-            ))}
-          </ul>
-          <p>The Productions of the grammar are:</p>
-          <ul className="productionList">
-            {productions.map((production, index) => (
-              <li key={index}>
-                {production.numberedRepresentation()}
-                {import.meta.env.DEV && " " + production.references}
-              </li>
-            ))}
-          </ul>
-          <div className="workspaceButtons fixpointInputLabelMargin">
-            <button
+      <div className="mr-1 h-full w-1/3 min-w-min overflow-scroll rounded-lg border-2 border-solid p-2 text-left">
+        <div
+          // TODO: center or not?
+          className="flex h-full flex-col items-center justify-between"
+        >
+          <div className="flex flex-col items-center">
+            <p>The Nonterminals of the grammar are:</p>
+            <ul className="commaList m-0 list-none p-0 before:mr-1 before:content-['𝑁_=_{'] after:ml-1 after:content-['}']">
+              {nonTerminals.map((nonterminal, index) => (
+                <li key={index} className="inline">
+                  {nonterminal.representation}
+                </li>
+              ))}
+            </ul>
+            <p>The Terminals of the grammar are:</p>
+            <ul className="commaList m-0 list-none p-0 before:mr-1 before:content-['𝑇_=_{'] after:ml-1 after:content-['}']">
+              {terminals.map((terminal, index) => (
+                <li key={index} className="inline">
+                  {terminal.representation}
+                </li>
+              ))}
+            </ul>
+            <p>The Productions of the grammar are:</p>
+            <ul className="commaList listSpace m-0 mb-2 list-none p-0 text-left before:mr-1 before:content-['𝑃_=_{'] after:ml-1 after:content-['}']">
+              {productions.map((production, index) => (
+                <li key={index} className="ml-4">
+                  {production.numberedRepresentation()}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={{ xs: 1, sm: 2 }}
+            className=""
+          >
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                setEmptyNodes([]);
+                setEmptyEdges([]);
+              }}
+              disabled={emptySetupComplete}
+              className="dangerousButton"
+            >
+              Reset Canvas
+            </Button>
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => {
+                solve();
+              }}
+              disabled={emptySetupComplete}
+            >
+              Show Solution
+            </Button>
+            <Button
+              variant="contained"
               onClick={() => {
                 if (checkGraph()) {
                   toggleEmptyDeletableAndConnectable(false, false);
@@ -402,29 +427,8 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
               disabled={emptySetupComplete}
             >
               Check Graph
-            </button>
-            <button
-              onClick={() => {
-                solve();
-              }}
-              disabled={emptySetupComplete}
-            >
-              Show Solution
-            </button>
-            <button
-              onClick={() => {
-                showSnackbar(
-                  "This feature is not yet implemented!",
-                  "warning",
-                  true,
-                );
-              }}
-              disabled={emptySetupComplete}
-              className="dangerousButton"
-            >
-              Reset Canvas
-            </button>
-          </div>
+            </Button>
+          </Stack>
         </div>
       </div>
       {/* right side, reactflow canvas */}
@@ -432,79 +436,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         {graphCanvas}
       </div>
     </>
-    // <>
-    //   <div className="workspace">
-    //     <div className="leftSide">
-    //       <div className="grammarDiv">
-    //         <p>
-    //           <span>
-    //             <b>Task: </b>
-    //           </span>
-    //           Set up the dependency graph for calculating the empty sets of the
-    //           grammar.
-    //         </p>
-    //         <p>The Nonterminals of the grammar are:</p>
-    //         <ul className="nonterminalList">
-    //           {nonTerminals.map((nonterminal, index) => (
-    //             <li key={index}>
-    //               {nonterminal.representation}
-    //               {import.meta.env.DEV && " " + nonterminal.references}
-    //             </li>
-    //           ))}
-    //         </ul>
-    //         <p>The Terminals of the grammar are:</p>
-    //         <ul className="terminalList">
-    //           {terminals.map((terminal, index) => (
-    //             <li key={index}>
-    //               {terminal.representation}
-    //               {import.meta.env.DEV && " " + terminal.references}
-    //             </li>
-    //           ))}
-    //         </ul>
-    //         <p>The Productions of the grammar are:</p>
-    //         <ul className="productionList">
-    //           {productions.map((production, index) => (
-    //             <li key={index}>
-    //               {production.numberedRepresentation()}
-    //               {import.meta.env.DEV && " " + production.references}
-    //             </li>
-    //           ))}
-    //         </ul>
-    //       </div>
-    //     </div>
-    //     <div className="rightSide">{graphCanvas}</div>
-    //     <div className="workspaceButtons fixpointInputLabelMargin">
-    //       <button
-    //         onClick={() => {
-    //           if (checkGraph()) {
-    //             toggleEmptyDeletableAndConnectable(false, false);
-    //             setEmptySetupComplete(true);
-    //           }
-    //         }}
-    //         disabled={emptySetupComplete}
-    //       >
-    //         Check Graph
-    //       </button>
-    //       <button
-    //         onClick={() => {
-    //           solve();
-    //         }}
-    //         disabled={emptySetupComplete}
-    //       >
-    //         Show Solution
-    //       </button>
-    //       <button
-    //         onClick={() => {
-    //           showSnackbar("This feature is not yet implemented!", "warning", true);
-    //         }}
-    //         disabled={emptySetupComplete}
-    //         className="dangerousButton"
-    //       >
-    //         Reset Canvas
-    //       </button>
-    //     </div>
-    //   </div>
-    // </>
   );
 }
 

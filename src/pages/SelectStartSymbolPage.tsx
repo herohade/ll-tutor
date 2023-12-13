@@ -137,25 +137,33 @@ function SelectStartSymbolPage() {
           .map((nonterminal, index) => (
             <li key={index} className="inline">
               <IconButton
-                // variant="contained"
                 color={
                   start.find(([n]) => n.name === nonterminal.name)?.[1]
                     ? "success"
-                    : "primary"
+                    : "default"
                 }
-                className="px-1 py-2"
+                sx={{
+                  "&:hover > div": {
+                    bgcolor: "success.main",
+                    color: "success.contrastText",
+                    borderColor: "success.main",
+                    opacity: start.find(([n]) => n.name === nonterminal.name)?.[1] ? 0.9 : 0.5,
+                  },
+                }}
+                className="rounded p-1"
                 onClick={clickStartSymbol(nonterminal)}
                 aria-label={"toggle " + nonterminal.name + " as start symbol"}
               >
                 <Avatar
                   sx={{
-                    bgcolor: nonterminal.start
-                      ? "success.main"
-                      : "primary.main",
+                    bgcolor: nonterminal.start ? "success.main" : "transparent",
                     color: nonterminal.start
                       ? "success.contrastText"
-                      : "primary.contrastText",
-                    fontWeight: "bold",
+                      : "text.primary",
+                    border: 1,
+                    borderColor: nonterminal.start
+                      ? "success.main"
+                      : "text.primary",
                     width: "1.5rem",
                     height: "1.5rem",
                   }}

@@ -20,14 +20,19 @@ import {
   NodeColor,
   NodeData,
 } from "../types";
+import { EmptyNode, FloatingEdge } from "../components";
 
 export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
   set,
   get,
 ) => ({
   emptyIdCounter: 0,
-  emptyNodeTypes: {},
-  emptyEdgeTypes: {},
+  emptyNodeTypes: {
+    empty: EmptyNode,
+  },
+  emptyEdgeTypes: {
+    floating: FloatingEdge,
+  },
   emptySetupComplete: false,
   emptyNodes: [],
   emptyEdges: [],
@@ -146,6 +151,187 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
       }),
       emptyEdges: get().emptyEdges.map((edge) => {
         edge.deletable = deletable;
+        return edge;
+      }),
+    });
+  },
+  updateEmptyNodeAndEdgeEmpty: (nodeId: string, empty: boolean) => {
+    set({
+      emptyNodes: get().emptyNodes.map((node) => {
+        if (node.id === nodeId) {
+          // it's important to create a new object here, to inform React Flow about the changes
+          node.data = {
+            ...node.data,
+            changed: true,
+            empty: empty,
+            color: empty ? NodeColor.thisTurn : NodeColor.none,
+          };
+        }
+        return node;
+      }),
+      emptyEdges: get().emptyEdges.map((edge) => {
+        if (edge.source === nodeId) {
+          (edge.markerEnd = {
+            type: MarkerType.ArrowClosed,
+            orient: "auto",
+            color: empty ? NodeColor.thisTurn : NodeColor.none,
+          }),
+            (edge.style = {
+              ...edge.style,
+              stroke: empty ? NodeColor.thisTurn : NodeColor.none,
+            });
+        }
+        return edge;
+      }),
+    });
+  },
+  updateEmptyNodeAndEdges: (nodeId: string, name: string, empty: boolean) => {
+    let changedNode: Node<NodeData>;
+    set({
+      emptyNodes: get().emptyNodes.map((node) => {
+        if (node.id === nodeId) {
+          // it's important to create a new object here, to inform React Flow about the changes
+          node.data = {
+            ...node.data,
+            name: name,
+            empty: empty,
+            color: empty ? NodeColor.thisTurn : NodeColor.none,
+          };
+          changedNode = node;
+        }
+        return node;
+      }),
+      emptyEdges: get().emptyEdges.map((edge) => {
+        if (edge.source === nodeId || edge.target === nodeId) {
+          const sourceName: string | undefined =
+            edge.source === nodeId ? name : edge.sourceNode?.data.name;
+          const targetName: string | undefined =
+            edge.target === nodeId ? name : edge.targetNode?.data.name;
+          if (!sourceName || !targetName) {
+            if (import.meta.env.DEV) {
+              console.error(
+                "Error Code a1eae9: Node name is not valid! Please contact the developer!",
+                edge,
+              );
+            }
+            return edge;
+          }
+          if (!edge.data) {
+            if (import.meta.env.DEV) {
+              console.error(
+                "Error Code df3769: Edge data is not valid! Please contact the developer!",
+                edge,
+              );
+            }
+            return edge;
+          }
+          edge.data = {
+            ...edge.data,
+            name: sourceName + "->" + targetName,
+          };
+          if (edge.source === nodeId) {
+            if (edge.markerEnd) {
+              edge.markerEnd = {
+                type: MarkerType.ArrowClosed,
+                orient: "auto",
+                color: empty ? NodeColor.thisTurn : NodeColor.none,
+              };
+            }
+            if (edge.markerStart) {
+              edge.markerStart = {
+                type: MarkerType.ArrowClosed,
+                orient: "auto",
+                color: empty ? NodeColor.thisTurn : NodeColor.none,
+              };
+            }
+            edge.style = {
+              ...edge.style,
+              stroke: empty ? NodeColor.thisTurn : NodeColor.none,
+            };
+            edge.sourceNode = changedNode;
+          } else {
+            edge.targetNode = changedNode;
+          }
+        }
+        return edge;
+      }),
+    });
+  },
+  resetChangedEmptyNodes: () => {
+    set({
+      emptyNodes: get().emptyNodes.map((node) => {
+        if (node.data.changed) {
+          node.data = {
+            ...node.data,
+            changed: false,
+          };
+        }
+        return node;
+      }),
+    });
+  },
+  updateAllEmptyNodeAndEdgeColors: () => {
+    set({
+      emptyNodes: get().emptyNodes.map((node) => {
+        if (node.data.changed) {
+          if (import.meta.env.DEV) {
+            console.error(
+              "Error Code 881a4f: Node was still changed at color update!",
+              node,
+            );
+          }
+        }
+        switch (node.data.color) {
+          case NodeColor.thisTurn:
+            node.data = {
+              ...node.data,
+              color: NodeColor.lastTurn,
+            };
+            break;
+          case NodeColor.lastTurn:
+            node.data = {
+              ...node.data,
+              color: NodeColor.older,
+            };
+            break;
+          case NodeColor.older:
+            break;
+          case NodeColor.none:
+            break;
+        }
+        return node;
+      }),
+      emptyEdges: get().emptyEdges.map((edge) => {
+        switch (edge.style?.stroke) {
+          case NodeColor.thisTurn:
+            (edge.markerEnd = {
+              type: MarkerType.ArrowClosed,
+              orient: "auto",
+              color: NodeColor.lastTurn,
+            }),
+              (edge.style = {
+                ...edge.style,
+                stroke: NodeColor.lastTurn,
+              });
+            break;
+          case NodeColor.lastTurn:
+            (edge.markerEnd = {
+              type: MarkerType.ArrowClosed,
+              orient: "auto",
+              color: NodeColor.older,
+            }),
+              (edge.style = {
+                ...edge.style,
+                stroke: NodeColor.older,
+              });
+            break;
+          case NodeColor.older:
+            break;
+          case NodeColor.none:
+            break;
+          default:
+            break;
+        }
         return edge;
       }),
     });

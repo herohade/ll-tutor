@@ -200,6 +200,14 @@ export type EmptyNodeSlice = {
     deletable: boolean,
     connectable: boolean,
   ) => void;
+  updateEmptyNodeAndEdgeEmpty: (nodeId: string, empty: boolean) => void;
+  updateEmptyNodeAndEdges: (
+    nodeId: string,
+    name: string,
+    empty: boolean,
+  ) => void;
+  resetChangedEmptyNodes: () => void;
+  updateAllEmptyNodeAndEdgeColors: () => void;
 };
 
 export type EmptyAlgorithmSlice = {

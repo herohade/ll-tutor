@@ -254,6 +254,11 @@ function ReadGrammarPage() {
                 size="small"
                 color="error"
                 className="mr-1"
+                sx={{
+                  "&:hover > svg": {
+                    color: "error.dark",
+                  },
+                }}
                 onClick={() => {
                   // remove start if necessary
                   if (production.leftSide.name === startSymbol.name) {
@@ -289,7 +294,10 @@ function ReadGrammarPage() {
               >
                 <RemoveCircleOutlineIcon />
               </IconButton>
-              <ListItemText className="flex-none" primary={production.representation} />
+              <ListItemText
+                className="flex-none"
+                primary={production.representation}
+              />
             </ListItem>
           ))}
         </List>

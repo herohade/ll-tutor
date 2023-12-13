@@ -6,7 +6,7 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
   minPage: 0,
   maxPage: 8,
   page: 0,
-  open: false,
+  open: window.innerWidth > window.innerHeight || window.innerWidth > 800,
   previousPage: () => {
     set({ page: get().page - 1 });
   },

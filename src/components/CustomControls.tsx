@@ -7,35 +7,77 @@ import {
 } from "reactflow";
 
 import { styled } from "@mui/material";
-import AddCircleSharpIcon from '@mui/icons-material/AddCircleSharp';
-import AccountTreeSharpIcon from '@mui/icons-material/AccountTreeSharp';
+import LibraryAddSharpIcon from "@mui/icons-material/LibraryAddSharp";
+import AccountTreeSharpIcon from "@mui/icons-material/AccountTreeSharp";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
 
-import { EmptyNodeSlice, NodeColor, NodeData } from "../types";
+import { EmptyNodeSlice, NavigationSlice, NodeColor, NodeData } from "../types";
 
 import { useLayoutedElements } from "../utils";
+import { useMemo } from "react";
 
 function CustomControls() {
-  const emptyNodeSelector = (state: EmptyNodeSlice) => ({
+  // Since ReactFlows Controls component already has a few buttons,
+  // we need to style them to match out custom buttons. This is done
+  // by simply styling all child buttons of the Controls component at once.
+  const StyledControls = useMemo(() => {
+    return styled(Controls)<ControlProps>(({ theme }) => {
+      return {
+        "> button": {
+          backgroundColor: theme.palette.primary.main,
+          color: theme.palette.primary.contrastText,
+          fill: theme.palette.primary.contrastText,
+          width: "1.25rem",
+          height: "1.25rem",
+          borderRadius: "0.5rem",
+          marginTop: "0.25rem",
+          marginBottom: "0.25rem",
+          borderBottom: "none",
+          "&:hover": {
+            backgroundColor: theme.palette.primary.dark,
+            opacity: 1,
+          },
+          "&:active": {
+            backgroundColor: theme.palette.primary.dark,
+            opacity: 0.8,
+          },
+          "&:disabled": {
+            backgroundColor: theme.palette.primary.light,
+            opacity: 0.8,
+          },
+          "> svg": {
+            maxWidth: "1.25rem",
+            maxHeight: "1.25rem",
+          },
+        },
+      };
+    });
+  }, []);
+
+  const emptyNodeSelector = (state: EmptyNodeSlice & NavigationSlice) => ({
+    // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
     emptyNodes: state.emptyNodes,
     emptyEdges: state.emptyEdges,
     getEmptyNodeId: state.getEmptyNodeId,
     setEmptyNodes: state.setEmptyNodes,
     setEmptyEdges: state.setEmptyEdges,
+    // NavigationSlice
+    page: state.page,
   });
   const {
+    // EmptyNodeSlice
     emptySetupComplete,
     emptyNodes,
     emptyEdges,
     getEmptyNodeId,
     setEmptyNodes,
     setEmptyEdges,
+    // NavigationSlice
+    page,
   } = useBoundStore(emptyNodeSelector, shallow);
-
-  const page = useBoundStore((state) => state.page);
 
   const store = useStoreApi();
 
@@ -45,10 +87,6 @@ function CustomControls() {
     setEmptyNodes,
     setEmptyEdges,
   );
-
-  // const theme = useTheme();
-  // const bg = theme.palette.primary.main;
-  // const text = theme.palette.primary.contrastText;
 
   const addEmptyNode = () => {
     // Add the node in the center of the viewport.
@@ -101,44 +139,8 @@ function CustomControls() {
     setEmptyNodes([...emptyNodes, newNode]);
   };
 
-  // Since ReactFlows Controls component already has a few buttons,
-  // we need to style them to match out custom buttons. This is done
-  // by simply styling all child buttons of the Controls component at once.
-  const StyledControls = styled(Controls)<ControlProps>(
-    ({ theme }) => ({
-      "> button": {
-        backgroundColor: theme.palette.primary.main,
-        color: theme.palette.primary.contrastText,
-        width: "1.25rem",
-        height: "1.25rem",
-        borderRadius: "0.5rem",
-        marginTop: "0.25rem",
-        marginBottom: "0.25rem",
-        borderBottom: "none",
-        "&:hover": {
-          backgroundColor: theme.palette.primary.dark,
-          opacity: 1,
-        },
-        "&:active": {
-          backgroundColor: theme.palette.primary.dark,
-          opacity: 0.8
-        },
-        "&:disabled": {
-          backgroundColor: theme.palette.primary.light,
-          opacity: 0.8,
-        },
-        "> svg": {
-          maxWidth: "1.25rem",
-          maxHeight: "1.25rem",
-        },
-      },
-    }),
-  );
-
   return (
-    <StyledControls
-      className="shadow-none"
-    >
+    <StyledControls className="shadow-none">
       <ControlButton
         onClick={() => {
           layoutElements({
@@ -164,7 +166,7 @@ function CustomControls() {
           title="add node"
           disabled={emptySetupComplete}
         >
-          <AddCircleSharpIcon />
+          <LibraryAddSharpIcon />
         </ControlButton>
       )}
     </StyledControls>

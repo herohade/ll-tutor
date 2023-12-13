@@ -4,7 +4,6 @@ import StyledEngineProvider from "@mui/material/StyledEngineProvider";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
@@ -43,7 +42,8 @@ import {
 
 import { EmptyNodeSlice, NavigationSlice } from "./types";
 
-import "reactflow/dist/style.css";
+// basic css required for react-flow to work
+import 'reactflow/dist/base.css';
 
 export default function App() {
   const selector = (state: NavigationSlice & EmptyNodeSlice) => ({
@@ -92,6 +92,12 @@ export default function App() {
       createTheme({
         palette: {
           mode: prefersLightMode ? "light" : "dark",
+          // primary: {
+          //   main: '#3070b3',
+          // },
+          // secondary: {
+          //   main: '#b37430',
+          // },
         },
       }),
     [prefersLightMode],
@@ -132,6 +138,7 @@ export default function App() {
       content = <SelectStartSymbolPage />;
       break;
     case 3:
+    case 4:
       content = <PrepareEmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />;
       break;
     default:
@@ -180,7 +187,12 @@ export default function App() {
               }}
             >
               <Toolbar />
-              <Container className="my-4 flex flex-grow overflow-hidden">{content}</Container>
+              {/* TODO: Box or Container? */}
+              <Box className="m-2 xs:m-4 flex flex-grow overflow-scroll">
+              {/* <Container className="my-4 flex flex-grow overflow-scroll"> */}
+                {content}
+              {/* </Container> */}
+              </Box>
             </Box>
           </SnackbarProvider>
         </Box>

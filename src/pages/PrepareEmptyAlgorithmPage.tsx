@@ -392,7 +392,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={{ xs: 1, sm: 2 }}
-            className=""
+            className="pb-1 sm:pb-0"
           >
             <Button
               variant="contained"

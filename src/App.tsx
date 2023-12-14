@@ -21,12 +21,13 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 
-import { useMemo } from "react";
+import { ReactNode, useMemo } from "react";
 
 import useBoundStore from "./store/store";
 import { shallow } from "zustand/shallow";
 
 import {
+  EmptyAlgorithmPage,
   PrepareEmptyAlgorithmPage,
   ReadGrammarPage,
   SelectStartSymbolPage,
@@ -43,7 +44,7 @@ import {
 import { EmptyNodeSlice, NavigationSlice } from "./types";
 
 // basic css required for react-flow to work
-import 'reactflow/dist/base.css';
+import "reactflow/dist/base.css";
 
 export default function App() {
   const selector = (state: NavigationSlice & EmptyNodeSlice) => ({
@@ -103,27 +104,29 @@ export default function App() {
     [prefersLightMode],
   );
 
+  // ReactFlowProvider, stays the same between pages
+  const emptyRfProvider = (children: ReactNode) => (
+    <ReactFlowProvider children={children} />
+  );
   // ReactFlow canvas, stays the same between pages
   const emptyGraphCanvas = (
-    <ReactFlowProvider>
-      <ReactFlow
-        nodes={emptyNodes}
-        edges={emptyEdges}
-        onNodesChange={onEmptyNodesChange}
-        onEdgesChange={onEmptyEdgesChange}
-        connectionLineComponent={ConnectionLine}
-        onConnect={onEmptyConnect(showSnackbar)}
-        onNodeDragStop={undefined}
-        nodeTypes={emptyNodeTypes}
-        edgeTypes={emptyEdgeTypes}
-        fitView={true}
-        zoomOnDoubleClick={false}
-        selectNodesOnDrag={false}
-      >
-        <CustomControls />
-        <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-      </ReactFlow>
-    </ReactFlowProvider>
+    <ReactFlow
+      nodes={emptyNodes}
+      edges={emptyEdges}
+      onNodesChange={onEmptyNodesChange}
+      onEdgesChange={onEmptyEdgesChange}
+      connectionLineComponent={ConnectionLine}
+      onConnect={onEmptyConnect(showSnackbar)}
+      onNodeDragStop={undefined}
+      nodeTypes={emptyNodeTypes}
+      edgeTypes={emptyEdgeTypes}
+      fitView={true}
+      zoomOnDoubleClick={false}
+      selectNodesOnDrag={false}
+    >
+      <CustomControls />
+      <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+    </ReactFlow>
   );
 
   let content;
@@ -138,8 +141,14 @@ export default function App() {
       content = <SelectStartSymbolPage />;
       break;
     case 3:
+      content = emptyRfProvider(
+        <PrepareEmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />,
+      );
+      break;
     case 4:
-      content = <PrepareEmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />;
+      content = emptyRfProvider(
+        <EmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />,
+      );
       break;
     default:
       content = (
@@ -188,10 +197,10 @@ export default function App() {
             >
               <Toolbar />
               {/* TODO: Box or Container? */}
-              <Box className="m-2 xs:m-4 flex flex-grow overflow-scroll">
-              {/* <Container className="my-4 flex flex-grow overflow-scroll"> */}
+              <Box className="m-2 flex flex-grow overflow-scroll xs:m-4">
+                {/* <Container className="my-4 flex flex-grow overflow-scroll"> */}
                 {content}
-              {/* </Container> */}
+                {/* </Container> */}
               </Box>
             </Box>
           </SnackbarProvider>

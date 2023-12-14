@@ -45,15 +45,15 @@ const steps: { label: string; content: string[] }[] = [
   {
     label: "Select Grammar",
     content: [
-      "Enter a production\nof form A -> α.",
-      "Select the start symbol\nfrom the nonterminals.",
+      "Enter a production of form A -> α.",
+      "Select the start symbol from the nonterminals.",
     ],
   },
   {
     label: "Calculate Empty Attributes",
     content: [
-      "Set up the dependency\ngraph for calculating\nthe empty sets.",
-      "TODO",
+      "Set up the dependency graph for calculating the empty sets.",
+      "Propagate the empty attribute through the dependency graph.",
     ],
   },
   { label: "Calculate First Sets", content: ["TODO", "TODO"] },
@@ -93,11 +93,17 @@ function ProgressDrawerComponent() {
         className="pl-3 pt-3 sm:pl-5 sm:pt-5"
       >
         {steps.map(({ label, content }, index) => (
-          <Step key={label + index} className="whitespace-pre">
+          <Step key={label + index}>
             <StepLabel>{open && label}</StepLabel>
             {open && (
               <StepContent>
-                <Tyoography className="text-start">
+                {/* Since there is a transition when opening the drawer, the
+                width would dynamically change causing the text to constantly
+                readjust line-brakes during opening. This can be fixed by
+                either auto-wrapping with fixed size (white-space:normal +
+                width:...) or by hardcoding line-breaks (white-space:pre).
+                Here we chose the former. */}
+                <Tyoography className="w-[186.4px] whitespace-normal text-start sm:w-[178.4px]">
                   {content[(page - 1) % 2]}
                 </Tyoography>
               </StepContent>

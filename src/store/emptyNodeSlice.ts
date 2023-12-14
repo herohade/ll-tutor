@@ -162,7 +162,6 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
           // it's important to create a new object here, to inform React Flow about the changes
           node.data = {
             ...node.data,
-            changed: true,
             empty: empty,
             color: empty ? NodeColor.thisTurn : NodeColor.none,
           };
@@ -257,30 +256,9 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
       }),
     });
   },
-  resetChangedEmptyNodes: () => {
-    set({
-      emptyNodes: get().emptyNodes.map((node) => {
-        if (node.data.changed) {
-          node.data = {
-            ...node.data,
-            changed: false,
-          };
-        }
-        return node;
-      }),
-    });
-  },
   updateAllEmptyNodeAndEdgeColors: () => {
     set({
       emptyNodes: get().emptyNodes.map((node) => {
-        if (node.data.changed) {
-          if (import.meta.env.DEV) {
-            console.error(
-              "Error Code 881a4f: Node was still changed at color update!",
-              node,
-            );
-          }
-        }
         switch (node.data.color) {
           case NodeColor.thisTurn:
             node.data = {

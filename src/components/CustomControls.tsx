@@ -130,7 +130,6 @@ function CustomControls() {
       type: "empty",
       data: {
         name: "S'",
-        changed: false,
         empty: false,
         color: NodeColor.none,
       },
@@ -150,7 +149,7 @@ function CustomControls() {
             // "elk.edgeRouting": "SPLINES",
             // "elk.edgeRouting": "POLYLINE",
             // "elk.edgeRouting": "ORTHOGONAL",
-            "elk.direction": "RIGHT",
+            // "elk.direction": "RIGHT",
             // "elk.nodeLabels.placement": "[INSIDE, H_LEFT, V_TOP]",
           });
         }}

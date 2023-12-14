@@ -21,14 +21,14 @@ const useLayoutedElements = (
   const { fitView } = useReactFlow();
 
   const layoutElements = useCallback(
-    (options?: LayoutOptions) => {
-      const relevantNodes = emptyNodes;
-      const relevantEdges = emptyEdges;
-      const relevantSetNodes = setEmptyNodes;
-      const relevantSetEdges = setEmpyEdges;
+    (options?: LayoutOptions, nodes?: Node<NodeData>[], edges?: Edge<EdgeData>[], setNodes?: (nodes: Node<NodeData>[]) => void, setEdges?: (edges: Edge<EdgeData>[]) => void) => {
+      const relevantNodes = nodes || emptyNodes;
+      const relevantEdges = edges || emptyEdges;
+      const relevantSetNodes = setNodes || setEmptyNodes;
+      const relevantSetEdges = setEdges || setEmpyEdges;
 
       const direction = (
-        options ? options["elk.direction"] : "DOWN"
+        options ? options["elk.direction"] : "RIGHT"
       ) as ElkDirectionType;
       const isRight = direction === "RIGHT";
       const isLeft = direction === "LEFT";
@@ -49,7 +49,7 @@ const useLayoutedElements = (
             : "bottom";
       const layoutOptions: LayoutOptions = {
         "elk.algorithm": "layered",
-        "elk.direction": "DOWN",
+        "elk.direction": "RIGHT",
         "elk.edgeRouting": "SPLINES",
         "elk.interactive": "true",
         "elk.spacing.nodeNode": "100",
@@ -90,8 +90,8 @@ const useLayoutedElements = (
             layoutOptions: childLayoutOptions,
             children: [],
             labels: label,
-            width: node.width ?? undefined,
-            height: node.height ?? undefined,
+            width: node.width ?? 100,
+            height: node.height ?? 80,
           });
         }
       }
@@ -107,8 +107,8 @@ const useLayoutedElements = (
             id: node.id,
             layoutOptions: childLayoutOptions,
             children: [],
-            width: node.width ?? undefined,
-            height: node.height ?? undefined,
+            width: node.width ?? 100,
+            height: node.height ?? 80,
           });
         }
       }
@@ -130,7 +130,7 @@ const useLayoutedElements = (
 
       elk
         .layout(graph, {
-          // The following options crash the layouting with a NullPointerException LMAO
+          // The following options crash the layouting with a NullPointerException lol
           // logging: import.meta.env.DEV,
           // measureExecutionTime: import.meta.env.DEV,
         })

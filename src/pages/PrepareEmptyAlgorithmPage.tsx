@@ -17,6 +17,8 @@ import {
 import useBoundStore from "../store/store";
 import { shallow } from "zustand/shallow";
 
+import { useLayoutedElements } from "../utils";
+
 type Props = {
   graphCanvas: JSX.Element;
 };
@@ -76,6 +78,13 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     });
   };
 
+  const { layoutElements } = useLayoutedElements(
+    emptyNodes,
+    emptyEdges,
+    setEmptyNodes,
+    setEmptyEdges,
+  );
+
   const checkGraph = () => {
     // for (const nonTerminal of newNonTerminals) {
     //   newNodes.push({
@@ -83,7 +92,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     //     type: "empty",
     //     data: {
     //       name: nonTerminal.name,
-    //       changed: true,
     //       empty: nonTerminal.empty,
     //       color: nonTerminal.empty ? NodeColor.lastTurn : NodeColor.none,
     //     },
@@ -96,7 +104,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     //     type: "empty",
     //     data: {
     //       name: terminal.name,
-    //       changed: true,
     //       empty: terminal.empty,
     //       color: terminal.empty ? NodeColor.lastTurn : NodeColor.none,
     //     },
@@ -108,7 +115,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     //   type: "empty",
     //   data: {
     //     name: epsilon.name,
-    //     changed: true,
     //     empty: epsilon.empty,
     //     color: epsilon.empty ? NodeColor.lastTurn : NodeColor.none,
     //   },
@@ -266,8 +272,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         type: "empty",
         data: {
           name: epsilon.name,
-          // changed: true,
-          changed: false,
           empty: epsilon.empty,
           color: epsilon.empty ? NodeColor.thisTurn : NodeColor.none,
         },
@@ -280,8 +284,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         type: "empty",
         data: {
           name: nonTerminal.name,
-          // changed: true,
-          changed: false,
           empty: nonTerminal.empty,
           color: nonTerminal.empty ? NodeColor.thisTurn : NodeColor.none,
         },
@@ -294,8 +296,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         type: "empty",
         data: {
           name: terminal.name,
-          // changed: true,
-          changed: false,
           empty: terminal.empty,
           color: terminal.empty ? NodeColor.thisTurn : NodeColor.none,
         },
@@ -349,10 +349,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       }
     }
 
-    setEmptyNodes(newNodes);
-    setEmptyEdges(newEdges);
-    // TODO: automatically layout the graph
-    // This probably requires a rewrite of utils/elk.ts (useLayoutedElements)
+    layoutElements(undefined, newNodes, newEdges, setEmptyNodes, setEmptyEdges);
   };
 
   return (
@@ -360,7 +357,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       {/* left side, task description and information */}
       <div className="mr-1 h-full w-1/3 min-w-min overflow-scroll rounded-lg border-2 border-solid p-2 text-left">
         <div
-          // TODO: center or not?
           className="flex h-full flex-col items-center justify-between"
         >
           <div className="flex flex-col items-center">
@@ -392,7 +388,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
           <Stack
             direction={{ xs: "column", sm: "row" }}
             spacing={{ xs: 1, sm: 2 }}
-            className="pb-1 sm:pb-0"
+            className="pb-1"
           >
             <Button
               variant="contained"

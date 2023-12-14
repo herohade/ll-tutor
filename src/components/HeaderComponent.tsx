@@ -90,13 +90,19 @@ function HeaderComponent() {
     setPreparedEmpty: state.setPreparedEmpty,
     setPreparedFirst: state.setPreparedFirst,
     // EmptyNodeSlice
+    emptySetupComplete: state.emptySetupComplete,
     setEmptySetupComplete: state.setEmptySetupComplete,
     setEmptyNodes: state.setEmptyNodes,
     setEmptyEdges: state.setEmptyEdges,
+    updateAllEmptyNodeAndEdgeColors: state.updateAllEmptyNodeAndEdgeColors,
     // EmptyAlgorithmSlice
+    finishedEmpty: state.finishedEmpty,
     setEmptyNonterminalMap: state.setEmptyNonterminalMap,
-    setEmptyTerminalMap: state.setEmptyTerminalMap,
     setEmptyProductionMap: state.setEmptyProductionMap,
+    setEmptyUserFixpoint: state.setEmptyUserFixpoint,
+    setEmptyFixpoint: state.setEmptyFixpoint,
+    setEmptyWorkList: state.setEmptyWorkList,
+    setFinishedEmpty: state.setFinishedEmpty,
   });
   const {
     // NavigationSlice
@@ -120,18 +126,25 @@ function HeaderComponent() {
     start,
     sorted,
     reduced,
+    preparedEmpty,
     setSorted,
     setReduced,
     setPreparedEmpty,
     setPreparedFirst,
     // EmptyNodeSlice
+    emptySetupComplete,
     setEmptySetupComplete,
     setEmptyNodes,
     setEmptyEdges,
+    updateAllEmptyNodeAndEdgeColors,
     // EmptyAlgorithmSlice
+    finishedEmpty,
     setEmptyNonterminalMap,
-    setEmptyTerminalMap,
     setEmptyProductionMap,
+    setEmptyUserFixpoint,
+    setEmptyFixpoint,
+    setEmptyWorkList,
+    setFinishedEmpty,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -538,10 +551,9 @@ function HeaderComponent() {
 
     // prepare the canvas
 
-    // color nonterminals, terminals and productions next to the canvas
+    // color nonterminals and productions next to the canvas
     // this must happen before preparing the first step of the empty algorithm
     setEmptyNonterminalMap(newNonTerminals.map((n) => [n.name, n.empty]));
-    setEmptyTerminalMap(newTerminals.map((t) => [t.name, t.empty]));
     setEmptyProductionMap(newProductions.map((p) => [p.name, p.empty]));
 
     const newNodes: Node<NodeData>[] = [];
@@ -550,6 +562,89 @@ function HeaderComponent() {
     // set the canvas
     setEmptyNodes(newNodes);
     setEmptyEdges(newEdges);
+
+    return true;
+  };
+
+  // Set up the first step of the empty attribute algorithm
+  // WARNING: When changing the empty attribute algorithm, this part
+  // needs to be updated accordingly!
+  const prepareEmptyAlgorithm = () => {
+    if (preparedEmpty) {
+      if (import.meta.env.DEV) {
+        console.log("Empty attribute algorithm is already prepared!");
+      }
+      return true;
+    } else {
+      if (import.meta.env.DEV) {
+        console.log("Preparing empty attribute algorithm...");
+      }
+      setPreparedEmpty(true);
+    }
+
+    // Prepare the first step of the empty algorithm
+
+    // update nodes to reflece beginning of the first step
+    updateAllEmptyNodeAndEdgeColors();
+
+    // calculate next steps solution
+    /*
+    // Full Algorithm:
+    // 1. set terminal ε to empty = true
+    // (already happens when creating)
+
+    // 2. while fixpoint is not reached, check all productions
+    let workList: Array<Production> = [...productions];
+    // with non-empty left side
+    let fixpoint = false;
+    // TODO: perhaps remove this counter
+    let counter = 0;
+    while (!fixpoint && counter < 10000) {
+        // TODO: remove this counter
+        counter++;
+        fixpoint = true;
+
+        // 3. remove all new empty productions
+        workList = workList.filter((p) => !p.empty);
+        for (const production of workList) {
+            // 5. if right side is empty, set left side and production to empty
+            // also set fixpoint to false since there are new empty nonterminals
+            if (!production.rightSide.some((s) => !s.empty)) {
+                production.leftSide.empty = true;
+                production.empty = true;
+                fixpoint = false;
+                continue;
+            }
+        }
+    }
+  */
+    let newEmptyWorkList = [...productions];
+    let newEmptyFixpoint = true;
+    newEmptyWorkList = newEmptyWorkList.filter((p) => !p.empty);
+    const newEmptyProductions = [];
+    for (const production of newEmptyWorkList) {
+      if (!production.rightSide.some((s) => !s.empty)) {
+        newEmptyProductions.push(production);
+      }
+    }
+    for (const production of newEmptyProductions) {
+      production.empty = true;
+      if (!production.leftSide.empty) {
+        production.leftSide.empty = true;
+        newEmptyFixpoint = false;
+      }
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("newEmptyWorkList", newEmptyWorkList);
+      console.log("newEmptyFixpoint", newEmptyFixpoint);
+    }
+
+    // reset the empty attribute algorithm
+    setEmptyWorkList(newEmptyWorkList);
+    setEmptyFixpoint(newEmptyFixpoint);
+    setEmptyUserFixpoint(false);
+    setFinishedEmpty(false);
 
     return true;
   };
@@ -619,7 +714,31 @@ function HeaderComponent() {
           }
         };
       case 3: // page (3) -> 4
+        return (cb) => {
+          if (emptySetupComplete) {
+            return cb();
+          } else {
+            showSnackbar(
+              "Please finish building the dependency graph!",
+              "error",
+              true,
+            );
+            return false;
+          }
+        };
       case 4: // page (4) -> 5
+        return (cb) => {
+          if (finishedEmpty) {
+            return cb();
+          } else {
+            showSnackbar(
+              "Please finish the empty attribute algorithm!",
+              "error",
+              true,
+            );
+            return false;
+          }
+        };
       case 5: // page (5) -> 6
       case 6: // page (6) -> 7
       case 7: // page (7) -> 8
@@ -672,6 +791,9 @@ function HeaderComponent() {
           return reduceGrammar();
         };
       case 4: // page 3 -> (4)
+        return () => {
+          return prepareEmptyAlgorithm();
+        };
       case 5: // page 4 -> (5)
       case 6: // page 5 -> (6)
       case 7: // page 6 -> (7)

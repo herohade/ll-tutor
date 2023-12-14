@@ -156,7 +156,6 @@ export enum NodeColor {
 
 export type NodeData = {
   name: string;
-  changed: boolean;
   empty: boolean;
   color: NodeColor;
   labelSize?: { width: number; height: number };
@@ -206,23 +205,18 @@ export type EmptyNodeSlice = {
     name: string,
     empty: boolean,
   ) => void;
-  resetChangedEmptyNodes: () => void;
   updateAllEmptyNodeAndEdgeColors: () => void;
 };
 
 export type EmptyAlgorithmSlice = {
   emptyNonterminalMap: [string, boolean][];
-  emptyTerminalMap: [string, boolean][];
   emptyProductionMap: [string, boolean][];
-  finishedEmptyStep: boolean;
   emptyUserFixpoint: boolean;
   emptyFixpoint: boolean;
   emptyWorkList: Production[];
   finishedEmpty: boolean;
   setEmptyNonterminalMap: (map: [string, boolean][]) => void;
-  setEmptyTerminalMap: (map: [string, boolean][]) => void;
   setEmptyProductionMap: (map: [string, boolean][]) => void;
-  setFinishedEmptyStep: (finished: boolean) => void;
   setEmptyUserFixpoint: (fixpoint: boolean) => void;
   setEmptyFixpoint: (fixpoint: boolean) => void;
   setEmptyWorkList: (workList: Production[]) => void;

@@ -135,8 +135,8 @@ function EmptyNode({ id, data, isConnectable }: Props) {
     <Box
       className="rounded-lg"
       sx={{
-        bgcolor: data.color,
         // TODO: use themed colors
+        bgcolor: data.color,
         // bgcolor: (theme) =>
         //   theme.palette.mode === "dark"
         //     ? isConnectable && isConnecting

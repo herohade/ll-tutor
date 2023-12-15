@@ -226,3 +226,34 @@ export type EmptyAlgorithmSlice = {
   setEmptyWorkList: (workList: Production[]) => void;
   setFinishedEmpty: (finished: boolean) => void;
 };
+
+export type FirstNodeSlice = {
+  firstIdCounter: number;
+  firstNodeTypes: NodeTypes;
+  firstEdgeTypes: EdgeTypes;
+  firstSetupComplete: boolean;
+  firstNodes: Node<NodeData>[];
+  firstEdges: Edge<EdgeData>[];
+  getFirstNodeId: () => string;
+  getFirstEdgeId: () => string;
+  setFirstSetupComplete: (complete: boolean) => void;
+  setFirstNodes: (nodes: Node<NodeData>[]) => void;
+  setFirstEdges: (edges: Edge<EdgeData>[]) => void;
+  setLabelSize: (
+    nodeId: string,
+    size: { width: number; height: number } | undefined,
+  ) => void;
+  onFirstNodesChange: OnNodesChange;
+  onFirstEdgesChange: OnEdgesChange;
+  onFirstConnect: (
+    showSnackbar: (
+      message: string,
+      variant: VariantType,
+      preventDuplicate: boolean,
+    ) => void,
+  ) => OnConnect;
+  toggleFirstDeletableAndConnectable: (
+    deletable: boolean,
+    connectable: boolean,
+  ) => void;
+};

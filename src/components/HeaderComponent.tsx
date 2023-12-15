@@ -12,18 +12,21 @@ import NavigateNext from "@mui/icons-material/NavigateNext";
 
 import { VariantType, useSnackbar } from "notistack";
 
-import { Node, Edge } from "reactflow";
+import { Node, Edge, MarkerType } from "reactflow";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
 
 import {
   EdgeData,
+  EdgePathType,
   EmptyAlgorithmSlice,
   EmptyNodeSlice,
+  FirstNodeSlice,
   GrammarSetupSlice,
   GrammarSlice,
   NavigationSlice,
+  NodeColor,
   NodeData,
   Nonterminal,
   Production,
@@ -60,7 +63,8 @@ function HeaderComponent() {
       GrammarSlice &
       GrammarSetupSlice &
       EmptyNodeSlice &
-      EmptyAlgorithmSlice,
+      EmptyAlgorithmSlice &
+      FirstNodeSlice,
   ) => ({
     // NavigationSlice
     minPage: state.minPage,
@@ -91,6 +95,7 @@ function HeaderComponent() {
     setPreparedFirst: state.setPreparedFirst,
     // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
+    emptyNodes: state.emptyNodes,
     setEmptySetupComplete: state.setEmptySetupComplete,
     setEmptyNodes: state.setEmptyNodes,
     setEmptyEdges: state.setEmptyEdges,
@@ -103,6 +108,13 @@ function HeaderComponent() {
     setEmptyFixpoint: state.setEmptyFixpoint,
     setEmptyWorkList: state.setEmptyWorkList,
     setFinishedEmpty: state.setFinishedEmpty,
+    // FirstNodeSlice
+    firstSetupComplete: state.firstSetupComplete,
+    getFirstNodeId: state.getFirstNodeId,
+    getFirstEdgeId: state.getFirstEdgeId,
+    setFirstSetupComplete: state.setFirstSetupComplete,
+    setFirstNodes: state.setFirstNodes,
+    setFirstEdges: state.setFirstEdges,
   });
   const {
     // NavigationSlice
@@ -127,12 +139,14 @@ function HeaderComponent() {
     sorted,
     reduced,
     preparedEmpty,
+    preparedFirst,
     setSorted,
     setReduced,
     setPreparedEmpty,
     setPreparedFirst,
     // EmptyNodeSlice
     emptySetupComplete,
+    emptyNodes,
     setEmptySetupComplete,
     setEmptyNodes,
     setEmptyEdges,
@@ -145,6 +159,13 @@ function HeaderComponent() {
     setEmptyFixpoint,
     setEmptyWorkList,
     setFinishedEmpty,
+    // FirstNodeSlice
+    firstSetupComplete,
+    getFirstNodeId,
+    getFirstEdgeId,
+    setFirstSetupComplete,
+    setFirstNodes,
+    setFirstEdges,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -267,8 +288,7 @@ function HeaderComponent() {
       }
       setReduced(true);
       setEmptySetupComplete(false);
-      // TODO: add this back in
-      // setFirstSetupComplete(false);
+      setFirstSetupComplete(false);
       setPreparedEmpty(false);
       setPreparedFirst(false);
     }
@@ -649,6 +669,110 @@ function HeaderComponent() {
     return true;
   };
 
+  // Set up the canvas for the first attribute algorithm.
+  // We add a new FirstNode for each (Non)terminal,
+  // a FirstNode {t}, as well as an Edge {t} -> t for each terminal t.
+  const prepareFirstAlgorithm = () => {
+    if (preparedFirst) {
+      if (import.meta.env.DEV) {
+        console.log("First attribute algorithm is already prepared!");
+      }
+      return true;
+    } else {
+      if (import.meta.env.DEV) {
+        console.log("Preparing first attribute algorithm...");
+      }
+      setPreparedFirst(true);
+    }
+
+    // Prepare the canvas for the first attribute algorithm
+    const newFirstNodes: Node<NodeData>[] = [];
+    const newFirstEdges: Edge<EdgeData>[] = [];
+
+    // add a new FirstNode for each (Non)terminal
+    for (const node of emptyNodes.filter((n) => n.data.name !== "ε")) {
+      const newNode: Node<NodeData> = {
+        id: getFirstNodeId(),
+        type: "first",
+        position: node.position,
+        deletable: false,
+        data: {
+          ...node.data,
+        },
+      };
+      newFirstNodes.push(newNode);
+    }
+
+    // add a FirstNode {t} for each terminal t
+    for (const terminal of terminals) {
+      const terminalNode: Node<NodeData> | undefined = newFirstNodes.find(
+        (n) => n.data.name === terminal.name,
+      );
+      if (!terminalNode) {
+        if (import.meta.env.DEV) {
+          console.error(
+            "Error Code 60c841: Terminal not found among newFirstNodes!",
+            terminal,
+          );
+        }
+        showSnackbar(
+          "Error Code 60c841: Please contact the developer!",
+          "error",
+          true,
+        );
+        return false;
+      }
+      const nodeId = getFirstNodeId();
+      const nodeName = `{${terminal.name}}`;
+      const newNode: Node<NodeData> = {
+        id: nodeId,
+        type: "first",
+        position: {
+          x: terminalNode.position.x,
+          y: terminalNode.position.y - (terminalNode.height ?? 50) - 50,
+        },
+        deletable: false,
+        data: {
+          name: nodeName,
+          empty: false,
+          color: NodeColor.none,
+        },
+      };
+      const edgeName = nodeName + "->" + terminalNode.data.name;
+      const newEdge: Edge<EdgeData> = {
+        id: getFirstEdgeId(),
+        type: "floating",
+        source: nodeId,
+        target: terminalNode.id,
+        sourceNode: newNode,
+        targetNode: terminalNode,
+        deletable: false,
+        data: {
+          pathType: EdgePathType.Straight,
+          isGroupEdge: false,
+          name: edgeName,
+        },
+        animated: true,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          orient: "auto",
+          color: NodeColor.none,
+        },
+        style: {
+          strokeWidth: 2,
+          stroke: NodeColor.none,
+        },
+      };
+      newFirstNodes.push(newNode);
+      newFirstEdges.push(newEdge);
+    }
+
+    setFirstNodes(newFirstNodes);
+    setFirstEdges(newFirstEdges);
+
+    return true;
+  };
+
   // Functions that are invoked when changing between pages
   // Indexed by current page - minimum page
   // What to do when leaving a page to go to the previous one:
@@ -740,6 +864,18 @@ function HeaderComponent() {
           }
         };
       case 5: // page (5) -> 6
+        return (cb) => {
+          if (firstSetupComplete) {
+            return cb();
+          } else {
+            showSnackbar(
+              "Please finish building the dependency graph!",
+              "error",
+              true,
+            );
+            return false;
+          }
+        };
       case 6: // page (6) -> 7
       case 7: // page (7) -> 8
         return (cb) => {
@@ -795,6 +931,9 @@ function HeaderComponent() {
           return prepareEmptyAlgorithm();
         };
       case 5: // page 4 -> (5)
+        return () => {
+          return prepareFirstAlgorithm();
+        };
       case 6: // page 5 -> (6)
       case 7: // page 6 -> (7)
       case 8: // page 7 -> (8)

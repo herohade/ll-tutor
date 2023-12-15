@@ -13,7 +13,13 @@ import AccountTreeSharpIcon from "@mui/icons-material/AccountTreeSharp";
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
 
-import { EmptyNodeSlice, NavigationSlice, NodeColor, NodeData } from "../types";
+import {
+  EmptyNodeSlice,
+  FirstNodeSlice,
+  NavigationSlice,
+  NodeColor,
+  NodeData,
+} from "../types";
 
 import { useLayoutedElements } from "../utils";
 import { useMemo } from "react";
@@ -56,7 +62,9 @@ function CustomControls() {
     });
   }, []);
 
-  const emptyNodeSelector = (state: EmptyNodeSlice & NavigationSlice) => ({
+  const emptyNodeSelector = (
+    state: EmptyNodeSlice & FirstNodeSlice & NavigationSlice,
+  ) => ({
     // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
     emptyNodes: state.emptyNodes,
@@ -64,6 +72,13 @@ function CustomControls() {
     getEmptyNodeId: state.getEmptyNodeId,
     setEmptyNodes: state.setEmptyNodes,
     setEmptyEdges: state.setEmptyEdges,
+    // FirstNodeSlice
+    firstSetupComplete: state.firstSetupComplete,
+    firstNodes: state.firstNodes,
+    firstEdges: state.firstEdges,
+    getFirstNodeId: state.getFirstNodeId,
+    setFirstNodes: state.setFirstNodes,
+    setFirstEdges: state.setFirstEdges,
     // NavigationSlice
     page: state.page,
   });
@@ -75,6 +90,13 @@ function CustomControls() {
     getEmptyNodeId,
     setEmptyNodes,
     setEmptyEdges,
+    // FirstNodeSlice
+    firstSetupComplete,
+    firstNodes,
+    firstEdges,
+    getFirstNodeId,
+    setFirstNodes,
+    setFirstEdges,
     // NavigationSlice
     page,
   } = useBoundStore(emptyNodeSelector, shallow);
@@ -86,6 +108,10 @@ function CustomControls() {
     emptyEdges,
     setEmptyNodes,
     setEmptyEdges,
+    firstNodes,
+    firstEdges,
+    setFirstNodes,
+    setFirstEdges,
   );
 
   const addEmptyNode = () => {
@@ -138,11 +164,63 @@ function CustomControls() {
     setEmptyNodes([...emptyNodes, newNode]);
   };
 
+  const addGroupNode = () => {
+    // Add the node in the center of the viewport.
+    // calculation of center copied from: https://stackoverflow.com/a/76394786
+
+    // Get the basic info about the viewport
+    const {
+      height,
+      width,
+      transform: [transformX, transformY, zoomLevel],
+    } = store.getState();
+    const zoomMultiplier = 1 / zoomLevel;
+
+    // Figure out the center of the current viewport
+    const centerX = -transformX * zoomMultiplier + (width * zoomMultiplier) / 2;
+    const centerY =
+      -transformY * zoomMultiplier + (height * zoomMultiplier) / 2;
+
+    const nodeWidth = 70;
+    const nodeHeighth = 60;
+
+    // Add offsets for the height/width of the new node
+    // (Assuming that you don't have to calculate this as well
+    const nodeWidthOffset = nodeWidth / 2;
+    const nodeHeightOffset = nodeHeighth / 2;
+
+    const randomXOffset = Math.round(
+      (Math.random() * 100 - 50) * zoomMultiplier,
+    );
+    const randomYOffset = Math.round(
+      (Math.random() * 100 - 50) * zoomMultiplier,
+    );
+
+    const center: { x: number; y: number } = {
+      x: centerX - nodeWidthOffset + randomXOffset,
+      y: centerY - nodeHeightOffset + randomYOffset,
+    };
+
+    const newNode: Node<NodeData> = {
+      id: getFirstNodeId(),
+      type: "group",
+      deletable: false,
+      data: {
+        name: "scc",
+        empty: false,
+        color: NodeColor.none,
+      },
+      position: center,
+    };
+    setFirstNodes([...firstNodes, newNode]);
+  };
+
   return (
     <StyledControls className="shadow-none">
       <ControlButton
         onClick={() => {
-          layoutElements({
+          const whichNodes = page < 5 ? "empty" : "first";
+          layoutElements(whichNodes, {
             // "elk.algorithm": "layered",
             // "elk.algorithm": "stress",
             // "elk.algorithm": "force",
@@ -164,6 +242,17 @@ function CustomControls() {
           }}
           title="add node"
           disabled={emptySetupComplete}
+        >
+          <LibraryAddSharpIcon />
+        </ControlButton>
+      )}
+      {page === 5 && (
+        <ControlButton
+          onClick={() => {
+            addGroupNode();
+          }}
+          title="add node"
+          disabled={firstSetupComplete}
         >
           <LibraryAddSharpIcon />
         </ControlButton>

@@ -56,7 +56,13 @@ const steps: { label: string; content: string[] }[] = [
       "Propagate the empty attribute through the dependency graph.",
     ],
   },
-  { label: "Calculate First Sets", content: ["TODO", "TODO"] },
+  {
+    label: "Calculate First Sets",
+    content: [
+      "Group the (Non-)Terminals into Strongly Connected Components. You may need to add Group Nodes to the graph.",
+      "TODO",
+    ],
+  },
   { label: "Calculate Follow Sets", content: ["TODO", "TODO"] },
 ];
 

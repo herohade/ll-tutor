@@ -125,7 +125,10 @@ function EmptyNode({ id, data, isConnectable }: Props) {
           color: "text.primary",
           ":disabled": {
             bgcolor: "background.paper",
-          }
+          },
+          ":hover": {
+            bgcolor: "empty.new",
+          },
         }}
         className="nodrag p-1 min-w-[2.5rem] normal-case"
         onClick={() => {
@@ -162,7 +165,6 @@ function EmptyNode({ id, data, isConnectable }: Props) {
             bgcolor: "background.paper",
             zIndex: 1000,
             lineHeight: 1,
-            // TODO: 1 or 4?
             borderRadius: 4,
             color: "text.primary",
             fontSize: 9,

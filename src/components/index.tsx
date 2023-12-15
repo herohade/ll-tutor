@@ -5,3 +5,5 @@ export { default as ConnectionLine } from "./ConnectionLine";
 export { default as CustomControls } from "./CustomControls";
 export { default as EmptyNode } from "./EmptyNode";
 export { default as FloatingEdge } from "./FloatingEdge";
+export { default as FirstNode } from "./FirstNode";
+export { default as GroupNode } from "./GroupNode";

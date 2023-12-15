@@ -19,10 +19,16 @@ import {
 import ReactFlow, {
   Background,
   BackgroundVariant,
+  Edge,
+  Node,
   ReactFlowProvider,
 } from "reactflow";
 
-import { ReactNode, useMemo } from "react";
+import {
+  MouseEvent as ReactMouseEvent,
+  useCallback,
+  useMemo,
+} from "react";
 
 import useBoundStore from "./store/store";
 import { shallow } from "zustand/shallow";
@@ -30,6 +36,7 @@ import { shallow } from "zustand/shallow";
 import {
   EmptyAlgorithmPage,
   PrepareEmptyAlgorithmPage,
+  PrepareFirstAlgorithmPage,
   ReadGrammarPage,
   SelectStartSymbolPage,
   StartPage,
@@ -42,13 +49,22 @@ import {
   ProgressDrawerComponent,
 } from "./components";
 
-import { EmptyNodeSlice, NavigationSlice, NodeColor } from "./types";
+import {
+  EdgeData,
+  EmptyNodeSlice,
+  FirstNodeSlice,
+  NavigationSlice,
+  NodeColor,
+  NodeData,
+} from "./types";
 
 // basic css required for react-flow to work
 import "reactflow/dist/base.css";
 
 export default function App() {
-  const selector = (state: NavigationSlice & EmptyNodeSlice) => ({
+  const selector = (
+    state: NavigationSlice & EmptyNodeSlice & FirstNodeSlice,
+  ) => ({
     // NavigationSlice
     page: state.page,
     // EmptyNodeSlice
@@ -59,6 +75,16 @@ export default function App() {
     onEmptyNodesChange: state.onEmptyNodesChange,
     onEmptyEdgesChange: state.onEmptyEdgesChange,
     onEmptyConnect: state.onEmptyConnect,
+    // FirstNodeSlice
+    firstNodeTypes: state.firstNodeTypes,
+    firstEdgeTypes: state.firstEdgeTypes,
+    firstNodes: state.firstNodes,
+    firstEdges: state.firstEdges,
+    setFirstNodes: state.setFirstNodes,
+    setFirstEdges: state.setFirstEdges,
+    onFirstNodesChange: state.onFirstNodesChange,
+    onFirstEdgesChange: state.onFirstEdgesChange,
+    onFirstConnect: state.onFirstConnect,
   });
   const {
     // NavigationSlice
@@ -71,6 +97,16 @@ export default function App() {
     onEmptyNodesChange,
     onEmptyEdgesChange,
     onEmptyConnect,
+    // FirstNodeSlice
+    firstNodeTypes,
+    firstEdgeTypes,
+    firstNodes,
+    firstEdges,
+    setFirstNodes,
+    setFirstEdges,
+    onFirstNodesChange,
+    onFirstEdgesChange,
+    onFirstConnect,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -112,10 +148,158 @@ export default function App() {
     [prefersLightMode],
   );
 
-  // ReactFlowProvider, stays the same between pages
-  const emptyRfProvider = (children: ReactNode) => (
-    <ReactFlowProvider children={children} />
+  const getIntersectingGroupNodes = (
+    node: Node<NodeData>,
+    nodes: Node<NodeData>[],
+  ): Node<NodeData>[] => {
+    const intersections: Node<NodeData>[] = [];
+    for (const n of nodes) {
+      if (n.type === "group" && n.id !== node.id) {
+        const nodeBoundingBox = {
+          x: node.position.x,
+          y: node.position.y,
+          width: node.width || 0,
+          height: node.height || 0,
+        };
+        const nBoundingBox = {
+          x: n.position.x,
+          y: n.position.y,
+          width: n.width || 0,
+          height: n.height || 0,
+        };
+        if (
+          nodeBoundingBox.x < nBoundingBox.x + nBoundingBox.width &&
+          nodeBoundingBox.x + nodeBoundingBox.width > nBoundingBox.x &&
+          nodeBoundingBox.y < nBoundingBox.y + nBoundingBox.height &&
+          nodeBoundingBox.y + nodeBoundingBox.height > nBoundingBox.y
+        ) {
+          intersections.push(n);
+        }
+      }
+    }
+    return intersections;
+  };
+
+  // Function to add a group node as a first nodes parent
+  // if the dragged first node does not already have one
+  // and is dragged on top of a group node
+  const onFirstNodeDragStop = useCallback(
+    (_event: ReactMouseEvent, node: Node<NodeData>) => {
+      if (node.type !== "first" || node.parentNode) {
+        return;
+      }
+      if (import.meta.env.DEV) {
+        console.log("Drag stopped");
+      }
+
+      const intersections: Node<NodeData>[] = getIntersectingGroupNodes(
+        node,
+        firstNodes,
+      );
+      // it seems that later elements are rendered on top of earlier ones and
+      // it is more natural to have the node bind to the group node that is
+      // the most visible one / the one on top (if there are multiple)
+      const groupNode = intersections[intersections.length - 1];
+      if (import.meta.env.DEV) {
+        console.log(intersections);
+      }
+
+      // when there is an intersection on drag stop, we want to attach the node to its new parent
+      if (intersections.length) {
+        const newNodes: Node<NodeData>[] = firstNodes.map((n) => {
+          if (n.id === node.id) {
+            const position = {
+              x: node.position.x - groupNode.position.x,
+              y: node.position.y - groupNode.position.y,
+            };
+
+            return {
+              ...n,
+              position,
+              parentNode: groupNode.id,
+              extent: "parent",
+              // we need to set dragging = false, because the internal change of the dragging state
+              // is not applied yet, so the node would be rendered as dragging
+              dragging: false,
+            } as Node<NodeData>;
+          } else {
+            if (n.id === groupNode.id) {
+              // add new name
+              if (import.meta.env.DEV) {
+                console.log(
+                  "old groupnode name",
+                  groupNode.data.name.split(", "),
+                );
+              }
+              const newName = groupNode.data.name
+                .split(", ")
+                .filter((name) => name.length > 0)
+                .concat([node.data.name])
+                .sort((a, b) => {
+                  if (a === "scc") {
+                    return -1; // "scc" comes first
+                  } else if (b === "scc") {
+                    return 1; // "scc" comes before other strings
+                  } else {
+                    return a.localeCompare(b); // lexicographical sorting for other strings
+                  }
+                })
+                .join(", ");
+              if (import.meta.env.DEV) {
+                console.log("new groupnode name", newName);
+              }
+              return {
+                ...n,
+                data: {
+                  ...groupNode.data,
+                  name: newName,
+                },
+              } as Node<NodeData>;
+            }
+          }
+
+          return n;
+        });
+        const newEdges: Edge<EdgeData>[] = firstEdges.map((edge) => {
+          if (edge.source === groupNode.id || edge.target === groupNode.id) {
+            const newSource =
+              edge.source === groupNode.id ? groupNode.id : edge.source;
+            const newSourceNode: Node<NodeData> | undefined =
+              edge.source === groupNode.id
+                ? newNodes.find((node) => node.id === groupNode.id)
+                : edge.sourceNode;
+            const newTarget =
+              edge.target === groupNode.id ? groupNode.id : edge.target;
+            const newTargetNode: Node<NodeData> | undefined =
+              edge.target === groupNode.id
+                ? newNodes.find((node) => node.id === groupNode.id)
+                : edge.targetNode;
+            if (!newSourceNode || !newTargetNode || !edge.data) {
+              throw new Error("new source or target node not found or no data");
+            }
+            return {
+              ...edge,
+              source: newSource,
+              sourceNode: newSourceNode,
+              target: newTarget,
+              targetNode: newTargetNode,
+              data: {
+                ...edge.data,
+                name: newSourceNode.data.name + "->" + newTargetNode.data.name,
+              },
+            };
+          } else {
+            return edge;
+          }
+        });
+
+        setFirstNodes(newNodes);
+        setFirstEdges(newEdges);
+      }
+    },
+    [setFirstNodes, firstNodes, setFirstEdges, firstEdges],
   );
+
   // ReactFlow canvas, stays the same between pages
   const emptyGraphCanvas = (
     <ReactFlow
@@ -128,6 +312,25 @@ export default function App() {
       onNodeDragStop={undefined}
       nodeTypes={emptyNodeTypes}
       edgeTypes={emptyEdgeTypes}
+      fitView={true}
+      zoomOnDoubleClick={false}
+      selectNodesOnDrag={false}
+    >
+      <CustomControls />
+      <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+    </ReactFlow>
+  );
+  const firstGraphCanvas = (
+    <ReactFlow
+      nodes={firstNodes}
+      edges={firstEdges}
+      onNodesChange={onFirstNodesChange}
+      onEdgesChange={onFirstEdgesChange}
+      connectionLineComponent={ConnectionLine}
+      onConnect={onFirstConnect(showSnackbar)}
+      onNodeDragStop={onFirstNodeDragStop}
+      nodeTypes={firstNodeTypes}
+      edgeTypes={firstEdgeTypes}
       fitView={true}
       zoomOnDoubleClick={false}
       selectNodesOnDrag={false}
@@ -149,13 +352,24 @@ export default function App() {
       content = <SelectStartSymbolPage />;
       break;
     case 3:
-      content = emptyRfProvider(
-        <PrepareEmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />,
+      content = (
+        <ReactFlowProvider>
+          <PrepareEmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />
+        </ReactFlowProvider>
       );
       break;
     case 4:
-      content = emptyRfProvider(
-        <EmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />,
+      content = (
+        <ReactFlowProvider>
+          <EmptyAlgorithmPage graphCanvas={emptyGraphCanvas} />
+        </ReactFlowProvider>
+      );
+      break;
+    case 5:
+      content = (
+        <ReactFlowProvider>
+          <PrepareFirstAlgorithmPage graphCanvas={firstGraphCanvas} />,
+        </ReactFlowProvider>
       );
       break;
     default:

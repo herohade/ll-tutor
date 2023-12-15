@@ -17,15 +17,30 @@ const useLayoutedElements = (
   emptyEdges: Edge<EdgeData>[],
   setEmptyNodes: (nodes: Node<NodeData>[]) => void,
   setEmpyEdges: (edges: Edge<EdgeData>[]) => void,
+  firstNodes: Node<NodeData>[],
+  firstEdges: Edge<EdgeData>[],
+  setFirstNodes: (nodes: Node<NodeData>[]) => void,
+  setFirstEdges: (edges: Edge<EdgeData>[]) => void,
 ) => {
   const { fitView } = useReactFlow();
 
   const layoutElements = useCallback(
-    (options?: LayoutOptions, nodes?: Node<NodeData>[], edges?: Edge<EdgeData>[], setNodes?: (nodes: Node<NodeData>[]) => void, setEdges?: (edges: Edge<EdgeData>[]) => void) => {
-      const relevantNodes = nodes || emptyNodes;
-      const relevantEdges = edges || emptyEdges;
-      const relevantSetNodes = setNodes || setEmptyNodes;
-      const relevantSetEdges = setEdges || setEmpyEdges;
+    (
+      whichNodes: "empty" | "first" | "provided",
+      options?: LayoutOptions,
+      nodes?: Node<NodeData>[],
+      edges?: Edge<EdgeData>[],
+      setNodes?: (nodes: Node<NodeData>[]) => void,
+      setEdges?: (edges: Edge<EdgeData>[]) => void,
+    ) => {
+      const relevantNodes =
+        nodes || (whichNodes === "empty" ? emptyNodes : firstNodes);
+      const relevantEdges =
+        edges || (whichNodes === "empty" ? emptyEdges : firstEdges);
+      const relevantSetNodes =
+        setNodes || (whichNodes === "empty" ? setEmptyNodes : setFirstNodes);
+      const relevantSetEdges =
+        setEdges || (whichNodes === "empty" ? setEmpyEdges : setFirstEdges);
 
       const direction = (
         options ? options["elk.direction"] : "RIGHT"
@@ -77,8 +92,8 @@ const useLayoutedElements = (
                     text: "",
                     x: 0,
                     y: 0,
-                    width: node.data.labelSize?.width ?? 0,
-                    height: node.data.labelSize?.height ?? 0,
+                    width: node.data.labelSize?.width ?? 120,
+                    height: node.data.labelSize?.height ?? 110,
                   },
                 ]
               : undefined;
@@ -90,8 +105,8 @@ const useLayoutedElements = (
             layoutOptions: childLayoutOptions,
             children: [],
             labels: label,
-            width: node.width ?? 100,
-            height: node.height ?? 80,
+            width: node.width ?? (node.type === "group" ? 100 : 80),
+            height: node.height ?? (node.type === "group" ? 100 : 80),
           });
         }
       }
@@ -107,8 +122,8 @@ const useLayoutedElements = (
             id: node.id,
             layoutOptions: childLayoutOptions,
             children: [],
-            width: node.width ?? 100,
-            height: node.height ?? 80,
+            width: node.width ?? 67,
+            height: node.height ?? 67,
           });
         }
       }
@@ -150,21 +165,24 @@ const useLayoutedElements = (
             if (!initialNode) {
               throw new Error("Node not found");
             }
-            const children = node.children?.map((child) => {
-              const initialChild = relevantNodes.find((n) => n.id === child.id);
-              if (!initialChild) {
-                throw new Error("Child not found");
-              }
-              return {
-                ...initialChild,
-                position: {
-                  x: child.x,
-                  y: child.y,
-                },
-                sourcePosition,
-                targetPosition,
-              } as Node<NodeData>;
-            });
+            const children =
+              node.children?.map((child) => {
+                const initialChild = relevantNodes.find(
+                  (n) => n.id === child.id,
+                );
+                if (!initialChild) {
+                  throw new Error("Child not found");
+                }
+                return {
+                  ...initialChild,
+                  position: {
+                    x: child.x,
+                    y: child.y,
+                  },
+                  sourcePosition,
+                  targetPosition,
+                } as Node<NodeData>;
+              }) ?? [];
             return [
               {
                 ...initialNode,
@@ -174,17 +192,18 @@ const useLayoutedElements = (
                 },
                 sourcePosition,
                 targetPosition,
-                width: children ? node.width : initialNode.width,
-                height: children ? node.height : initialNode.height,
-                style: children
-                  ? {
-                      ...initialNode.style,
-                      width: node.width,
-                      height: node.height,
-                    }
-                  : initialNode.style,
+                width: children.length > 0 ? node.width : initialNode.width,
+                height: children.length > 0 ? node.height : initialNode.height,
+                style:
+                  children.length > 0
+                    ? {
+                        ...initialNode.style,
+                        width: node.width,
+                        height: node.height,
+                      }
+                    : initialNode.style,
               } as Node<NodeData>,
-              ...(children ?? []),
+              ...children,
             ];
           });
           const newEdges: Edge<EdgeData>[] = elkEdges.map((edge) => {
@@ -216,6 +235,10 @@ const useLayoutedElements = (
       emptyEdges,
       setEmptyNodes,
       setEmpyEdges,
+      firstNodes,
+      firstEdges,
+      setFirstNodes,
+      setFirstEdges,
       fitView,
     ],
   );

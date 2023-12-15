@@ -9,6 +9,7 @@ import {
   EdgeData,
   EdgePathType,
   EmptyNodeSlice,
+  FirstNodeSlice,
   GrammarSlice,
   NodeColor,
   NodeData,
@@ -29,18 +30,13 @@ The user adds the nodes and edges to the graph to model
 the dependency graph for the empty set calculation.
 */
 function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
-  const grammarSelector = (state: GrammarSlice) => ({
+  const selector = (state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice) => ({
+    // GrammarSlice
     epsilon: state.epsilon,
     productions: state.productions,
     nonTerminals: state.nonTerminals,
     terminals: state.terminals,
-  });
-  const { epsilon, productions, nonTerminals, terminals } = useBoundStore(
-    grammarSelector,
-    shallow,
-  );
-
-  const emptyNodeSelector = (state: EmptyNodeSlice) => ({
+    // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
     emptyNodes: state.emptyNodes,
     emptyEdges: state.emptyEdges,
@@ -51,8 +47,19 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     setEmptyEdges: state.setEmptyEdges,
     toggleEmptyDeletableAndConnectable:
       state.toggleEmptyDeletableAndConnectable,
+    // FirstNodeSlice
+    firstNodes: state.firstNodes,
+    firstEdges: state.firstEdges,
+    setFirstNodes: state.setFirstNodes,
+    setFirstEdges: state.setFirstEdges,
   });
   const {
+    // GrammarSlice
+    epsilon,
+    productions,
+    nonTerminals,
+    terminals,
+    // EmptyNodeSlice
     emptySetupComplete,
     emptyNodes,
     emptyEdges,
@@ -62,7 +69,12 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     setEmptyNodes,
     setEmptyEdges,
     toggleEmptyDeletableAndConnectable,
-  } = useBoundStore(emptyNodeSelector, shallow);
+    // FirstNodeSlice
+    firstNodes,
+    firstEdges,
+    setFirstNodes,
+    setFirstEdges,
+  } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -83,9 +95,13 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     emptyEdges,
     setEmptyNodes,
     setEmptyEdges,
+    firstNodes,
+    firstEdges,
+    setFirstNodes,
+    setFirstEdges,
   );
 
-  const checkGraph = () => {
+  const check = () => {
     // for (const nonTerminal of newNonTerminals) {
     //   newNodes.push({
     //     id: getEmptyNodeId(),
@@ -349,16 +365,21 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       }
     }
 
-    layoutElements(undefined, newNodes, newEdges, setEmptyNodes, setEmptyEdges);
+    layoutElements(
+      "provided",
+      undefined,
+      newNodes,
+      newEdges,
+      setEmptyNodes,
+      setEmptyEdges,
+    );
   };
 
   return (
     <>
       {/* left side, task description and information */}
       <div className="mr-1 h-full w-1/3 min-w-min overflow-scroll rounded-lg border-2 border-solid p-2 text-left">
-        <div
-          className="flex h-full flex-col items-center justify-between"
-        >
+        <div className="flex h-full flex-col items-center justify-between">
           <div className="flex flex-col items-center">
             <p>The Nonterminals of the grammar are:</p>
             <ul className="commaList m-0 list-none p-0 before:mr-1 before:content-['𝑁_=_{'] after:ml-1 after:content-['}']">
@@ -398,7 +419,6 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
                 setEmptyEdges([]);
               }}
               disabled={emptySetupComplete}
-              className="dangerousButton"
             >
               Reset Canvas
             </Button>
@@ -415,7 +435,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
             <Button
               variant="contained"
               onClick={() => {
-                if (checkGraph()) {
+                if (check()) {
                   toggleEmptyDeletableAndConnectable(false, false);
                   setEmptySetupComplete(true);
                 }

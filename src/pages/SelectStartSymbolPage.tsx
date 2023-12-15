@@ -3,6 +3,7 @@ import { useSnackbar, VariantType } from "notistack";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Avatar from "@mui/material/Avatar";
+import ListItem from "@mui/material/ListItem";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
@@ -188,17 +189,16 @@ function SelectStartSymbolPage() {
       <div className="flex justify-center">
         <ul className="commaList listSpace m-0 list-none p-0 text-left before:mr-1 before:content-['𝑃_=_{'] after:ml-1 after:content-['}']">
           {productions.map((production, index) => (
-            <li
+            <ListItem
               key={index}
-              className={
-                production.leftSide.name === startSymbol.name &&
-                start.some(([, s]) => s)
-                  ? "startSymbolProductionGreen ml-4"
-                  : "ml-4"
-              }
+              sx={{
+                color: production.leftSide.name === startSymbol.name &&
+                start.some(([, s]) => s) ? "success.light" : "text.primary",
+              }}
+              className="ml-4 p-0"
             >
               {production.representation}
-            </li>
+            </ListItem>
           ))}
         </ul>
       </div>

@@ -127,7 +127,6 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
         markerEnd: {
           type: MarkerType.ArrowClosed,
           orient: "auto",
-          // TODO: Check if this works
           color: sourceNode.data.empty ? NodeColor.thisTurn : NodeColor.none,
         },
         style: {

@@ -148,10 +148,14 @@ export type GrammarSetupSlice = {
 };
 
 export enum NodeColor {
-  none = "grey",
-  thisTurn = "lightblue",
-  lastTurn = "blue",
-  older = "darkblue",
+  // @mui/material/colors
+  none = "#9e9e9e", // grey[500],
+  // thisTurn = "#00b0ff", // lightBlue.A400,
+  // lastTurn = "#2979ff", // blue.A400,
+  // older = "#651fff", // deepPurple.A400,
+  thisTurn = "#8c9eff", // indigo.A100,
+  lastTurn = "#536dfe", // indigo.A200,
+  older = "#1a237e", // indigo[900],
 }
 
 export type NodeData = {

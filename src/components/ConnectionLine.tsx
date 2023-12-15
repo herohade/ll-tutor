@@ -16,7 +16,7 @@ const markerDef = (
   <defs>
     <marker
       className="react-flow__arrowhead"
-      id="custom__1__color=grey&amp;orient=auto&amp;type=arrowclosed"
+      id="custom__1__color=none&amp;orient=auto&amp;type=arrowclosed"
       markerWidth="12.5"
       markerHeight="12.5"
       viewBox="-10 -10 20 20"
@@ -38,7 +38,7 @@ const markerDef = (
     </marker>
     <marker
       className="react-flow__arrowhead"
-      id="custom__1__color=lightblue&amp;orient=auto&amp;type=arrowclosed"
+      id="custom__1__color=new&amp;orient=auto&amp;type=arrowclosed"
       markerWidth="12.5"
       markerHeight="12.5"
       viewBox="-10 -10 20 20"
@@ -73,7 +73,7 @@ function ConnectionLine(props: Props) {
 
   const marker =
     "url(#custom__1__color=" +
-    ((fromPosition === Position.Bottom && fromNode?.data.empty) ? NodeColor.thisTurn : NodeColor.none) +
+    ((fromPosition === Position.Bottom && fromNode?.data.empty) ? "new" : "none") +
     "&orient=auto&type=arrowclosed)";
   return (
     <g>

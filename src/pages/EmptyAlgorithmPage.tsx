@@ -1,3 +1,4 @@
+import { styled } from "@mui/material";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Stack from "@mui/material/Stack";
@@ -272,6 +273,8 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     setEmptyFixpoint(newEmptyFixpoint);
   };
 
+  const StyledSpan = styled("span")({});
+
   return (
     <>
       {/* left side, task description and information */}
@@ -282,18 +285,17 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
             <ul className="commaList m-0 list-none p-0 before:mr-1 before:content-['𝑁_=_{'] after:ml-1 after:content-['}']">
               {nonTerminals.map((nonterminal, index) => (
                 <li key={index} className="inline">
-                  <span
-                    className={
-                      emptyNonterminalMap.find(
+                  <StyledSpan
+                    sx={{
+                      color: emptyNonterminalMap.find(
                         ([n]) => n === nonterminal.name,
                       )?.[1]
-                        ? // TODO: use themed colors
-                          "text-[#646cff]"
-                        : ""
-                    }
+                        ? "empty.text"
+                        : "inherit",
+                    }}
                   >
                     {nonterminal.representation}
-                  </span>
+                  </StyledSpan>
                 </li>
               ))}
             </ul>
@@ -309,39 +311,37 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
             <ul className="commaList listSpace m-0 mb-2 list-none p-0 text-left before:mr-1 before:content-['𝑃_=_{'] after:ml-1 after:content-['}']">
               {productions.map((production, index) => (
                 <li key={index} className="ml-4">
-                  <span
-                    className={
-                      emptyProductionMap.find(
+                  <StyledSpan
+                    sx={{
+                      color: emptyProductionMap.find(
                         ([p]) => p === production.name,
                       )?.[1]
-                        ? // TODO: use themed colors
-                          "text-[#646cff]"
-                        : ""
-                    }
+                        ? "empty.text"
+                        : "inherit",
+                    }}
                   >
                     {production.leftSide.representation + " => "}
                     {production.rightSide.map((v, i) => (
-                      <span
+                      <StyledSpan
                         key={v.name + i}
-                        className={
-                          v instanceof Nonterminal
-                            ? emptyNonterminalMap.find(
-                                ([n]) => n === v.name,
-                              )?.[1]
-                              ? // TODO: use themed colors
-                                "text-[#646cff]"
-                              : ""
-                            : v.name === epsilon.name
-                              ? // TODO: use themed colors
-                                "text-[#646cff]"
-                              : ""
-                        }
+                        sx={{
+                          color:
+                            v instanceof Nonterminal
+                              ? emptyNonterminalMap.find(
+                                  ([n]) => n === v.name,
+                                )?.[1]
+                                ? "empty.text"
+                                : "inherit"
+                              : v.name === epsilon.name
+                                ? "empty.text"
+                                : "inherit",
+                        }}
                       >
                         {v.representation + " "}
-                      </span>
+                      </StyledSpan>
                     ))}
                     {production.uppercaseNumber}
-                  </span>
+                  </StyledSpan>
                 </li>
               ))}
             </ul>
@@ -394,7 +394,6 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
               >
                 Show Solution
               </Button>
-              {/* TODO: merge check and finish step */}
               <Button
                 variant="contained"
                 onClick={() => {

@@ -1,4 +1,5 @@
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { indigo } from "@mui/material/colors";
 import CssBaseline from "@mui/material/CssBaseline";
 import StyledEngineProvider from "@mui/material/StyledEngineProvider";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -41,7 +42,7 @@ import {
   ProgressDrawerComponent,
 } from "./components";
 
-import { EmptyNodeSlice, NavigationSlice } from "./types";
+import { EmptyNodeSlice, NavigationSlice, NodeColor } from "./types";
 
 // basic css required for react-flow to work
 import "reactflow/dist/base.css";
@@ -99,6 +100,13 @@ export default function App() {
           // secondary: {
           //   main: '#b37430',
           // },
+          empty: {
+            text: indigo.A400,
+            main: NodeColor.none,
+            new: NodeColor.thisTurn,
+            recent: NodeColor.lastTurn,
+            old: NodeColor.older,
+          },
         },
       }),
     [prefersLightMode],
@@ -196,11 +204,8 @@ export default function App() {
               }}
             >
               <Toolbar />
-              {/* TODO: Box or Container? */}
               <Box className="m-2 flex flex-grow overflow-scroll xs:m-4">
-                {/* <Container className="my-4 flex flex-grow overflow-scroll"> */}
                 {content}
-                {/* </Container> */}
               </Box>
             </Box>
           </SnackbarProvider>

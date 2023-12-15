@@ -65,6 +65,9 @@ function EmptyNode({ id, data, isConnectable }: Props) {
         <Select
           native
           size="small"
+          sx={{
+            bgcolor: "background.paper",
+          }}
           className="nodrag min-w-max"
           id={id + "-nativeSelect"}
           // label="Symbol"
@@ -116,8 +119,15 @@ function EmptyNode({ id, data, isConnectable }: Props) {
       </FormControl>
     ) : (
       <Button
-        variant="outlined"
-        className="nodrag p-1 min-w-[2.5rem]"
+        variant="contained"
+        sx={{
+          bgcolor: "background.paper",
+          color: "text.primary",
+          ":disabled": {
+            bgcolor: "background.paper",
+          }
+        }}
+        className="nodrag p-1 min-w-[2.5rem] normal-case"
         onClick={() => {
           updateEmptyNodeAndEdgeEmpty(id, !data.empty);
         }}
@@ -135,16 +145,7 @@ function EmptyNode({ id, data, isConnectable }: Props) {
     <Box
       className="rounded-lg"
       sx={{
-        // TODO: use themed colors
-        bgcolor: data.color,
-        // bgcolor: (theme) =>
-        //   theme.palette.mode === "dark"
-        //     ? isConnectable && isConnecting
-        //       ? "success.dark"
-        //       : "secondary.dark"
-        //     : isConnectable && isConnecting
-        //       ? "success.light"
-        //       : "secondary.light",
+        bgcolor: isConnectable && isConnecting ? "success.main" : data.color,
       }}
     >
       <Box
@@ -158,17 +159,14 @@ function EmptyNode({ id, data, isConnectable }: Props) {
             height: "20%",
             width: "40%",
             transform: "translate(-50%, 0)",
-            bgcolor: (theme) =>
-              theme.palette.mode === "dark"
-                ? "primary.dark"
-                : "primary.light",
+            bgcolor: "background.paper",
             zIndex: 1000,
             lineHeight: 1,
+            // TODO: 1 or 4?
             borderRadius: 4,
             color: "text.primary",
             fontSize: 9,
             border: 2,
-            // borderColor: "
           },
         }}
         style={{

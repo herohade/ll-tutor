@@ -108,6 +108,12 @@ class Production implements printable {
   }
 }
 
+export type localStoreSettings = {
+  tutorial: boolean;
+  language: "en" | "de";
+  colorScheme: "dark" | "light" | "system";
+}
+
 // Type for the layout algorithm (ELK)
 export type ElkDirectionType = "RIGHT" | "LEFT" | "UP" | "DOWN";
 
@@ -117,9 +123,11 @@ export type NavigationSlice = {
   maxPage: number;
   page: number;
   open: boolean;
+  settings: localStoreSettings;
   previousPage: () => void;
   nextPage: () => void;
   toggleOpen: () => void;
+  setSettings: (settings: localStoreSettings) => void;
 };
 
 export type GrammarSlice = {

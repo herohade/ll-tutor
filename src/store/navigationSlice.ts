@@ -7,6 +7,10 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
   maxPage: 8,
   page: 0,
   open: window.innerWidth > window.innerHeight || window.innerWidth > 800,
+  settings: JSON.parse(
+    localStorage.getItem("settings") ||
+      '{"tutorial": true, "colorScheme": "system", "language": "en"}',
+  ),
   previousPage: () => {
     set({ page: get().page - 1 });
   },
@@ -15,5 +19,9 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
   },
   toggleOpen: () => {
     set({ open: !get().open });
+  },
+  setSettings: (settings) => {
+    localStorage.setItem("settings", JSON.stringify(settings));
+    set({ settings });
   },
 });

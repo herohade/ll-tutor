@@ -1,5 +1,6 @@
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
+import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import InfoIcon from "@mui/icons-material/Info";
 import { ScrollableDialogComponent } from "../components";
@@ -19,25 +20,29 @@ function StartPage() {
     >
       <Typography variant="h1">LL Tutor</Typography>
 
-      <ScrollableDialogComponent
-        DisplayButton={(props) => (
-          <Button
-            variant="contained"
-            // size="small"
-            color="info"
-            endIcon={<InfoIcon />}
-            className="self-center"
-            aria-label="info"
-            {...props}
-          >
-            What is LL Tutor?
-          </Button>
-        )}
-        title={"What is LL Tutor?"}
-        content={
-          'LL Tutor is a webtutor for the lecture "Compiler Construction" at the Technical University of Munich.'
-        }
-      />
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={{ xs: 1, sm: 2 }}
+        className="pb-1 self-center"
+      >
+        <ScrollableDialogComponent
+          DisplayButton={(props) => (
+            <Button
+              variant="contained"
+              color="info"
+              endIcon={<InfoIcon />}
+              aria-label="info"
+              {...props}
+            >
+              What is LL Tutor?
+            </Button>
+          )}
+          title={"What is LL Tutor?"}
+          content={
+            'LL Tutor is a webtutor for the lecture "Compiler Construction" at the Technical University of Munich.'
+          }
+        />
+      </Stack>
 
       {window.innerWidth < window.innerHeight && (
         <Typography variant="body1" className="my-auto opacity-50">

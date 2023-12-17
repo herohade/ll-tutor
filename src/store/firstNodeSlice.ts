@@ -140,7 +140,7 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
         showSnackbar(
           "Edge " + edgeName + " already exists.",
           "warning",
-          false,
+          true,
         );
         return;
       }

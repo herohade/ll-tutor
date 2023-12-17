@@ -106,7 +106,7 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
         if (import.meta.env.DEV) {
           console.log("Edge already exists.", connection, edges);
         }
-        showSnackbar("Edge " + edgeName + " already exists.", "error", true);
+        showSnackbar("Edge " + edgeName + " already exists.", "warning", true);
         return;
       }
 

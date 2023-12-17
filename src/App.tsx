@@ -1,18 +1,9 @@
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { indigo } from "@mui/material/colors";
-import CssBaseline from "@mui/material/CssBaseline";
-import StyledEngineProvider from "@mui/material/StyledEngineProvider";
-import useMediaQuery from "@mui/material/useMediaQuery";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import CloseIcon from "@mui/icons-material/Close";
 
 import {
-  SnackbarProvider,
   VariantType,
-  closeSnackbar,
   useSnackbar,
 } from "notistack";
 
@@ -24,11 +15,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 
-import {
-  MouseEvent as ReactMouseEvent,
-  useCallback,
-  useMemo,
-} from "react";
+import { MouseEvent as ReactMouseEvent, useCallback } from "react";
 
 import useBoundStore from "./store/store";
 import { shallow } from "zustand/shallow";
@@ -54,7 +41,6 @@ import {
   EmptyNodeSlice,
   FirstNodeSlice,
   NavigationSlice,
-  NodeColor,
   NodeData,
 } from "./types";
 
@@ -122,31 +108,6 @@ export default function App() {
       preventDuplicate,
     });
   };
-
-  const prefersLightMode = useMediaQuery("(prefers-color-scheme: light)");
-
-  const theme = useMemo(
-    () =>
-      createTheme({
-        palette: {
-          mode: prefersLightMode ? "light" : "dark",
-          // primary: {
-          //   main: '#3070b3',
-          // },
-          // secondary: {
-          //   main: '#b37430',
-          // },
-          empty: {
-            text: indigo.A400,
-            main: NodeColor.none,
-            new: NodeColor.thisTurn,
-            recent: NodeColor.lastTurn,
-            old: NodeColor.older,
-          },
-        },
-      }),
-    [prefersLightMode],
-  );
 
   const getIntersectingGroupNodes = (
     node: Node<NodeData>,
@@ -391,40 +352,22 @@ export default function App() {
   }
 
   return (
-    <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={theme}>
-        <Box sx={{ display: "flex" }}>
-          <CssBaseline />
-          <SnackbarProvider
-            action={(snackbarId) => (
-              <IconButton
-                size="small"
-                aria-label="close"
-                color="inherit"
-                onClick={() => closeSnackbar(snackbarId)}
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            )}
-          >
-            <HeaderComponent />
-            <ProgressDrawerComponent />
-            <Box
-              component="main"
-              className="hs-screen flex flex-col"
-              sx={{
-                flexGrow: 1,
-                overflow: "auto",
-              }}
-            >
-              <Toolbar />
-              <Box className="m-2 flex flex-grow overflow-scroll xs:m-4">
-                {content}
-              </Box>
-            </Box>
-          </SnackbarProvider>
+    <Box sx={{ display: "flex" }}>
+      <HeaderComponent />
+      <ProgressDrawerComponent />
+      <Box
+        component="main"
+        className="hs-screen flex flex-col"
+        sx={{
+          flexGrow: 1,
+          overflow: "auto",
+        }}
+      >
+        <Toolbar />
+        <Box className="m-2 flex flex-grow overflow-scroll xs:m-4">
+          {content}
         </Box>
-      </ThemeProvider>
-    </StyledEngineProvider>
+      </Box>
+    </Box>
   );
 }

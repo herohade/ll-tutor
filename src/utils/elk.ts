@@ -15,12 +15,12 @@ const elk = new ELK({
 const useLayoutedElements = (
   emptyNodes: Node<NodeData>[],
   emptyEdges: Edge<EdgeData>[],
-  setEmptyNodes: (nodes: Node<NodeData>[]) => void,
-  setEmpyEdges: (edges: Edge<EdgeData>[]) => void,
+  setEmptyNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void,
+  setEmpyEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
   firstNodes: Node<NodeData>[],
   firstEdges: Edge<EdgeData>[],
-  setFirstNodes: (nodes: Node<NodeData>[]) => void,
-  setFirstEdges: (edges: Edge<EdgeData>[]) => void,
+  setFirstNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void,
+  setFirstEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
 ) => {
   const { fitView } = useReactFlow();
 
@@ -30,8 +30,8 @@ const useLayoutedElements = (
       options?: LayoutOptions,
       nodes?: Node<NodeData>[],
       edges?: Edge<EdgeData>[],
-      setNodes?: (nodes: Node<NodeData>[]) => void,
-      setEdges?: (edges: Edge<EdgeData>[]) => void,
+      setNodes?: (nodes: Node<NodeData>[], fitView?: () => void) => void,
+      setEdges?: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
     ) => {
       const relevantNodes =
         nodes || (whichNodes === "empty" ? emptyNodes : firstNodes);
@@ -224,10 +224,7 @@ const useLayoutedElements = (
           }
 
           relevantSetNodes(newNodes);
-          relevantSetEdges(newEdges);
-          window.requestAnimationFrame(() => {
-            fitView();
-          });
+          relevantSetEdges(newEdges, fitView);
         });
     },
     [

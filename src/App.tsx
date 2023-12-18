@@ -2,10 +2,7 @@ import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 
-import {
-  VariantType,
-  useSnackbar,
-} from "notistack";
+import { VariantType, useSnackbar } from "notistack";
 
 import ReactFlow, {
   Background,
@@ -262,6 +259,7 @@ export default function App() {
   );
 
   // ReactFlow canvas, stays the same between pages
+  const customControls = <CustomControls />;
   const emptyGraphCanvas = (
     <ReactFlow
       nodes={emptyNodes}
@@ -277,7 +275,7 @@ export default function App() {
       zoomOnDoubleClick={false}
       selectNodesOnDrag={false}
     >
-      <CustomControls />
+      {customControls}
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
     </ReactFlow>
   );
@@ -296,7 +294,7 @@ export default function App() {
       zoomOnDoubleClick={false}
       selectNodesOnDrag={false}
     >
-      <CustomControls />
+      {customControls}
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
     </ReactFlow>
   );
@@ -329,7 +327,7 @@ export default function App() {
     case 5:
       content = (
         <ReactFlowProvider>
-          <PrepareFirstAlgorithmPage graphCanvas={firstGraphCanvas} />,
+          <PrepareFirstAlgorithmPage graphCanvas={firstGraphCanvas} />
         </ReactFlowProvider>
       );
       break;
@@ -351,10 +349,13 @@ export default function App() {
       break;
   }
 
+  const headerComponent = <HeaderComponent />;
+  const progressDrawerComponent = <ProgressDrawerComponent />;
+
   return (
     <Box sx={{ display: "flex" }}>
-      <HeaderComponent />
-      <ProgressDrawerComponent />
+      {headerComponent}
+      {progressDrawerComponent}
       <Box
         component="main"
         className="hs-screen flex flex-col"

@@ -62,11 +62,17 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
   setFirstSetupComplete: (complete: boolean) => {
     set({ firstSetupComplete: complete });
   },
-  setFirstNodes: (nodes: Node<NodeData>[]) => {
+  setFirstNodes: (nodes: Node<NodeData>[], fitView?: () => void) => {
     set({ firstNodes: nodes.sort(sortFirstAndGroupNodes) });
+    if (fitView) {
+      setTimeout(() => fitView(), 0);
+    }
   },
-  setFirstEdges: (edges: Edge<EdgeData>[]) => {
+  setFirstEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => {
     set({ firstEdges: edges });
+    if (fitView) {
+      setTimeout(() => fitView(), 0);
+    }
   },
   setLabelSize(nodeId, size) {
     set({

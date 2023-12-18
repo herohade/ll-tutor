@@ -207,7 +207,13 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
 
   return (
     <>
-      <NodeResizer minWidth={minWidth} minHeight={minHeight} />
+      <NodeResizer
+        minWidth={minWidth}
+        minHeight={minHeight}
+        lineStyle={{
+          borderWidth: 1,
+        }}
+      />
       {!firstSetupComplete && (
         <NodeToolbar className="nodrag">
           <Stack
@@ -225,15 +231,14 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           </Stack>
         </NodeToolbar>
       )}
-      <div
-        className="flex m-2"
-      >
+      <div className="m-2 flex">
         <Box
           className="relative flex items-center justify-center rounded-lg border-2 border-solid"
           ref={ref}
-        sx={{
-          bgcolor: isConnectable && isConnecting ? "success.main" : data.color,
-        }}
+          sx={{
+            bgcolor:
+              isConnectable && isConnecting ? "success.main" : data.color,
+          }}
           style={{
             borderStyle: isConnectable && isConnecting ? "dashed" : "solid",
           }}

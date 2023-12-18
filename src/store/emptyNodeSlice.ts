@@ -49,11 +49,17 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
   setEmptySetupComplete: (complete: boolean) => {
     set({ emptySetupComplete: complete });
   },
-  setEmptyNodes: (nodes: Node<NodeData>[]) => {
+  setEmptyNodes: (nodes: Node<NodeData>[], fitView?: () => void) => {
     set({ emptyNodes: nodes });
+    if (fitView) {
+      setTimeout(() => fitView(), 0);
+    }
   },
-  setEmptyEdges: (edges: Edge<EdgeData>[]) => {
+  setEmptyEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => {
     set({ emptyEdges: edges });
+    if (fitView) {
+      setTimeout(() => fitView(), 0);
+    }
   },
   onEmptyNodesChange: (changes: NodeChange[]) => {
     set({

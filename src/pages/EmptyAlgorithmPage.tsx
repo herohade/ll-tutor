@@ -278,7 +278,7 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
   return (
     <>
       {/* left side, task description and information */}
-      <div className="mr-1 h-full w-1/3 min-w-min overflow-scroll rounded-lg border-2 border-solid p-2 text-left">
+      <div className="mr-1 h-full w-1/2 overflow-scroll rounded-lg border-2 border-solid p-2 text-left sm:w-1/3">
         <div className="flex h-full flex-col items-center justify-between">
           <div className="flex flex-col items-center">
             <p>The Nonterminals of the grammar are:</p>
@@ -370,8 +370,8 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
             </div>
 
             <Stack
-              direction={{ xs: "column", sm: "row" }}
-              spacing={{ xs: 1, sm: 2 }}
+              direction={{ xs: "column", md: "row" }}
+              spacing={{ xs: 1, md: 2 }}
               className="mt-2 pb-1"
             >
               <Button
@@ -410,7 +410,7 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
         </div>
       </div>
       {/* right side, reactflow canvas */}
-      <div className="h-full w-2/3 rounded-lg border-2 border-solid p-2">
+      <div className="h-full w-1/2 rounded-lg border-2 border-solid p-2 sm:w-2/3">
         {graphCanvas}
       </div>
     </>

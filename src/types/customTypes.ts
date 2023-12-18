@@ -112,7 +112,7 @@ export type localStoreSettings = {
   tutorial: boolean;
   language: "en" | "de";
   colorScheme: "dark" | "light" | "system";
-}
+};
 
 // Type for the layout algorithm (ELK)
 export type ElkDirectionType = "RIGHT" | "LEFT" | "UP" | "DOWN";
@@ -196,8 +196,8 @@ export type EmptyNodeSlice = {
   getEmptyNodeId: () => string;
   getEmptyEdgeId: () => string;
   setEmptySetupComplete: (complete: boolean) => void;
-  setEmptyNodes: (nodes: Node<NodeData>[]) => void;
-  setEmptyEdges: (edges: Edge<EdgeData>[]) => void;
+  setEmptyNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void;
+  setEmptyEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void;
   onEmptyNodesChange: OnNodesChange;
   onEmptyEdgesChange: OnEdgesChange;
   onEmptyConnect: (
@@ -245,8 +245,8 @@ export type FirstNodeSlice = {
   getFirstNodeId: () => string;
   getFirstEdgeId: () => string;
   setFirstSetupComplete: (complete: boolean) => void;
-  setFirstNodes: (nodes: Node<NodeData>[]) => void;
-  setFirstEdges: (edges: Edge<EdgeData>[]) => void;
+  setFirstNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void;
+  setFirstEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void;
   setLabelSize: (
     nodeId: string,
     size: { width: number; height: number } | undefined,

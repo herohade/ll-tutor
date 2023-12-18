@@ -110,7 +110,7 @@ class Production implements printable {
 
 export type localStoreSettings = {
   tutorial: boolean;
-  language: "en" | "de";
+  language: "en" | "de"; // currently unused since only english is supported
   colorScheme: "dark" | "light" | "system";
 };
 
@@ -124,10 +124,12 @@ export type NavigationSlice = {
   page: number;
   open: boolean;
   settings: localStoreSettings;
+  tutorialPage: number;
   previousPage: () => void;
   nextPage: () => void;
   toggleOpen: () => void;
   setSettings: (settings: localStoreSettings) => void;
+  setTutorialPage: (tutorialPage: number) => void;
 };
 
 export type GrammarSlice = {

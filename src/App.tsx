@@ -12,7 +12,7 @@ import ReactFlow, {
   ReactFlowProvider,
 } from "reactflow";
 
-import { MouseEvent as ReactMouseEvent, useCallback } from "react";
+import { MouseEvent as ReactMouseEvent, useCallback, useState } from "react";
 
 import useBoundStore from "./store/store";
 import { shallow } from "zustand/shallow";
@@ -31,6 +31,7 @@ import {
   CustomControls,
   HeaderComponent,
   ProgressDrawerComponent,
+  TutorialComponent,
 } from "./components";
 
 import {
@@ -299,10 +300,15 @@ export default function App() {
     </ReactFlow>
   );
 
+  const [open, setOpen] = useState(false);
+  const tutorialComponent = <TutorialComponent page={page} open={open} setOpen={setOpen} />;
+  const headerComponent = <HeaderComponent setTutorialOpen={setOpen} />;
+  const progressDrawerComponent = <ProgressDrawerComponent />;
+
   let content;
   switch (page) {
     case 0:
-      content = <StartPage />;
+      content = <StartPage setTutorialOpen={setOpen} />;
       break;
     case 1:
       content = <ReadGrammarPage />;
@@ -349,9 +355,6 @@ export default function App() {
       break;
   }
 
-  const headerComponent = <HeaderComponent />;
-  const progressDrawerComponent = <ProgressDrawerComponent />;
-
   return (
     <Box sx={{ display: "flex" }}>
       {headerComponent}
@@ -366,6 +369,7 @@ export default function App() {
       >
         <Toolbar />
         <Box className="m-2 flex flex-grow overflow-scroll xs:m-4">
+          {tutorialComponent}
           {content}
         </Box>
       </Box>

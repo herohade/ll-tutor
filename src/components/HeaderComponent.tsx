@@ -14,6 +14,8 @@ import { VariantType, useSnackbar } from "notistack";
 
 import { Node, Edge, MarkerType } from "reactflow";
 
+import { Dispatch, SetStateAction } from "react";
+
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
 
@@ -32,6 +34,10 @@ import {
   Production,
   Terminal,
 } from "../types";
+
+interface Props {
+  setTutorialOpen: Dispatch<SetStateAction<boolean>>;
+}
 
 const drawerWidth: number = 240;
 
@@ -57,7 +63,7 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
-function HeaderComponent() {
+function HeaderComponent({ setTutorialOpen }: Props) {
   const selector = (
     state: NavigationSlice &
       GrammarSlice &
@@ -71,9 +77,13 @@ function HeaderComponent() {
     maxPage: state.maxPage,
     page: state.page,
     open: state.open,
+    settings: state.settings,
+    tutorialPage: state.tutorialPage,
     previousPage: state.previousPage,
     nextPage: state.nextPage,
     toggleOpen: state.toggleOpen,
+    setSettings: state.setSettings,
+    setTutorialPage: state.setTutorialPage,
     // GrammarSlice
     startSymbol: state.startSymbol,
     epsilon: state.epsilon,
@@ -122,9 +132,13 @@ function HeaderComponent() {
     maxPage,
     page,
     open,
+    settings,
+    tutorialPage,
     previousPage,
     nextPage,
     toggleOpen,
+    setSettings,
+    setTutorialPage,
     // GrammarSlice
     startSymbol,
     epsilon,
@@ -957,6 +971,16 @@ function HeaderComponent() {
   const handleNextNavigation = () => {
     if (leaveToNext(page)(arriveToNext(page + 1))) {
       nextPage();
+      if (settings.tutorial && page + 1 >= tutorialPage) {
+        setTutorialOpen(true);
+        setTutorialPage(page + 2);
+        if (maxPage === page + 1) {
+          setSettings({
+            ...settings,
+            tutorial: false,
+          });
+        }
+      }
     }
   };
 

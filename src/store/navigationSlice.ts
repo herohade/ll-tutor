@@ -11,6 +11,7 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
     localStorage.getItem("settings") ||
       '{"tutorial": true, "colorScheme": "system", "language": "en"}',
   ),
+  tutorialPage: 0,
   previousPage: () => {
     set({ page: get().page - 1 });
   },
@@ -23,5 +24,8 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
   setSettings: (settings) => {
     localStorage.setItem("settings", JSON.stringify(settings));
     set({ settings });
+  },
+  setTutorialPage: (tutorialPage) => {
+    set({ tutorialPage });
   },
 });

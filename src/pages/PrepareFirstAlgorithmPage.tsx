@@ -181,8 +181,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     }
 
     setFirstNodes(newFirstNodes);
-    setFirstEdges(newFirstEdges);
-    setTimeout(() => fitView(), 0);
+    setFirstEdges(newFirstEdges, fitView);
   };
 
   const addMissing = () => {

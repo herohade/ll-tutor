@@ -51,13 +51,17 @@ export default function SettingsComponent({ DisplayButton }: Props) {
   const [scroll, setScroll] = useState<DialogProps["scroll"]>("paper");
   const selector = (state: NavigationSlice) => ({
     // NavigationSlice
+    page: state.page,
     settings: state.settings,
     setSettings: state.setSettings,
+    setTutorialPage: state.setTutorialPage,
   });
   const {
     // NavigationSlice
+    page,
     settings,
     setSettings,
+    setTutorialPage,
   } = useBoundStore(selector, shallow);
 
   const [oldSettings, setOldSettings] = useState(settings);
@@ -116,6 +120,7 @@ export default function SettingsComponent({ DisplayButton }: Props) {
                   ...settings,
                   tutorial: event.target.checked,
                 });
+                setTutorialPage(page + 1);
               }}
               inputProps={{ "aria-label": "ant design" }}
             />

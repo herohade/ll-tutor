@@ -304,12 +304,16 @@ export default function App() {
   // to avoid executing the localStorage.getItem("settings") call on every
   // render, when react only uses the initial value on the first render anyways.
   // refer to https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state
-  const [open, setOpen] = useState(() => localStorage.getItem("settings") === null);
+  const [open, setOpen] = useState(
+    () => localStorage.getItem("settings") === null,
+  );
   const tutorialComponent = (
     <TutorialComponent page={page} open={open} setOpen={setOpen} />
   );
   const headerComponent = <HeaderComponent setTutorialOpen={setOpen} />;
-  const progressDrawerComponent = <ProgressDrawerComponent />;
+  const progressDrawerComponent = (
+    <ProgressDrawerComponent setTutorialOpen={setOpen} />
+  );
 
   let content;
   switch (page) {

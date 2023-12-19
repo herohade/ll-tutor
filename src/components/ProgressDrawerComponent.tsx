@@ -9,16 +9,23 @@ import Toolbar from "@mui/material/Toolbar";
 import Divider from "@mui/material/Divider";
 import IconButton from "@mui/material/IconButton";
 import Button from "@mui/material/Button";
+import Stack from "@mui/material/Stack";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import SettingsIcon from "@mui/icons-material/Settings";
+import InfoIcon from "@mui/icons-material/Info";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
+
+import { Dispatch, SetStateAction } from "react";
 
 import { SettingsComponent } from ".";
 
 import { NavigationSlice } from "../types";
 
+interface Props {
+  setTutorialOpen: Dispatch<SetStateAction<boolean>>;
+}
 const drawerWidth: number = 240;
 
 const Drawer = styled(MuiDrawer, {
@@ -72,7 +79,7 @@ const steps: { label: string; content: string[] }[] = [
   { label: "Calculate Follow Sets", content: ["TODO", "TODO"] },
 ];
 
-function ProgressDrawerComponent() {
+function ProgressDrawerComponent({ setTutorialOpen }: Props) {
   const selector = (state: NavigationSlice) => ({
     // NavigationSlice
     page: state.page,
@@ -103,7 +110,13 @@ function ProgressDrawerComponent() {
           // We exclude the StartPage (page 0) from this calculation (page - 1).
           activeStep={(page - 1) >> 1}
           orientation="vertical"
+          // TODO: fix padding, don't forget to change HeaderComponent, too
+          // 1. not centered (weird on small screens because buttons below are)
           className="pl-3 pt-3 sm:pl-5 sm:pt-5"
+          // 2. centered (weird on big screen, looks not centered?)
+          // className="pl-[15.6px] pt-3 sm:pl-[23.6px] sm:pt-5"
+          // 3. centered on small, but not on big screen (xl)
+          // className="pl-[15.6px] pt-3 sm:pl-[23.6px] sm:pt-5 xl:pl-5"
         >
           {steps.map(({ label, content }, index) => (
             <Step key={label + index}>
@@ -125,26 +138,45 @@ function ProgressDrawerComponent() {
           ))}
         </Stepper>
       </div>
-      <SettingsComponent
-        DisplayButton={(props) => (
-          <Button
-            variant="contained"
-            className="m-2 min-w-0"
-            aria-label="settings"
-            {...props}
-          >
-            <Typography sx={{ display: open ? "block" : "none" }}>
-              Settings
-            </Typography>
-            <SettingsIcon
-              sx={{
-                ml: open ? 1 : 0,
-                mr: open ? -0.5 : 0,
-              }}
-            />
-          </Button>
-        )}
-      />
+      <Stack direction="column" spacing={{ xs: 1, md: 2 }} className="m-2">
+        <Button
+          variant="contained"
+          color="info"
+          className="min-w-0"
+          aria-label="help"
+          onClick={() => setTutorialOpen(true)}
+        >
+          <Typography sx={{ display: open ? "block" : "none" }}>
+            Help
+          </Typography>
+          <InfoIcon
+            sx={{
+              ml: open ? 1 : 0,
+              mr: open ? -0.5 : 0,
+            }}
+          />
+        </Button>
+        <SettingsComponent
+          DisplayButton={(props) => (
+            <Button
+              variant="contained"
+              className="min-w-0"
+              aria-label="settings"
+              {...props}
+            >
+              <Typography sx={{ display: open ? "block" : "none" }}>
+                Settings
+              </Typography>
+              <SettingsIcon
+                sx={{
+                  ml: open ? 1 : 0,
+                  mr: open ? -0.5 : 0,
+                }}
+              />
+            </Button>
+          )}
+        />
+      </Stack>
     </Drawer>
   );
 }

@@ -996,7 +996,13 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           sx={{
             ...(open && { display: "none" }),
           }}
+          // TODO: fix padding, don't forget to change ProgressDrawerComponent, too
+          // 1. not centered (weird on small screens because buttons below are)
           className="mr-3 sm:mr-5"
+          // 2. centered (weird on big screen, looks not centered?)
+          // className="mr-3 sm:mr-5 ml-[-8px]"
+          // 3. centered on small, but not on big screen (xl)
+          // className="mr-3 sm:mr-5 ml-[-8px] xl:ml-[-12px]"
         >
           <MenuIcon />
         </IconButton>

@@ -76,7 +76,7 @@ const ariaDescriptions = [
 ];
 const titles = [
   // page 0
-  "Tutorial",
+  "Help",
   // page 1
   "Grammar",
   // page 2
@@ -96,7 +96,7 @@ const titles = [
 ];
 const contents = [
   // page 0
-  "It seems you are new to this app. For your convenience, there will be short explanations when you work through each page of the app. You can toggle this feature on and off in the settings. To dismiss this dialog, click the close button or click outside of this dialog.",
+  "It seems you are new to this app. For your convenience, there will be short explanations when you work through each page of the app. You can toggle this feature on and off in the settings. If you want to read the explanations again, you can open this dialog at any time by clicking the help button in the lower left corner. To dismiss this dialog, click the close button or click outside of this dialog.",
   // page 1
   "In this app, you will be guided through the steps of constructing a look-ahead table for an LL(1) grammar. You will be able to deepen your understanding of the algorithms you have learned in class. We will start by defining the production rules of a grammar. Type in production rules in the text field below. A production must be of form A->α, where the nonterminal A is a single uppercase letter and α is a string of terminals and nonterminals. The allowed characters are 0123456789 and abcdefghijklmnopqrstuvwxyz and ABCDEFGHIJKLMNOPQRSTUVWXYZ and !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~ (notice that space is not allowed).",
   // page 2

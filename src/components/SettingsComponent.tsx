@@ -80,7 +80,7 @@ export default function SettingsComponent({ DisplayButton }: Props) {
     setOpen(false);
   };
 
-  const descriptionElementRef = useRef<HTMLElement>(null);
+  const descriptionElementRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (open) {
       const { current: descriptionElement } = descriptionElementRef;
@@ -104,11 +104,7 @@ export default function SettingsComponent({ DisplayButton }: Props) {
       >
         <DialogTitle id="Settings Dialog Title">Settings</DialogTitle>
         <DialogContent dividers={scroll === "paper"}>
-          <DialogContentText
-            id="Settings Dialog Tutorial"
-            ref={descriptionElementRef}
-            tabIndex={-1}
-          >
+          <DialogContentText id="Settings Dialog Tutorial" tabIndex={-1}>
             Tutorial:
           </DialogContentText>
           <Stack direction="row" spacing={1} alignItems="center">
@@ -215,7 +211,12 @@ export default function SettingsComponent({ DisplayButton }: Props) {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => handleClose(true)}>Save</Button>
-          <Button onClick={() => handleClose(false)}>Cancel</Button>
+          <Button
+            ref={descriptionElementRef}
+            onClick={() => handleClose(false)}
+          >
+            Cancel
+          </Button>
         </DialogActions>
       </Dialog>
     </>

@@ -210,13 +210,13 @@ export default function SettingsComponent({ DisplayButton }: Props) {
           </button> */}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => handleClose(true)}>Save</Button>
           <Button
             ref={descriptionElementRef}
             onClick={() => handleClose(false)}
           >
             Cancel
           </Button>
+          <Button onClick={() => handleClose(true)}>Save</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -136,7 +136,7 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
         </NodeToolbar>
       )}
       <Box
-        className="rounded-md"
+        className="rounded-lg"
         sx={{
           bgcolor: isConnectable && isConnecting ? "success.main" : data.color,
         }}

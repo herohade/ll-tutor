@@ -88,8 +88,8 @@ function ProgressDrawerComponent({ setTutorialOpen }: Props) {
   });
   const { page, open, toggleOpen } = useBoundStore(selector, shallow);
   return (
-    <Drawer variant="permanent" open={open}>
-      <div className="flex h-full flex-col">
+    <Drawer variant="permanent" className="h-dvh" open={open}>
+      <div className="flex h-full flex-col overflow-scroll">
         <Toolbar
           sx={{
             display: "flex",

@@ -371,7 +371,7 @@ export default function App() {
       {progressDrawerComponent}
       <Box
         component="main"
-        className="hs-screen flex flex-col"
+        className="h-dvh flex flex-col"
         sx={{
           flexGrow: 1,
           overflow: "auto",

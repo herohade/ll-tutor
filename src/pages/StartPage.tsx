@@ -45,11 +45,9 @@ function StartPage() {
         />
       </Stack>
 
-      {window.innerWidth < window.innerHeight && (
-        <Typography variant="body1" className="my-auto opacity-50">
-          Consider using landscape mode for the best experience!
-        </Typography>
-      )}
+      <Typography variant="body1" className="mt-auto opacity-50 sm:hidden">
+        Consider using landscape mode for the best experience!
+      </Typography>
     </Box>
   );
 }

@@ -300,15 +300,21 @@ export default function App() {
     </ReactFlow>
   );
 
-  const [open, setOpen] = useState(false);
-  const tutorialComponent = <TutorialComponent page={page} open={open} setOpen={setOpen} />;
+  // Here we pass an initializer function () => value instead of just value
+  // to avoid executing the localStorage.getItem("settings") call on every
+  // render, when react only uses the initial value on the first render anyways.
+  // refer to https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state
+  const [open, setOpen] = useState(() => localStorage.getItem("settings") === null);
+  const tutorialComponent = (
+    <TutorialComponent page={page} open={open} setOpen={setOpen} />
+  );
   const headerComponent = <HeaderComponent setTutorialOpen={setOpen} />;
   const progressDrawerComponent = <ProgressDrawerComponent />;
 
   let content;
   switch (page) {
     case 0:
-      content = <StartPage setTutorialOpen={setOpen} />;
+      content = <StartPage />;
       break;
     case 1:
       content = <ReadGrammarPage />;

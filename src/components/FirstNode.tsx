@@ -86,12 +86,14 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
     });
     const newEdges: Edge<EdgeData>[] = firstEdges.map((edge) => {
       if (edge.source === oldParentId || edge.target === oldParentId) {
-        const newSource = edge.source === oldParentId ? oldParentId : edge.source;
+        const newSource =
+          edge.source === oldParentId ? oldParentId : edge.source;
         const newSourceNode: Node<NodeData> | undefined =
           edge.source === oldParentId
             ? newNodes.find((node) => node.id === oldParentId)
             : edge.sourceNode;
-        const newTarget = edge.target === oldParentId ? oldParentId : edge.target;
+        const newTarget =
+          edge.target === oldParentId ? oldParentId : edge.target;
         const newTargetNode: Node<NodeData> | undefined =
           edge.target === oldParentId
             ? newNodes.find((node) => node.id === oldParentId)
@@ -120,9 +122,7 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
 
   const isConnecting = !!connectionNodeId;
 
-  const content = (
-    <Typography className="min-w-[1.5rem]">{data.name}</Typography>
-  );
+  const content = <Typography className="min-w-6">{data.name}</Typography>;
 
   return (
     <>
@@ -170,7 +170,7 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
           {/* In this case we don't need to use useUpdateNodeInternals, since !isConnecting is true at the beginning and all handles are rendered initially. */}
           {!isConnecting && (
             <Handle
-              className="absolute left-0 top-0 h-full w-full transform-none cursor-cell rounded-none border-0 opacity-0"
+              className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
               type="source"
               position={Position.Bottom}
               isConnectable={isConnectable}
@@ -179,7 +179,7 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
             />
           )}
           <Handle
-            className="absolute left-0 top-0 h-full w-full transform-none cursor-cell rounded-none border-0 opacity-0"
+            className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
             type="target"
             position={Position.Top}
             isConnectable={isConnectable}

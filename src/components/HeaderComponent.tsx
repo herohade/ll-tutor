@@ -1032,7 +1032,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             startIcon={<NavigateBefore />}
             // On small screens, we need to hide the text (Prev) and only
             // display the icon. For this we need to fix margins
-            className="box-content min-w-[20px] sm:box-border sm:min-w-[64px] [&>*]:mx-0 sm:[&>.MuiButton-startIcon]:ml-[-4px] sm:[&>.MuiButton-startIcon]:mr-2"
+            className="min-w-5 sm:min-w-16 box-content sm:box-border [&>*]:mx-0 sm:[&>.MuiButton-startIcon]:ml-[-4px] sm:[&>.MuiButton-startIcon]:mr-2"
             onClick={handlePreviousNavigation}
             disabled={page === minPage}
           >
@@ -1046,7 +1046,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             endIcon={<NavigateNext />}
             // On small screens, we need to hide the text (Next) and only
             // display the icon. For this we need to fix margins
-            className="ml-1 box-content min-w-[20px] sm:ml-2 sm:box-border sm:min-w-[64px] [&>*]:mx-0 sm:[&>.MuiButton-endIcon]:ml-2 sm:[&>.MuiButton-endIcon]:mr-[-4px]"
+            className="min-w-5 sm:min-w-16 ml-1 box-content sm:ml-2 sm:box-border [&>*]:mx-0 sm:[&>.MuiButton-endIcon]:ml-2 sm:[&>.MuiButton-endIcon]:mr-[-4px]"
             onClick={handleNextNavigation}
             disabled={page === maxPage}
           >

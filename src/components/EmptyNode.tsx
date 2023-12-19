@@ -130,7 +130,7 @@ function EmptyNode({ id, data, isConnectable }: Props) {
             bgcolor: "empty.new",
           },
         }}
-        className="nodrag p-1 min-w-[2.5rem] normal-case"
+        className="nodrag min-w-10 p-1 normal-case"
         onClick={() => {
           updateEmptyNodeAndEdgeEmpty(id, !data.empty);
         }}
@@ -180,7 +180,7 @@ function EmptyNode({ id, data, isConnectable }: Props) {
         {/* In this case we don't need to use useUpdateNodeInternals, since !isConnecting is true at the beginning and all handles are rendered initially. */}
         {!isConnecting && (
           <Handle
-            className="absolute left-0 top-0 h-full w-full transform-none cursor-cell rounded-none border-0 opacity-0"
+            className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
             type="source"
             position={Position.Bottom}
             isConnectable={isConnectable}
@@ -189,7 +189,7 @@ function EmptyNode({ id, data, isConnectable }: Props) {
           />
         )}
         <Handle
-          className="absolute left-0 top-0 h-full w-full transform-none cursor-cell rounded-none border-0 opacity-0"
+          className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
           type="target"
           position={Position.Top}
           isConnectable={isConnectable}

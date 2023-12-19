@@ -256,7 +256,7 @@ function ReadGrammarPage() {
                 className="mr-1"
                 sx={{
                   "&:hover > svg": {
-                    color: "error.dark",
+                    color: "error.main",
                   },
                 }}
                 onClick={() => {

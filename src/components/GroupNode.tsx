@@ -244,7 +244,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           }}
         >
           <Box
-            className="z-[10000] mx-6 my-5 aspect-square min-w-[4rem]"
+            className="z-[10000] mx-6 my-5 aspect-square min-w-16"
             sx={{
               ":hover": {
                 borderColor:
@@ -258,7 +258,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           {/* In this case we don't need to use useUpdateNodeInternals, since !isConnecting is true at the beginning and all handles are rendered initially. */}
           {!isConnecting && (
             <Handle
-              className="absolute left-0 top-0 h-full w-full transform-none cursor-cell rounded-none border-0 opacity-0"
+              className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
               type="source"
               position={Position.Bottom}
               isConnectable={isConnectable}
@@ -267,7 +267,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             />
           )}
           <Handle
-            className="absolute left-0 top-0 h-full w-full transform-none cursor-cell rounded-none border-0 opacity-0"
+            className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
             type="target"
             position={Position.Top}
             isConnectable={isConnectable}

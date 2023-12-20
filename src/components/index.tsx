@@ -9,3 +9,4 @@ export { default as FloatingEdge } from "./FloatingEdge";
 export { default as FirstNode } from "./FirstNode";
 export { default as GroupNode } from "./GroupNode";
 export { default as TutorialComponent } from "./TutorialComponent";
+export { default as ExpanderComponent } from "./ExpanderComponent";

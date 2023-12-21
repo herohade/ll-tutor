@@ -165,12 +165,28 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
             borderStyle: isConnectable && isConnecting ? "dashed" : "solid",
           }}
         >
-          <div className="z-[10000] mx-6 my-5">{content}</div>
+          <Box
+            className="z-[10000] mx-6 my-5 rounded-md border-2 border-solid"
+            sx={{
+              ":hover": {
+                borderRadius: "6px",
+                bgcolor:
+                  isConnectable && isConnecting
+                    ? (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "success.dark"
+                          : "success.light"
+                    : "",
+              },
+            }}
+          >
+            {content}
+          </Box>
           {/* If handles are conditionally rendered and not present initially, you need to update the node internals https://reactflow.dev/docs/api/hooks/use-update-node-internals/ */}
           {/* In this case we don't need to use useUpdateNodeInternals, since !isConnecting is true at the beginning and all handles are rendered initially. */}
           {!isConnecting && (
             <Handle
-              className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
+              className="absolute left-0 top-0 size-full transform-none cursor-cell rounded-none border-0 opacity-0"
               type="source"
               position={Position.Bottom}
               isConnectable={isConnectable}
@@ -179,7 +195,7 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
             />
           )}
           <Handle
-            className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
+            className="absolute left-0 top-0 size-full transform-none cursor-cell rounded-none border-0 opacity-0"
             type="target"
             position={Position.Top}
             isConnectable={isConnectable}

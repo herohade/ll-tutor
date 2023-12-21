@@ -3,6 +3,8 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 
+import { VariantType, useSnackbar } from "notistack";
+
 import {
   Handle,
   NodeProps,
@@ -17,32 +19,52 @@ import { shallow } from "zustand/shallow";
 
 import { useEffect, useRef, useState } from "react";
 
-import { FirstNodeSlice, GrammarSlice, NodeData } from "../types";
+import {
+  FirstAlgorithmSlice,
+  FirstNodeSlice,
+  GrammarSlice,
+  NavigationSlice,
+  NodeData,
+} from "../types";
 
 type Props = NodeProps<NodeData>;
 
 function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
-  const grammarSelector = (state: GrammarSlice) => ({
+  const selector = (
+    state: GrammarSlice &
+      FirstNodeSlice &
+      FirstAlgorithmSlice &
+      NavigationSlice,
+  ) => ({
+    // GrammarSlice
     terminals: state.terminals,
-  });
-  const { terminals } = useBoundStore(grammarSelector, shallow);
-
-  const firstNodeSelector = (state: FirstNodeSlice) => ({
+    // FirstNodeSlice
     firstSetupComplete: state.firstSetupComplete,
     firstNodes: state.firstNodes,
     firstEdges: state.firstEdges,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
     setLabelSize: state.setLabelSize,
+    // FirstAlgorithmSlice
+    finishedFirst: state.finishedFirst,
+    // NavigationSlice
+    page: state.page,
   });
   const {
+    // GrammarSlice
+    terminals,
+    // FirstNodeSlice
     firstSetupComplete,
     firstNodes,
     firstEdges,
     setFirstNodes,
     setFirstEdges,
     setLabelSize,
-  } = useBoundStore(firstNodeSelector, shallow);
+    // FirstAlgorithmSlice
+    finishedFirst,
+    // NavigationSlice
+    page,
+  } = useBoundStore(selector, shallow);
 
   const connectionNodeId = useStore((state) => state.connectionNodeId);
 
@@ -70,6 +92,20 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
       );
     }
   }, [id, ref, setLabelSize]);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const showSnackbar = (
+    message: string,
+    variant: VariantType,
+    preventDuplicate: boolean,
+  ) => {
+    // variant could be success, error, warning, info, or default
+    enqueueSnackbar(message, {
+      variant,
+      preventDuplicate,
+    });
+  };
 
   // We don't want group nodes to be smaller than the content. But (constantly)
   // calculating the minimum size is expensive. So we set the minimum size to
@@ -178,32 +214,85 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
 
   const StyledSpan = styled("span")({});
 
-  const content = (
-    <p className="m-0 whitespace-nowrap">
-      <b>
-        F<sub>ε</sub>:
-      </b>
-      <br />
-      {terminals.map((terminal) => {
-        const isChild = childNodes.some(
-          (node) => node.data.name === "{" + terminal.name + "}",
-        );
-        return (
-          // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
-          // and color the terminals if they belong to the first set of this scc
-          <StyledSpan
-            key={terminal.name}
-            className={isChild ? "font-semibold" : "opacity-50"}
-            sx={{
-              color: isChild ? "success.dark" : "inherit",
-            }}
-          >
-            {terminal.name + " "}
-          </StyledSpan>
-        );
-      })}
-    </p>
-  );
+  const content =
+    page === 5 ? (
+      <p className="m-0 whitespace-nowrap">
+        <b>
+          F<sub>ε</sub>:
+        </b>
+        <br />
+        {terminals.map((terminal) => {
+          const isChild = childNodes.some(
+            (node) => node.data.name === "{" + terminal.name + "}",
+          );
+          return (
+            // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
+            // and color the terminals if they belong to the first set of this scc
+            <StyledSpan
+              key={terminal.name}
+              className={
+                isChild ? "isColoredChild font-semibold" : "opacity-50"
+              }
+              sx={{
+                color: isChild ? "success.dark" : "inherit",
+              }}
+            >
+              {terminal.name + " "}
+            </StyledSpan>
+          );
+        })}
+      </p>
+    ) : (
+      <Button
+        variant="contained"
+        sx={{
+          bgcolor: "background.paper",
+          color: "text.primary",
+          ":disabled": {
+            bgcolor: "background.paper",
+          },
+          ":hover": {
+            // TODO: change to first colorset
+            bgcolor: "empty.new",
+          },
+        }}
+        className="nodrag size-full normal-case"
+        onClick={() => {
+          // TODO: add or remove terminals from all outgoing sccs
+          showSnackbar("This feature is not yet implemented!", "error", true);
+        }}
+        disabled={
+          finishedFirst
+          // TODO: add disable if any incoming is not yet finished
+          // or any outgoing is finished
+        }
+      >
+        <p className="m-0 whitespace-nowrap">
+          <b>
+            F<sub>ε</sub>:
+          </b>
+          <br />
+          {terminals.map((terminal) => {
+            const isChild = childNodes.some(
+              (node) => node.data.name === "{" + terminal.name + "}",
+            );
+            return (
+              // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
+              // and color the terminals if they belong to the first set of this scc
+              <StyledSpan
+                key={terminal.name}
+                className={isChild ? "font-semibold" : "opacity-50"}
+                sx={{
+                  color: isChild ? "success.dark" : "inherit",
+                }}
+              >
+                {terminal.name + " "}
+              </StyledSpan>
+            );
+          })}
+        </p>
+      </Button>
+    );
 
   return (
     <>
@@ -244,11 +333,22 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           }}
         >
           <Box
-            className="z-[10000] mx-6 my-5 aspect-square min-w-16"
+            className="z-[10000] mx-6 my-5 aspect-square min-w-16 rounded-md border-2 border-solid"
             sx={{
               ":hover": {
-                borderColor:
-                  isConnectable && isConnecting ? "inherit" : "success.main",
+                bgcolor:
+                  isConnectable && isConnecting
+                    ? (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "success.dark"
+                          : "success.light"
+                    : "",
+              },
+              ":hover .isColoredChild": {
+                color: (theme) =>
+                  theme.palette.mode === "dark" && isConnectable && isConnecting
+                    ? "success.light"
+                    : "",
               },
             }}
           >
@@ -258,7 +358,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           {/* In this case we don't need to use useUpdateNodeInternals, since !isConnecting is true at the beginning and all handles are rendered initially. */}
           {!isConnecting && (
             <Handle
-              className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
+              className="absolute left-0 top-0 size-full transform-none cursor-cell rounded-none border-0 opacity-0"
               type="source"
               position={Position.Bottom}
               isConnectable={isConnectable}
@@ -267,7 +367,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             />
           )}
           <Handle
-            className="size-full absolute left-0 top-0 transform-none cursor-cell rounded-none border-0 opacity-0"
+            className="absolute left-0 top-0 size-full transform-none cursor-cell rounded-none border-0 opacity-0"
             type="target"
             position={Position.Top}
             isConnectable={isConnectable}

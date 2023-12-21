@@ -1,3 +1,4 @@
+import { styled } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 
@@ -13,27 +14,34 @@ import { groupNodesBySCC, useLayoutedElements } from "../utils";
 import {
   EdgeData,
   EdgePathType,
+  EmptyAlgorithmSlice,
   EmptyNodeSlice,
   FirstNodeSlice,
   GrammarSlice,
   NodeColor,
   NodeData,
+  Nonterminal,
 } from "../types";
 
 type Props = {
   graphCanvas: JSX.Element;
 };
 
+const StyledSpan = styled("span")({});
+
 /*
 This is the sixth page of the webtutor.
 It shows the user the grammer, color coded regarding the empty
 attributes. The user has to group the FirstNodes into Strongly Connected
-Components (SCCNodes). These are used to calculate the first attributes
+Components (grou nodes). These are used to calculate the first attributes
 in the next step.
 */
 function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
-  const selector = (state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice) => ({
+  const selector = (
+    state: GrammarSlice & EmptyNodeSlice & EmptyAlgorithmSlice & FirstNodeSlice,
+  ) => ({
     // GrammarSlice
+    epsilon: state.epsilon,
     productions: state.productions,
     nonTerminals: state.nonTerminals,
     terminals: state.terminals,
@@ -42,6 +50,8 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     emptyEdges: state.emptyEdges,
     setEmptyNodes: state.setEmptyNodes,
     setEmptyEdges: state.setEmptyEdges,
+    // EmptyAlgorithmSlice
+    emptyNonterminalMap: state.emptyNonterminalMap,
     // FirstNodeSlice
     firstSetupComplete: state.firstSetupComplete,
     firstNodes: state.firstNodes,
@@ -56,6 +66,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   });
   const {
     // GrammarSlice
+    epsilon,
     productions,
     nonTerminals,
     terminals,
@@ -64,6 +75,8 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     emptyEdges,
     setEmptyNodes,
     setEmptyEdges,
+    // EmptyAlgorithmSlice
+    emptyNonterminalMap,
     // FirstNodeSlice
     firstSetupComplete,
     firstNodes,
@@ -493,7 +506,29 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
             <ul className="commaList listSpace m-0 mb-2 list-none p-0 text-left before:mr-1 before:content-['𝑃_=_{'] after:ml-1 after:content-['}']">
               {productions.map((production, index) => (
                 <li key={index} className="ml-4">
-                  {production.numberedRepresentation()}
+                  <span>
+                    {production.leftSide.representation + " => "}
+                    {production.rightSide.map((v, i) => (
+                      <StyledSpan
+                        key={v.name + i}
+                        sx={{
+                          color:
+                            v instanceof Nonterminal
+                              ? emptyNonterminalMap.find(
+                                  ([n]) => n === v.name,
+                                )?.[1]
+                                ? "empty.text"
+                                : ""
+                              : v.name === epsilon.name
+                                ? "empty.text"
+                                : "",
+                        }}
+                      >
+                        {v.representation + " "}
+                      </StyledSpan>
+                    ))}
+                    {production.uppercaseNumber}
+                  </span>
                 </li>
               ))}
             </ul>

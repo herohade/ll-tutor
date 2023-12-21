@@ -4,3 +4,4 @@ export { default as SelectStartSymbolPage } from "./SelectStartSymbolPage";
 export { default as PrepareEmptyAlgorithmPage } from "./PrepareEmptyAlgorithmPage";
 export { default as EmptyAlgorithmPage } from "./EmptyAlgorithmPage";
 export { default as PrepareFirstAlgorithmPage } from "./PrepareFirstAlgorithmPage";
+export { default as FirstAlgorithmPage } from "./FirstAlgorithmPage";

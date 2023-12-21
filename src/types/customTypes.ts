@@ -266,4 +266,10 @@ export type FirstNodeSlice = {
     deletable: boolean,
     connectable: boolean,
   ) => void;
+  setFirstNodeEdgesHidden: (hidden: boolean) => void;
+};
+
+export type FirstAlgorithmSlice = {
+  finishedFirst: boolean;
+  setFinishedFirst: (finished: boolean) => void;
 };

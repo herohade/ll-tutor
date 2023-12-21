@@ -143,11 +143,7 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
         if (import.meta.env.DEV) {
           console.log("Edge already exists.", connection, edges);
         }
-        showSnackbar(
-          "Edge " + edgeName + " already exists.",
-          "warning",
-          true,
-        );
+        showSnackbar("Edge " + edgeName + " already exists.", "warning", true);
         return;
       }
 
@@ -196,6 +192,19 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
       }),
       firstEdges: get().firstEdges.map((edge) => {
         edge.deletable = deletable;
+        return edge;
+      }),
+    });
+  },
+  setFirstNodeEdgesHidden: (hidden: boolean) => {
+    set({
+      firstEdges: get().firstEdges.map((edge) => {
+        if (!edge.data?.isGroupEdge) {
+          return {
+            ...edge,
+            hidden: hidden,
+          };
+        }
         return edge;
       }),
     });

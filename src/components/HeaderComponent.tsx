@@ -24,6 +24,7 @@ import {
   EdgePathType,
   EmptyAlgorithmSlice,
   EmptyNodeSlice,
+  FirstAlgorithmSlice,
   FirstNodeSlice,
   GrammarSetupSlice,
   GrammarSlice,
@@ -70,7 +71,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       GrammarSetupSlice &
       EmptyNodeSlice &
       EmptyAlgorithmSlice &
-      FirstNodeSlice,
+      FirstNodeSlice &
+      FirstAlgorithmSlice,
   ) => ({
     // NavigationSlice
     minPage: state.minPage,
@@ -125,6 +127,10 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFirstSetupComplete: state.setFirstSetupComplete,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
+    setFirstNodeEdgesHidden: state.setFirstNodeEdgesHidden,
+    // FirstAlgorithmSlice
+    finishedFirst: state.finishedFirst,
+    setFinishedFirst: state.setFinishedFirst,
   });
   const {
     // NavigationSlice
@@ -180,6 +186,10 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFirstSetupComplete,
     setFirstNodes,
     setFirstEdges,
+    setFirstNodeEdgesHidden,
+    // FirstAlgorithmSlice
+    finishedFirst,
+    setFinishedFirst,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -346,7 +356,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     //TODO: perhaps remove this counter
     let counter = 0;
     while (!fixpoint && counter < 10000) {
-      // TODO: remove this counter
       counter++;
       fixpoint = true;
       // 4. go through all productions and mark them as productive if all right side symbols are productive
@@ -367,7 +376,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       // reduce workList to only unproductive productions
       workList = workList.filter((p) => !p.productive);
     }
-    // TODO: remove this counter
     if (counter >= 10000) {
       if (import.meta.env.DEV) {
         console.error(
@@ -448,10 +456,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       );
       setReduced(false);
 
-      // This is easy to mess up, but we need to either reset our changes
-      // to the reference counts if we want to preserve the original grammar
-      // or we need to remove the unreachable (non)terminals and productions
-      // For now we try the first option
+      // We now need to either reset our changes to the reference counts if we
+      // want to preserve the original grammar or we need to remove the
+      // unreachable (non)terminals and productions (all of them).
+      // For now we try the first option since the user might not want
+      // to have to re-enter the grammar after a typo.
       for (const p of workList) {
         p.references++;
         p.leftSide.references++;
@@ -468,8 +477,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     let newReachableNonTerminals: Nonterminal[] = [startSymbol];
     let unreachableNonTerminals: Nonterminal[] = [];
     let unreachableProductions: Production[] = [...newProductions];
-    // 2. got through set of newly reachable nonterminals and mark all new nonterminals
-    // on the right sides as reachable and add them to the new-list
+    // 2. got through set of newly reachable nonterminals and mark all new
+    // nonterminals on the right sides as reachable and add them to the new-list
     while (newReachableNonTerminals.length !== 0) {
       reachableNonTerminals = newReachableNonTerminals;
       newReachableNonTerminals = [];
@@ -480,6 +489,9 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         (p) => !p.reachable,
       );
       for (const production of unreachableProductions) {
+        // we might be able to just use if (production.leftSide.reachable)
+        // here but this would include symbols added in this iteration
+        // and I'm currently too lazy to check if this could be a problem
         if (
           reachableNonTerminals.some((n) => n.name === production.leftSide.name)
         ) {
@@ -538,7 +550,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       }
     }
 
-    // number the productions
+    // number the productions (for printing A->...^0, A->...^1, ...)
     let productionCounter = 0;
     let lastLeftSide = "";
     for (const p of newProductions.sort(grammarRuleSort)) {
@@ -583,17 +595,16 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       showSnackbar("Grammar was reduced!", "info", true);
     }
 
-    // prepare the canvas
+    // prepare the reactflow canvas
 
-    // color nonterminals and productions next to the canvas
-    // this must happen before preparing the first step of the empty algorithm
+    // These are needed to color nonterminals and productions next to the canvas
+    // This must happen before preparing the first step of the empty algorithm
     setEmptyNonterminalMap(newNonTerminals.map((n) => [n.name, n.empty]));
     setEmptyProductionMap(newProductions.map((p) => [p.name, p.empty]));
 
+    // delete the old nodes and edges (if there are any)
     const newNodes: Node<NodeData>[] = [];
     const newEdges: Edge<EdgeData>[] = [];
-
-    // set the canvas
     setEmptyNodes(newNodes);
     setEmptyEdges(newEdges);
 
@@ -686,6 +697,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   // Set up the canvas for the first attribute algorithm.
   // We add a new FirstNode for each (Non)terminal,
   // a FirstNode {t}, as well as an Edge {t} -> t for each terminal t.
+  // Also we reset the first attribute algorithm.
   const prepareFirstAlgorithm = () => {
     if (preparedFirst) {
       if (import.meta.env.DEV) {
@@ -784,11 +796,14 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFirstNodes(newFirstNodes);
     setFirstEdges(newFirstEdges);
 
+    // reset the first attribute algorithm
+    setFinishedFirst(false);
+
     return true;
   };
 
   // Functions that are invoked when changing between pages
-  // Indexed by current page - minimum page
+  // Indexed by current page - minimum page (=0)
   // What to do when leaving a page to go to the previous one:
   const leaveToPrevious = (page: number): ((cb: () => boolean) => boolean) => {
     switch (page) {
@@ -891,6 +906,18 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           }
         };
       case 6: // page (6) -> 7
+        return (cb) => {
+          if (finishedFirst) {
+            return cb();
+          } else {
+            showSnackbar(
+              "Please finish the first attribute algorithm!",
+              "error",
+              true,
+            );
+            return false;
+          }
+        };
       case 7: // page (7) -> 8
         return (cb) => {
           return cb();
@@ -911,7 +938,14 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       case 2: // page (2) <- 3
       case 3: // page (3) <- 4
       case 4: // page (4) <- 5
+        return () => {
+          return true;
+        };
       case 5: // page (5) <- 6
+        return () => {
+          setFirstNodeEdgesHidden(false);
+          return true;
+        };
       case 6: // page (6) <- 7
       case 7: // page (7) <- 8
         return () => {
@@ -949,6 +983,10 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           return prepareFirstAlgorithm();
         };
       case 6: // page 5 -> (6)
+        return () => {
+          setFirstNodeEdgesHidden(true);
+          return true;
+        };
       case 7: // page 6 -> (7)
       case 8: // page 7 -> (8)
         return () => {
@@ -971,9 +1009,12 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   const handleNextNavigation = () => {
     if (leaveToNext(page)(arriveToNext(page + 1))) {
       nextPage();
+      // open tutorial dialog if necessary
       if (settings.tutorial && page + 1 >= tutorialPage) {
         setTutorialOpen(true);
+        // page+2 since nextPage() does not change the value of page in here
         setTutorialPage(page + 2);
+        // after completing the tutorial, disable it
         if (maxPage === page + 1) {
           setSettings({
             ...settings,
@@ -1032,7 +1073,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             startIcon={<NavigateBefore />}
             // On small screens, we need to hide the text (Prev) and only
             // display the icon. For this we need to fix margins
-            className="min-w-5 sm:min-w-16 box-content sm:box-border [&>*]:mx-0 sm:[&>.MuiButton-startIcon]:ml-[-4px] sm:[&>.MuiButton-startIcon]:mr-2"
+            className="box-content min-w-5 sm:box-border sm:min-w-16 [&>*]:mx-0 sm:[&>.MuiButton-startIcon]:ml-[-4px] sm:[&>.MuiButton-startIcon]:mr-2"
             onClick={handlePreviousNavigation}
             disabled={page === minPage}
           >
@@ -1046,7 +1087,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             endIcon={<NavigateNext />}
             // On small screens, we need to hide the text (Next) and only
             // display the icon. For this we need to fix margins
-            className="min-w-5 sm:min-w-16 ml-1 box-content sm:ml-2 sm:box-border [&>*]:mx-0 sm:[&>.MuiButton-endIcon]:ml-2 sm:[&>.MuiButton-endIcon]:mr-[-4px]"
+            className="ml-1 box-content min-w-5 sm:ml-2 sm:box-border sm:min-w-16 [&>*]:mx-0 sm:[&>.MuiButton-endIcon]:ml-2 sm:[&>.MuiButton-endIcon]:mr-[-4px]"
             onClick={handleNextNavigation}
             disabled={page === maxPage}
           >

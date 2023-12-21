@@ -21,6 +21,8 @@ type Props = {
   graphCanvas: JSX.Element;
 };
 
+const StyledSpan = styled("span")({});
+
 /*
 This is the fifth page of the webtutor.
 It lets the user apply the algorithm to propagate the empty
@@ -272,8 +274,6 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     setEmptyWorkList(newEmptyWorkList);
     setEmptyFixpoint(newEmptyFixpoint);
   };
-
-  const StyledSpan = styled("span")({});
 
   return (
     <>

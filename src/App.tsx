@@ -19,6 +19,7 @@ import { shallow } from "zustand/shallow";
 
 import {
   EmptyAlgorithmPage,
+  FirstAlgorithmPage,
   PrepareEmptyAlgorithmPage,
   PrepareFirstAlgorithmPage,
   ReadGrammarPage,
@@ -190,6 +191,8 @@ export default function App() {
                   groupNode.data.name.split(", "),
                 );
               }
+              // name is something like scc, A, B, C
+              // TODO: get a better name. maybe with JSON.stringify?
               const newName = groupNode.data.name
                 .split(", ")
                 .filter((name) => name.length > 0)
@@ -219,7 +222,9 @@ export default function App() {
 
           return n;
         });
+        // We also need to update the edge names (sourcename->targetname)
         const newEdges: Edge<EdgeData>[] = firstEdges.map((edge) => {
+          // get the new names/nodes if they exist, else use the old ones
           if (edge.source === groupNode.id || edge.target === groupNode.id) {
             const newSource =
               edge.source === groupNode.id ? groupNode.id : edge.source;
@@ -280,6 +285,8 @@ export default function App() {
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
     </ReactFlow>
   );
+  // use two separate graphs, as it's probably cheaper then saving/restoring
+  // when navigating between pages (but it's possible according to the docs)
   const firstGraphCanvas = (
     <ReactFlow
       nodes={firstNodes}
@@ -300,13 +307,17 @@ export default function App() {
     </ReactFlow>
   );
 
-  // Here we pass an initializer function () => value instead of just value
+  // If the user is new (no localstorage -> never changed settings or completed
+  // tutorial before) we want to show the tutorial dialog for the start page.
+  // Here we pass an initializer function ()=>value instead of just value
   // to avoid executing the localStorage.getItem("settings") call on every
   // render, when react only uses the initial value on the first render anyways.
   // refer to https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state
   const [open, setOpen] = useState(
     () => localStorage.getItem("settings") === null,
   );
+
+  // Here begins the actual content of the page
   const tutorialComponent = (
     <TutorialComponent page={page} open={open} setOpen={setOpen} />
   );
@@ -315,6 +326,7 @@ export default function App() {
     <ProgressDrawerComponent setTutorialOpen={setOpen} />
   );
 
+  // Navigation (page change) is handled by the HeaderComponent
   let content;
   switch (page) {
     case 0:
@@ -347,6 +359,13 @@ export default function App() {
         </ReactFlowProvider>
       );
       break;
+    case 6:
+      content = (
+        <ReactFlowProvider>
+          <FirstAlgorithmPage graphCanvas={firstGraphCanvas} />
+        </ReactFlowProvider>
+      );
+      break;
     default:
       content = (
         <>
@@ -371,7 +390,7 @@ export default function App() {
       {progressDrawerComponent}
       <Box
         component="main"
-        className="h-dvh flex flex-col"
+        className="flex h-dvh flex-col"
         sx={{
           flexGrow: 1,
           overflow: "auto",

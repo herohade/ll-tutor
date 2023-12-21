@@ -85,13 +85,12 @@ const tutorialPages: tutorialPage[] = [
       {
         type: "text",
         content:
-          "In this app, you will be guided through the steps of constructing a look-ahead table for an LL(1) grammar. You will be able to deepen your understanding of the algorithms you have learned in class.",
+          "In this app, you will be guided through the steps of constructing a look-ahead table for an LL(1) grammar. You will be able to deepen your understanding of the algorithms you have learned in class. Let's start by defining the production rules of your grammar.",
       },
       {
         type: "collapsible",
         title: "Your task",
-        content:
-          "We will start by defining the production rules of our grammar. Type in production rules in the text field below.",
+        content: "Type in production rules in the text field below.",
       },
       {
         type: "collapsible",
@@ -116,27 +115,28 @@ const tutorialPages: tutorialPage[] = [
       {
         type: "text",
         content:
-          "In this step, we will add the start symbol S' to the grammar.",
+          "In this step, you will add the start symbol S' to the grammar.",
       },
       {
         type: "collapsible",
         title: "Your task",
         content:
-          "Decide which nonterminal will be our grammar's entry point. The production S' -> <entry point>, where S' is the start symbol, will be added automatically. Please select the entry point by clicking on the nonterminal of your choice.",
+          "Decide which nonterminal will be the grammar's entry point. The production S' -> <entry point>, where S' is the start symbol, will be added automatically. Please select the entry point by clicking on the nonterminal of your choice.",
       },
     ],
   },
   // page 3
   {
-    ariaTitle: "TODO",
-    ariaDescription: "TODO",
+    ariaTitle: "The empty attributes",
+    ariaDescription:
+      "This dialog explains the setup of the empty attribute algorithm.",
     title: "Empty Attributes",
     contents: [
       // To add nodes, click on the bottommost plus icon on the graph canvas. You can add an edge by clicking on and holding the outer area of the source node. Then, drag the arrow to the center of your target node. You can remove a node or an edge by clicking on it and pressing the backspace key. To clear the graph, press the 'reset graph' button. Once you are done, click the 'check graph' button.
       {
         type: "text",
         content:
-          "To visualize the grammar's empty attributes, we will set up a simplified dependency graph.",
+          "To visualize the grammar's empty attributes, you will set up a simplified dependency graph.",
       },
       {
         type: "collapsible",
@@ -160,14 +160,14 @@ const tutorialPages: tutorialPage[] = [
   },
   // page 4
   {
-    ariaTitle: "TODO",
-    ariaDescription: "TODO",
+    ariaTitle: "The empty attribute algorithm",
+    ariaDescription: "This dialog explains the empty attribute algorithm.",
     title: "Empty Attributes",
     contents: [
       {
         type: "text",
         content:
-          "Now, we will apply a fixpoint algorithm to compute the empty attributes for the grammar. The algorithm will be applied to the grammar's production rules on the left in conjunction with the dependency graph we have previously set up. We will repeat the steps until no more changes are made to the graph.",
+          "Now, you will apply a fixpoint algorithm to compute the empty attributes for the grammar. The algorithm will be applied to the grammar's production rules on the left in conjunction with the dependency graph you have previously set up. You must repeat the steps until no more changes are made to the graph.",
       },
       {
         type: "collapsible",
@@ -179,7 +179,7 @@ const tutorialPages: tutorialPage[] = [
         type: "collapsible",
         title: "The fixpoint algorithm",
         content:
-          "For each not-yet-empty production, we check if the entire right side is marked as empty. Empty symbols and productions will automatically be colored blue. All not-empty nonterminals A become empty if a production A -> α exists, where α is an empty right side. To mark them as such, we must press the corresponding button in the graph to the right. For example, if we find a production A -> B, with B already marked as empty, we must press the button 'A' in the graph. After correctly toggling all newly empty nonterminals in the graph, we proceed to the next iteration by pressing the 'check step' button. Once we reach an iteration where we cannot find any new button to toggle, we will toggle the 'fixpoint reached' switch on the left side instead.",
+          "For each not-yet-empty production, check if the entire right side is marked as empty. Empty symbols and productions will automatically be colored blue. All not-empty nonterminals A become empty if a production A -> α exists, where α is an empty right side. To mark them as such, you must press the corresponding button in the graph to the right. For example, if you find a production A -> B, with B already marked as empty, you must press the button 'A' in the graph. After correctly toggling all newly empty nonterminals in the graph, proceed to the next iteration by pressing the 'check step' button. Once you reach an iteration where you cannot find any new button to toggle, toggle the 'fixpoint reached' switch on the left side instead.",
       },
       {
         type: "collapsible",
@@ -198,7 +198,7 @@ const tutorialPages: tutorialPage[] = [
       {
         type: "text",
         content:
-          "To calculate the first sets of the grammar, we will use the algorithm from the lecture. In this step, we will set up a dependency graph representing the first set inequality system and group the terminals and nonterminals into strongly connected components, indicating they have the same first sets.",
+          "To calculate the first sets of the grammar, you will use the algorithm from the lecture. In this step, you will set up a dependency graph representing the first set inequality system and group the terminals and nonterminals into strongly connected components, indicating they have the same first sets.",
       },
       {
         type: "collapsible",
@@ -209,13 +209,20 @@ const tutorialPages: tutorialPage[] = [
       {
         type: "collapsible",
         title: "The algorithm",
-        content: "TODO",
+        content:
+          "TODO (Note: While edges from groupnodes to themselves (SCC(1)->SCC(1)) are not necessary, edges from nonterminals to themselves (A->A) are still required.)",
       },
       {
         type: "collapsible",
         title: "Graph interaction",
         content:
           "To add group nodes to the graph, click the bottommost plus icon on the canvas. Nodes can be added to a group node by dragging and dropping them onto a group node. Select a node and press the' detach' button to separate a node from its parent (group) node. To detach all nodes from a group at once, click the group node and press 'ungroup'. You can delete a group node by pressing 'delete' - This will also automatically ungroup any nodes remaining in the selected group node. To add an edge, click on and hold the outer area of the source node. Then, drag the arrow to the center of your target node.",
+      },
+      {
+        type: "collapsible",
+        title: "Color coding",
+        content:
+          "Empty nonterminals will be colored blue to help you visualize the inequality system.",
       },
     ],
   },
@@ -316,42 +323,40 @@ export default function TutorialComponent({ page, open, setOpen }: Props) {
     >
       <DialogTitle> {tutorialPages[page].title}</DialogTitle>
       <DialogContent tabIndex={-1} dividers={true}>
-        {
-          tutorialPages[page].contents.map((c, index) =>
-            c.type === "text" ? (
-              <DialogContentText
-                key={index}
-                sx={{
-                  my: 1,
-                }}
-              >
-                {c.content}
-              </DialogContentText>
-            ) : (
-              <ExpanderComponent
-                key={index}
-                sx={{
-                  my: 1,
-                }}
-                expanded={collapsibleOpen[page][index]}
-                setExpanded={setCollapsibleOpenForSpecificPageAndIndex(
-                  page,
-                  index,
-                )}
-                title={
-                  <DialogContentText
-                    sx={{
-                      my: "auto",
-                    }}
-                  >
-                    {c.title}
-                  </DialogContentText>
-                }
-                children={<DialogContentText>{c.content}</DialogContentText>}
-              />
-            ),
-          )
-        }
+        {tutorialPages[page].contents.map((c, index) =>
+          c.type === "text" ? (
+            <DialogContentText
+              key={index}
+              sx={{
+                my: 1,
+              }}
+            >
+              {c.content}
+            </DialogContentText>
+          ) : (
+            <ExpanderComponent
+              key={index}
+              sx={{
+                my: 1,
+              }}
+              expanded={collapsibleOpen[page][index]}
+              setExpanded={setCollapsibleOpenForSpecificPageAndIndex(
+                page,
+                index,
+              )}
+              title={
+                <DialogContentText
+                  sx={{
+                    my: "auto",
+                  }}
+                >
+                  {c.title}
+                </DialogContentText>
+              }
+              children={<DialogContentText>{c.content}</DialogContentText>}
+            />
+          ),
+        )}
       </DialogContent>
       <DialogActions>
         <Button ref={descriptionElementRef} onClick={handleClose}>

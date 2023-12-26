@@ -150,11 +150,13 @@ export type GrammarSetupSlice = {
   reduced: boolean;
   preparedEmpty: boolean;
   preparedFirst: boolean;
+  preparedFirstMap: boolean;
   setStart: (start: [name: Nonterminal, start: boolean][]) => void;
   setSorted: (sorted: boolean) => void;
   setReduced: (reduced: boolean) => void;
   setPreparedEmpty: (prepared: boolean) => void;
   setPreparedFirst: (prepared: boolean) => void;
+  setPreparedFirstMap: (prepared: boolean) => void;
 };
 
 export enum NodeColor {
@@ -269,7 +271,26 @@ export type FirstNodeSlice = {
   setFirstNodeEdgesHidden: (hidden: boolean) => void;
 };
 
+// Every FirstNode has a FirstAlgorithmNodeMap
+export type FirstAlgorithmNodeMap = {
+  // Wheter the node (=button) is active or not.
+  // A node (button) is disabled if any outgoing node is active.
+  active: boolean;
+  // A map of all incoming nodes and their first sets.
+  incomingFirst: Map<string, string[] | undefined>;
+  // The first set of this node. Needs to be updated by an incoming node
+  // if it changes its incoming first value.
+  // It is a set of unique terminals.
+  first: Set<string>;
+}
+
 export type FirstAlgorithmSlice = {
+  // Indicates whether the empty algorithm is finished
+  // User can now proceed to the next page
   finishedFirst: boolean;
+  // A map of all nodes (ids) and their firstAlgorithmNodeMap.
+  firstNodeMap: Map<string, FirstAlgorithmNodeMap>;
   setFinishedFirst: (finished: boolean) => void;
+  setFirstNodeMap: (map: Map<string, FirstAlgorithmNodeMap>) => void;
+  changeFirstNodeMap: (nodeName: string, map: FirstAlgorithmNodeMap) => void;
 };

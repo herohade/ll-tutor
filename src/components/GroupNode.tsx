@@ -17,9 +17,10 @@ import {
 import useBoundStore from "../store/store";
 import { shallow } from "zustand/shallow";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  FirstAlgorithmNodeMap,
   FirstAlgorithmSlice,
   FirstNodeSlice,
   GrammarSlice,
@@ -47,6 +48,8 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     setLabelSize: state.setLabelSize,
     // FirstAlgorithmSlice
     finishedFirst: state.finishedFirst,
+    firstNodeMap: state.firstNodeMap,
+    changeFirstNodeMap: state.changeFirstNodeMap,
     // NavigationSlice
     page: state.page,
   });
@@ -62,6 +65,8 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     setLabelSize,
     // FirstAlgorithmSlice
     finishedFirst,
+    firstNodeMap,
+    changeFirstNodeMap,
     // NavigationSlice
     page,
   } = useBoundStore(selector, shallow);
@@ -95,17 +100,69 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const showSnackbar = (
-    message: string,
-    variant: VariantType,
-    preventDuplicate: boolean,
-  ) => {
-    // variant could be success, error, warning, info, or default
-    enqueueSnackbar(message, {
-      variant,
-      preventDuplicate,
-    });
-  };
+  const showSnackbar = useCallback(
+    (message: string, variant: VariantType, preventDuplicate: boolean) => {
+      // variant could be success, error, warning, info, or default
+      enqueueSnackbar(message, {
+        variant,
+        preventDuplicate,
+      });
+    },
+    [enqueueSnackbar],
+  );
+
+  const outgoingNodeMaps: Map<string, FirstAlgorithmNodeMap> | undefined =
+    useMemo(() => {
+      if (page === 5) {
+        return undefined;
+      }
+      const outgoingNodeMaps: Map<string, FirstAlgorithmNodeMap> = new Map();
+      firstEdges.forEach((edge) => {
+        if (edge.source === id && edge.target !== id) {
+          const outgoingNodeMap = firstNodeMap.get(edge.target);
+          if (!outgoingNodeMap) {
+            if (import.meta.env.DEV) {
+              console.log(
+                "Error Code e95b84: outgoingNodeMap not found",
+                edge.target,
+              );
+            }
+            showSnackbar(
+              "Error Code e95b84: Please contact the developer!",
+              "error",
+              true,
+            );
+            return;
+          }
+          outgoingNodeMaps.set(edge.target, outgoingNodeMap);
+        }
+      });
+      return outgoingNodeMaps;
+    }, [firstEdges, firstNodeMap, id, page, showSnackbar]);
+  const thisFirstNodeMap: FirstAlgorithmNodeMap | undefined = useMemo(() => {
+    return page === 5 ? undefined : firstNodeMap.get(id)!;
+  }, [firstNodeMap, id, page]);
+  // A node (button) is disabled if any outgoing node is active.
+  const disabledBecauseOfOutgoing = useMemo(() => {
+    if (page === 5) {
+      return false;
+    }
+    if (!outgoingNodeMaps) {
+      return false;
+    }
+    for (const outgoingNodeMap of outgoingNodeMaps.values()) {
+      if (outgoingNodeMap.active) {
+        if (import.meta.env.DEV) {
+          console.log(
+            "disabledBecauseOfOutgoing: outgoingNodeMap " + id + " is active:",
+            outgoingNodeMap,
+          );
+        }
+        return true;
+      }
+    }
+    return false;
+  }, [id, outgoingNodeMaps, page]);
 
   // We don't want group nodes to be smaller than the content. But (constantly)
   // calculating the minimum size is expensive. So we set the minimum size to
@@ -258,14 +315,41 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         }}
         className="nodrag size-full normal-case"
         onClick={() => {
-          // TODO: add or remove terminals from all outgoing sccs
-          showSnackbar("This feature is not yet implemented!", "error", true);
+          if (thisFirstNodeMap) {
+            // toggle active and update outgoing nodes
+            // TODO: update outgoing nodes
+            if (thisFirstNodeMap.active) {
+              changeFirstNodeMap(id, {
+                ...thisFirstNodeMap,
+                active: false,
+              });
+            } else {
+              changeFirstNodeMap(id, {
+                ...thisFirstNodeMap,
+                active: true,
+              });
+            }
+            if (import.meta.env.DEV) {
+              console.log(
+                "thisFirstNodeMap " + id + " was clicked, now active:",
+                !thisFirstNodeMap.active,
+              );
+            }
+          } else {
+            if (import.meta.env.DEV) {
+              console.log(
+                "Error Code 955767: thisFirstNodeMap not found",
+                thisFirstNodeMap,
+              );
+            }
+            showSnackbar(
+              "Error Code 955767: Please contact the developer!",
+              "error",
+              true,
+            );
+          }
         }}
-        disabled={
-          finishedFirst
-          // TODO: add disable if any incoming is not yet finished
-          // or any outgoing is finished
-        }
+        disabled={finishedFirst || disabledBecauseOfOutgoing}
       >
         <p className="m-0 whitespace-nowrap">
           <b>

@@ -24,6 +24,7 @@ import {
   EdgePathType,
   EmptyAlgorithmSlice,
   EmptyNodeSlice,
+  FirstAlgorithmNodeMap,
   FirstAlgorithmSlice,
   FirstNodeSlice,
   GrammarSetupSlice,
@@ -101,10 +102,12 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     reduced: state.reduced,
     preparedEmpty: state.preparedEmpty,
     preparedFirst: state.preparedFirst,
+    preparedFirstMap: state.preparedFirstMap,
     setSorted: state.setSorted,
     setReduced: state.setReduced,
     setPreparedEmpty: state.setPreparedEmpty,
     setPreparedFirst: state.setPreparedFirst,
+    setPreparedFirstMap: state.setPreparedFirstMap,
     // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
     emptyNodes: state.emptyNodes,
@@ -122,6 +125,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFinishedEmpty: state.setFinishedEmpty,
     // FirstNodeSlice
     firstSetupComplete: state.firstSetupComplete,
+    firstNodes: state.firstNodes,
+    firstEdges: state.firstEdges,
     getFirstNodeId: state.getFirstNodeId,
     getFirstEdgeId: state.getFirstEdgeId,
     setFirstSetupComplete: state.setFirstSetupComplete,
@@ -131,6 +136,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     // FirstAlgorithmSlice
     finishedFirst: state.finishedFirst,
     setFinishedFirst: state.setFinishedFirst,
+    setFirstNodeMap: state.setFirstNodeMap,
   });
   const {
     // NavigationSlice
@@ -160,10 +166,12 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     reduced,
     preparedEmpty,
     preparedFirst,
+    preparedFirstMap,
     setSorted,
     setReduced,
     setPreparedEmpty,
     setPreparedFirst,
+    setPreparedFirstMap,
     // EmptyNodeSlice
     emptySetupComplete,
     emptyNodes,
@@ -181,6 +189,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFinishedEmpty,
     // FirstNodeSlice
     firstSetupComplete,
+    firstNodes,
+    firstEdges,
     getFirstNodeId,
     getFirstEdgeId,
     setFirstSetupComplete,
@@ -190,6 +200,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     // FirstAlgorithmSlice
     finishedFirst,
     setFinishedFirst,
+    setFirstNodeMap,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -315,6 +326,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       setFirstSetupComplete(false);
       setPreparedEmpty(false);
       setPreparedFirst(false);
+      setPreparedFirstMap(false);
     }
 
     // reset grammar in case it was already reduced and then changed again
@@ -796,8 +808,92 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFirstNodes(newFirstNodes);
     setFirstEdges(newFirstEdges);
 
+    return true;
+  };
+
+  // Set up the
+  const prepareFirstMap = () => {
+    if (preparedFirstMap) {
+      if (import.meta.env.DEV) {
+        console.log("First attribute map is already prepared!");
+      }
+      setFirstNodeEdgesHidden(true);
+      return true;
+    } else {
+      if (import.meta.env.DEV) {
+        console.log("Preparing first attribute map...");
+      }
+      setPreparedFirstMap(true);
+    }
+
     // reset the first attribute algorithm
     setFinishedFirst(false);
+    // hide the edges of the FirstNodes (we only need edges between sccs)
+    setFirstNodeEdgesHidden(true);
+
+    // Prepare the first attribute map
+    // This maps each SCC (groupnode) to a FirstAlgorithmNodeMap
+    // The FirstAlgorithmNodeMap contains the following information:
+    // active: boolean, whether the button (SCC) is active (already processed)
+    // incomingFirst: Map<string, string[] | undefined>, maps each incoming
+    // SCC (groupnode) to the first attribute of the incoming SCC or undefined
+    // if it was not yet processed
+    // first: Set<string>, the first attribute of the current SCC (groupnode)
+    // as far as it was already processed
+    const newFirstNodeMap = new Map<string, FirstAlgorithmNodeMap>();
+    for (const node of firstNodes) {
+      // We only consider SCCs (groupnodes) here
+      if (node.type === "group") {
+        const name: string = node.id;
+        // Get all incoming SCCs (groupnodes)
+        // Those are relevant since this SCC gets its first attributes from them
+        const incomingNodeNames: string[] = firstEdges
+          .filter((e) => e.target === node.id && e.source !== node.id)
+          .map((e) => {
+            if (e.sourceNode) {
+              return e.sourceNode.id;
+            } else {
+              if (import.meta.env.DEV) {
+                console.error(
+                  "Error Code 7c164d: Source node not found for edge!",
+                  e,
+                );
+              }
+              showSnackbar(
+                "Error Code 7c164d: Please contact the developer!",
+                "error",
+                true,
+              );
+              return "";
+            }
+          });
+        const newIncomingFirst = new Map<string, string[] | undefined>();
+        for (const nodeName of incomingNodeNames) {
+          newIncomingFirst.set(nodeName, undefined);
+        }
+        // This will be the first attributes of the SCC
+        // It will be dynamically updated while processing the SCC
+        // unless this is one of the leaves of the graph ("{terminalname}")
+        // If so, we need to add terminalname to the array.
+        // In theory {terminalnale} should only ever appear in the name for the
+        // leaves. Also it should only ever be one terminal in those SCCs.
+        // Considering this, firstArray should contain at most one element.
+        // That being either terminalname if this is the SCC of {terminalname}
+        // or nothing if this is not the SCC of {terminalname}.
+        // Also this should be able to handle terminalname="}" -> "{}}"
+        const firstArray = node.data.name.match(/{(.+)}/)?.[1] ?? [];
+        const nodeMap: FirstAlgorithmNodeMap = {
+          active: false,
+          incomingFirst: newIncomingFirst,
+          first: new Set<string>(firstArray),
+        };
+        newFirstNodeMap.set(name, nodeMap);
+      }
+    }
+    if (import.meta.env.DEV) {
+      console.log("newFirstNodeMap", newFirstNodeMap);
+    }
+    setFirstNodeMap(newFirstNodeMap);
 
     return true;
   };
@@ -984,8 +1080,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 6: // page 5 -> (6)
         return () => {
-          setFirstNodeEdgesHidden(true);
-          return true;
+          return prepareFirstMap();
         };
       case 7: // page 6 -> (7)
       case 8: // page 7 -> (8)

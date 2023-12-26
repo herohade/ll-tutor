@@ -3,7 +3,7 @@ import { StateCreator } from "zustand";
 import { GrammarSetupSlice, Nonterminal } from "../types";
 
 export const createGrammarSetupSlice: StateCreator<GrammarSetupSlice> = (
-  set
+  set,
 ) => ({
   // Variables needed for the selection of the start symbol
   // A mapping from nonterminals to booleans, indicating whether they are
@@ -19,6 +19,7 @@ export const createGrammarSetupSlice: StateCreator<GrammarSetupSlice> = (
   reduced: false,
   preparedEmpty: false,
   preparedFirst: false,
+  preparedFirstMap: false,
   setStart: (start: [name: Nonterminal, start: boolean][]) => {
     set({ start: start });
   },
@@ -33,5 +34,8 @@ export const createGrammarSetupSlice: StateCreator<GrammarSetupSlice> = (
   },
   setPreparedFirst: (setup: boolean) => {
     set({ preparedFirst: setup });
+  },
+  setPreparedFirstMap: (setup: boolean) => {
+    set({ preparedFirstMap: setup });
   },
 });

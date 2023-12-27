@@ -9,7 +9,9 @@ import useBoundStore from "../store/store";
 
 import {
   EmptyAlgorithmSlice,
+  FirstAlgorithmNodeMap,
   FirstAlgorithmSlice,
+  FirstNodeSlice,
   GrammarSlice,
   Nonterminal,
 } from "../types";
@@ -27,7 +29,10 @@ to propagate the first attributes through the graph.
 */
 function FirstAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
-    state: GrammarSlice & EmptyAlgorithmSlice & FirstAlgorithmSlice,
+    state: GrammarSlice &
+      EmptyAlgorithmSlice &
+      FirstNodeSlice &
+      FirstAlgorithmSlice,
   ) => ({
     // GrammarSlice
     epsilon: state.epsilon,
@@ -36,9 +41,14 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     terminals: state.terminals,
     // EmptyAlgorithmSlice
     emptyNonterminalMap: state.emptyNonterminalMap,
+    // FirstNodeSlice
+    firstNodes: state.firstNodes,
+    firstEdges: state.firstEdges,
     // FirstAlgorithmSlice
     finishedFirst: state.finishedFirst,
+    firstNodeMap: state.firstNodeMap,
     setFinishedFirst: state.setFinishedFirst,
+    setFirstNodeMap: state.setFirstNodeMap,
   });
   const {
     // GrammarSlice
@@ -48,9 +58,14 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     terminals,
     // EmptyAlgorithmSlice
     emptyNonterminalMap,
+    // FirstNodeSlice
+    firstNodes,
+    firstEdges,
     // FirstAlgorithmSlice
     finishedFirst,
+    firstNodeMap,
     setFinishedFirst,
+    setFirstNodeMap,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -65,6 +80,249 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
       variant,
       preventDuplicate,
     });
+  };
+
+  // copied from prepareFirstMap() in HeaderComponent.tsx
+  const resetGraph = () => {
+    // This maps each SCC (groupnode) to a FirstAlgorithmNodeMap
+    // The FirstAlgorithmNodeMap contains the following information:
+    // active: boolean, whether the button (SCC) is active (already processed)
+    // incomingFirst: Map<string, string[] | undefined>, maps each incoming
+    // SCC (groupnode) to the first attribute of the incoming SCC or undefined
+    // if it was not yet processed
+    // first: Set<string>, the first attribute of the current SCC (groupnode)
+    // as far as it was already processed
+    const newFirstNodeMap = new Map<string, FirstAlgorithmNodeMap>();
+    for (const node of firstNodes) {
+      // We only consider SCCs (groupnodes) here
+      if (node.type === "group") {
+        const name: string = node.id;
+        // Get all incoming SCCs (groupnodes)
+        // Those are relevant since this SCC gets its first attributes from them
+        const incomingNodeNames: string[] = firstEdges
+          .filter((e) => e.target === node.id && e.source !== node.id)
+          .map((e) => {
+            if (e.sourceNode) {
+              return e.sourceNode.id;
+            } else {
+              if (import.meta.env.DEV) {
+                console.error(
+                  "Error Code 7c164d: Source node not found for edge!",
+                  e,
+                );
+              }
+              showSnackbar(
+                "Error Code 7c164d: Please contact the developer!",
+                "error",
+                true,
+              );
+              return "";
+            }
+          });
+        const newIncomingFirst = new Map<string, string[] | undefined>();
+        for (const nodeName of incomingNodeNames) {
+          newIncomingFirst.set(nodeName, undefined);
+        }
+        // This will be the first attributes of the SCC
+        // It will be dynamically updated while processing the SCC
+        // unless this is one of the leaves of the graph ("{terminalname}")
+        // If so, we need to add terminalname to the array.
+        // In theory {terminalnale} should only ever appear in the name for the
+        // leaves. Also it should only ever be one terminal in those SCCs.
+        // Considering this, firstArray should contain at most one element.
+        // That being either terminalname if this is the SCC of {terminalname}
+        // or nothing if this is not the SCC of {terminalname}.
+        // Also this should be able to handle terminalname="}" -> "{}}"
+        const firstArray = node.data.name.match(/{(.+)}/)?.[1] ?? [];
+        const nodeMap: FirstAlgorithmNodeMap = {
+          active: false,
+          incomingFirst: newIncomingFirst,
+          first: new Set<string>(firstArray),
+        };
+        newFirstNodeMap.set(name, nodeMap);
+      }
+    }
+    if (import.meta.env.DEV) {
+      console.log("newFirstNodeMap", newFirstNodeMap);
+    }
+    setFirstNodeMap(newFirstNodeMap);
+  };
+
+  const solveGraph = () => {
+    // We start with the leafs, from there we propagate the first attributes
+    // through the graph.
+    const leafIds = firstNodes
+      .filter((n) => n.type === "group")
+      .filter((n) => n.data.name.match(/{(.+)}/))
+      .map((n) => n.id);
+
+    const newFirstNodeMap = new Map(firstNodeMap);
+    for (const leafId of leafIds) {
+      const leafNodeMap = newFirstNodeMap.get(leafId);
+      if (leafNodeMap === undefined) {
+        if (import.meta.env.DEV) {
+          console.error(
+            "Error Code 61a6ac: Leaf node not found in firstNodeMap!",
+            leafId,
+          );
+        }
+        showSnackbar(
+          "Error Code 61a6ac: Please contact the developer!",
+          "error",
+          true,
+        );
+        return;
+      }
+
+      const workList: string[] = [leafId];
+      while (workList.length > 0) {
+        const currentNodeId = workList.pop();
+        if (currentNodeId === undefined) {
+          if (import.meta.env.DEV) {
+            console.error(
+              "Error Code 004a3e: currentNodeId is undefined!",
+              currentNodeId,
+            );
+          }
+          showSnackbar(
+            "Error Code 004a3e: Please contact the developer!",
+            "error",
+            true,
+          );
+          return;
+        }
+        const currentNodeMap = newFirstNodeMap.get(currentNodeId);
+        if (currentNodeMap === undefined) {
+          if (import.meta.env.DEV) {
+            console.error(
+              "Error Code 658cd6: currentNodeMap is undefined!",
+              currentNodeMap,
+            );
+          }
+          showSnackbar(
+            "Error Code 658cd6: Please contact the developer!",
+            "error",
+            true,
+          );
+          return;
+        }
+        if (import.meta.env.DEV) {
+          console.log(
+            "processing leafId",
+            leafId,
+            "currentNodeId",
+            currentNodeId,
+            "worklist",
+            workList,
+          );
+          console.log("firstNodeMap", newFirstNodeMap);
+        }
+
+        // If all incoming SCCs (groupnodes) have been processed,
+        // we can process the current SCC.
+        // If not, we skip it. It will be added to the worklist again
+        // once all incoming SCCs have been processed.
+        // (Technically whenever an incoming SCC is processed, but
+        // we would just skip it again if it was not the last one.)
+        let newActive = true;
+        for (const firstSet of currentNodeMap.incomingFirst.values()) {
+          if (firstSet === undefined) {
+            newActive = false;
+            break;
+          }
+        }
+        if (newActive) {
+          // Calculate the first set of the current SCC from the
+          // first sets of the incoming SCCs
+          const newCurrentNodeMap = {
+            ...currentNodeMap,
+            first:
+              // If this is one of the leaves of the graph, keep the first set
+              // since those already have their first sets
+              // (and no incoming SCCs which would erase the first set)
+              currentNodeId !== leafId
+                ? new Set(
+                    [
+                      ...currentNodeMap.incomingFirst.values(),
+                    ].flat() as string[],
+                  )
+                : currentNodeMap.first,
+            active: true,
+          };
+          newFirstNodeMap.set(currentNodeId, newCurrentNodeMap);
+
+          // and update this one's first set in the outgoing SCCs
+          const outgoingNodeIds = firstEdges
+            .filter((e) => e.data?.isGroupEdge)
+            .filter(
+              (e) => e.source === currentNodeId && e.target !== currentNodeId,
+            )
+            .map((e) => e.target);
+          for (const outgoingNodeId of outgoingNodeIds) {
+            // add the outgoing SCCs to the worklist
+            workList.push(outgoingNodeId);
+
+            const outgoingNodeMap = newFirstNodeMap.get(outgoingNodeId);
+            if (outgoingNodeMap === undefined) {
+              if (import.meta.env.DEV) {
+                console.error(
+                  "Error Code c7ec4d: outgoingNodeMap is undefined!",
+                  outgoingNodeMap,
+                );
+              }
+              showSnackbar(
+                "Error Code c7ec4d: Please contact the developer!",
+                "error",
+                true,
+              );
+              return;
+            }
+            // update this one's first set in the outgoing SCCs
+            const newIncomingFirst = new Map(outgoingNodeMap.incomingFirst);
+            newIncomingFirst.set(currentNodeId, [
+              ...newCurrentNodeMap.first.values(),
+            ]);
+            newFirstNodeMap.set(outgoingNodeId, {
+              ...outgoingNodeMap,
+              incomingFirst: newIncomingFirst,
+            });
+          }
+          if (import.meta.env.DEV) {
+            console.log(
+              "updated outgoing SCCs",
+              outgoingNodeIds,
+              "worklist",
+              workList,
+            );
+            console.log("newFirstNodeMap", newFirstNodeMap);
+          }
+        }
+      }
+    }
+    setFirstNodeMap(newFirstNodeMap);
+  };
+
+  const checkGraph = () => {
+    // TODO: maybe give more feedback like
+    // which button can be clicked next?
+    for (const firstAlgorithmNodeMap of firstNodeMap.values()) {
+      // TODO: remove one of these options:
+      // OPTION-1: either require all buttons to be clicked:
+      if (!firstAlgorithmNodeMap.active) {
+        showSnackbar("There are still buttons to be clicked!", "error", true);
+        return false;
+      }
+      // OPTION-2: or just require the first sets to be calculated
+      // (does not require the last buttons (roots?) since these
+      // SCCs do not need to propagate their first sets)
+      // for (const firstArray of firstAlgorithmNodeMap.incomingFirst.values()) {
+      //   if (firstArray === undefined) {
+      //     showSnackbar("There are still buttons to be clicked!", "error", true);
+      //     return false;
+      //   }
+      // }
+    }
+    return true;
   };
 
   return (
@@ -128,52 +386,34 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
             <Button
               variant="contained"
               color="error"
-              // TODO
-              onClick={() => {
-                showSnackbar(
-                  "This feature is not yet implemented!",
-                  "error",
-                  true,
-                );
-              }}
+              onClick={resetGraph}
               disabled={finishedFirst}
             >
-              Reset Step
+              Reset Graph
             </Button>
             <Button
               variant="contained"
               color="success"
-              // TODO
-              onClick={() => {
-                showSnackbar(
-                  "This feature is not yet implemented!",
-                  "error",
-                  true,
-                );
-              }}
+              onClick={solveGraph}
               disabled={finishedFirst}
             >
               Show Solution
             </Button>
             <Button
               variant="contained"
-              // TODO
               onClick={() => {
-                showSnackbar(
-                  "This feature is not yet implemented!",
-                  "error",
-                  true,
-                );
-                setFinishedFirst(true);
-                showSnackbar(
-                  "Congratulations! You have calculated the first attributes!",
-                  "success",
-                  true,
-                );
+                if (checkGraph()) {
+                  setFinishedFirst(true);
+                  showSnackbar(
+                    "Congratulations! You have calculated the first attributes!",
+                    "success",
+                    true,
+                  );
+                }
               }}
               disabled={finishedFirst}
             >
-              Check Step
+              Check Graph
             </Button>
           </Stack>
         </div>

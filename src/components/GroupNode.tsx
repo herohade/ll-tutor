@@ -49,7 +49,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     // FirstAlgorithmSlice
     finishedFirst: state.finishedFirst,
     firstNodeMap: state.firstNodeMap,
-    changeFirstNodeMap: state.changeFirstNodeMap,
+    setFirstNodeMap: state.setFirstNodeMap,
     // NavigationSlice
     page: state.page,
   });
@@ -66,7 +66,7 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     // FirstAlgorithmSlice
     finishedFirst,
     firstNodeMap,
-    changeFirstNodeMap,
+    setFirstNodeMap,
     // NavigationSlice
     page,
   } = useBoundStore(selector, shallow);
@@ -140,8 +140,8 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
       return outgoingNodeMaps;
     }, [firstEdges, firstNodeMap, id, page, showSnackbar]);
   const thisFirstNodeMap: FirstAlgorithmNodeMap | undefined = useMemo(() => {
-    return page === 5 ? undefined : firstNodeMap.get(id)!;
-  }, [firstNodeMap, id, page]);
+    return firstNodeMap.get(id);
+  }, [firstNodeMap, id]);
   // A node (button) is disabled if any outgoing node is active.
   const disabledBecauseOfOutgoing = useMemo(() => {
     if (page === 5) {
@@ -152,17 +152,25 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     }
     for (const outgoingNodeMap of outgoingNodeMaps.values()) {
       if (outgoingNodeMap.active) {
-        if (import.meta.env.DEV) {
-          console.log(
-            "disabledBecauseOfOutgoing: outgoingNodeMap " + id + " is active:",
-            outgoingNodeMap,
-          );
-        }
         return true;
       }
     }
     return false;
-  }, [id, outgoingNodeMaps, page]);
+  }, [outgoingNodeMaps, page]);
+  const disabledBecauseOfIncoming = useMemo(() => {
+    if (page === 5) {
+      return false;
+    }
+    if (!thisFirstNodeMap) {
+      return false;
+    }
+    for (const incomingFirstSet of thisFirstNodeMap.incomingFirst.values()) {
+      if (incomingFirstSet === undefined) {
+        return true;
+      }
+    }
+    return false;
+  }, [page, thisFirstNodeMap]);
 
   // We don't want group nodes to be smaller than the content. But (constantly)
   // calculating the minimum size is expensive. So we set the minimum size to
@@ -269,6 +277,108 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     );
   };
 
+  const handleClickGroupNode = () => {
+    if (thisFirstNodeMap) {
+      if (thisFirstNodeMap.active) {
+        const newFirstNodeMap = new Map(firstNodeMap);
+        // toggle active
+        newFirstNodeMap.set(id, {
+          ...thisFirstNodeMap,
+          active: false,
+        });
+        // update outgoung node's first algorithm sets:
+        // - update their incoming node's first sets (in particular this one's)
+        // - update their first sets by re-calculating them with the new
+        // incoming node first sets
+        for (const [
+          incomingNodeId,
+          incomingFirstAlgorithmNodeMap,
+        ] of outgoingNodeMaps!) {
+          // copy the outgoing node's incoming node's first sets
+          const newIncomingFirstMap = new Map(
+            incomingFirstAlgorithmNodeMap.incomingFirst,
+          );
+          // remove this node's first set from the outgoing node's set
+          // by setting it to undefined
+          newIncomingFirstMap.set(id, undefined);
+          // re-calculate the outgoing node's first set
+          const relevantIncomingFirstSets: string[][] = [
+            ...newIncomingFirstMap.values(),
+          ].filter((firstArr) => firstArr !== undefined) as string[][];
+          const newFirstSet = new Set(relevantIncomingFirstSets.flat());
+          const newIncomingFirstAlgorithmNodeMap = {
+            active: incomingFirstAlgorithmNodeMap.active,
+            incomingFirst: newIncomingFirstMap,
+            first: newFirstSet,
+          };
+          // save the outgoing node's new first algorithm set
+          newFirstNodeMap.set(incomingNodeId, newIncomingFirstAlgorithmNodeMap);
+        }
+        if (import.meta.env.DEV) {
+          console.log(
+            "newFirstNodeMap after clicking " + id + ":",
+            newFirstNodeMap,
+          );
+        }
+        setFirstNodeMap(newFirstNodeMap);
+      } else {
+        const newFirstNodeMap = new Map(firstNodeMap);
+        // toggle active
+        newFirstNodeMap.set(id, {
+          ...thisFirstNodeMap,
+          active: true,
+        });
+        // update outgoung node's first algorithm sets:
+        // - update their incoming node's first sets (in particular this one's)
+        // - update their first sets by re-calculating them with the new
+        // incoming node first sets
+        const myFirstSet: Set<string> = thisFirstNodeMap.first;
+        for (const [
+          incomingNodeId,
+          incomingFirstAlgorithmNodeMap,
+        ] of outgoingNodeMaps!) {
+          // copy the outgoing node's incoming node's first sets
+          const newIncomingFirstMap = new Map(
+            incomingFirstAlgorithmNodeMap.incomingFirst,
+          );
+          // update this node's first set in the outgoing node's set
+          newIncomingFirstMap.set(id, [...myFirstSet]);
+          // re-calculate the outgoing node's first set
+          const newFirstSet = new Set([
+            ...incomingFirstAlgorithmNodeMap.first,
+            ...myFirstSet,
+          ]);
+          const newIncomingFirstAlgorithmNodeMap = {
+            active: incomingFirstAlgorithmNodeMap.active,
+            incomingFirst: newIncomingFirstMap,
+            first: newFirstSet,
+          };
+          // save the outgoing node's new first algorithm set
+          newFirstNodeMap.set(incomingNodeId, newIncomingFirstAlgorithmNodeMap);
+        }
+        if (import.meta.env.DEV) {
+          console.log(
+            "newFirstNodeMap after clicking " + id + ":",
+            newFirstNodeMap,
+          );
+        }
+        setFirstNodeMap(newFirstNodeMap);
+      }
+    } else {
+      if (import.meta.env.DEV) {
+        console.log(
+          "Error Code 955767: thisFirstNodeMap not found",
+          thisFirstNodeMap,
+        );
+      }
+      showSnackbar(
+        "Error Code 955767: Please contact the developer!",
+        "error",
+        true,
+      );
+    }
+  };
+
   const StyledSpan = styled("span")({});
 
   const content =
@@ -279,19 +389,21 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         </b>
         <br />
         {terminals.map((terminal) => {
-          const isChild = childNodes.some(
-            (node) => node.data.name === "{" + terminal.name + "}",
-          );
+          const isInFirstSet = thisFirstNodeMap
+            ? thisFirstNodeMap.first.has(terminal.name)
+            : childNodes.some(
+                (node) => node.data.name === "{" + terminal.name + "}",
+              );
           return (
             // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
             // and color the terminals if they belong to the first set of this scc
             <StyledSpan
               key={terminal.name}
               className={
-                isChild ? "isColoredChild font-semibold" : "opacity-50"
+                isInFirstSet ? "isColoredChild font-semibold" : "opacity-50"
               }
               sx={{
-                color: isChild ? "success.dark" : "inherit",
+                color: isInFirstSet ? "success.dark" : "inherit",
               }}
             >
               {terminal.name + " "}
@@ -314,42 +426,12 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           },
         }}
         className="nodrag size-full normal-case"
-        onClick={() => {
-          if (thisFirstNodeMap) {
-            // toggle active and update outgoing nodes
-            // TODO: update outgoing nodes
-            if (thisFirstNodeMap.active) {
-              changeFirstNodeMap(id, {
-                ...thisFirstNodeMap,
-                active: false,
-              });
-            } else {
-              changeFirstNodeMap(id, {
-                ...thisFirstNodeMap,
-                active: true,
-              });
-            }
-            if (import.meta.env.DEV) {
-              console.log(
-                "thisFirstNodeMap " + id + " was clicked, now active:",
-                !thisFirstNodeMap.active,
-              );
-            }
-          } else {
-            if (import.meta.env.DEV) {
-              console.log(
-                "Error Code 955767: thisFirstNodeMap not found",
-                thisFirstNodeMap,
-              );
-            }
-            showSnackbar(
-              "Error Code 955767: Please contact the developer!",
-              "error",
-              true,
-            );
-          }
-        }}
-        disabled={finishedFirst || disabledBecauseOfOutgoing}
+        onClick={handleClickGroupNode}
+        disabled={
+          finishedFirst ||
+          disabledBecauseOfOutgoing ||
+          disabledBecauseOfIncoming
+        }
       >
         <p className="m-0 whitespace-nowrap">
           <b>
@@ -357,17 +439,17 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           </b>
           <br />
           {terminals.map((terminal) => {
-            const isChild = childNodes.some(
-              (node) => node.data.name === "{" + terminal.name + "}",
-            );
+            const isInFirstSet = thisFirstNodeMap
+              ? thisFirstNodeMap.first.has(terminal.name)
+              : childNodes.some(
+                  (node) => node.data.name === "{" + terminal.name + "}",
+                );
             return (
-              // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
-              // and color the terminals if they belong to the first set of this scc
               <StyledSpan
                 key={terminal.name}
-                className={isChild ? "font-semibold" : "opacity-50"}
+                className={isInFirstSet ? "font-semibold" : "opacity-50"}
                 sx={{
-                  color: isChild ? "success.dark" : "inherit",
+                  color: isInFirstSet ? "success.dark" : "inherit",
                 }}
               >
                 {terminal.name + " "}

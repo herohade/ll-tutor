@@ -19,7 +19,7 @@ export const createFirstAlgorithmSlice: StateCreator<FirstAlgorithmSlice> = (
   },
   changeFirstNodeMap: (nodeName: string, map: FirstAlgorithmNodeMap) => {
     set({
-      firstNodeMap: get().firstNodeMap.set(nodeName, map),
+      firstNodeMap: new Map(get().firstNodeMap).set(nodeName, map),
     });
   },
 });

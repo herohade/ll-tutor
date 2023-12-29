@@ -415,14 +415,29 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
       <Button
         variant="contained"
         sx={{
-          bgcolor: "background.paper",
-          color: "text.primary",
+          bgcolor: thisFirstNodeMap?.active
+            ? "first.selected"
+            : "secondary.dark",
+          color: thisFirstNodeMap?.active
+            ? "first.contrastText"
+            : "secondary.contrastText",
+          "& .isInFirstSet": {
+            color: thisFirstNodeMap?.active ? "success.dark" : "success.light",
+          },
+          // TODO: maybe use a third color for disabled
           ":disabled": {
-            bgcolor: "background.paper",
+            bgcolor: thisFirstNodeMap?.active
+              ? "first.selected"
+              : "background.paper",
+            color: thisFirstNodeMap?.active
+              ? "first.disabledText"
+              : "",
+            "& .isInFirstSet": {
+              opacity: 0.5,
+            },
           },
           ":hover": {
-            // TODO: change to first colorset
-            bgcolor: "empty.new",
+            bgcolor: "first.hover",
           },
         }}
         className="nodrag size-full normal-case"
@@ -445,15 +460,14 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
                   (node) => node.data.name === "{" + terminal.name + "}",
                 );
             return (
-              <StyledSpan
+              <span
                 key={terminal.name}
-                className={isInFirstSet ? "font-semibold" : "opacity-50"}
-                sx={{
-                  color: isInFirstSet ? "success.dark" : "inherit",
-                }}
+                className={
+                  isInFirstSet ? "isInFirstSet font-semibold" : "opacity-50"
+                }
               >
                 {terminal.name + " "}
-              </StyledSpan>
+              </span>
             );
           })}
         </p>

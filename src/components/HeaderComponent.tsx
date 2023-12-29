@@ -706,24 +706,24 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Set up the canvas for the first attribute algorithm.
+  // Set up the canvas for the first set algorithm.
   // We add a new FirstNode for each (Non)terminal,
   // a FirstNode {t}, as well as an Edge {t} -> t for each terminal t.
-  // Also we reset the first attribute algorithm.
+  // Also we reset the first set algorithm.
   const prepareFirstAlgorithm = () => {
     if (preparedFirst) {
       if (import.meta.env.DEV) {
-        console.log("First attribute algorithm is already prepared!");
+        console.log("First set algorithm is already prepared!");
       }
       return true;
     } else {
       if (import.meta.env.DEV) {
-        console.log("Preparing first attribute algorithm...");
+        console.log("Preparing first set algorithm...");
       }
       setPreparedFirst(true);
     }
 
-    // Prepare the canvas for the first attribute algorithm
+    // Prepare the canvas for the first set algorithm
     const newFirstNodes: Node<NodeData>[] = [];
     const newFirstEdges: Edge<EdgeData>[] = [];
 
@@ -815,30 +815,30 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   const prepareFirstMap = () => {
     if (preparedFirstMap) {
       if (import.meta.env.DEV) {
-        console.log("First attribute map is already prepared!");
+        console.log("First set map is already prepared!");
       }
       setFirstNodeEdgesHidden(true);
       return true;
     } else {
       if (import.meta.env.DEV) {
-        console.log("Preparing first attribute map...");
+        console.log("Preparing first set map...");
       }
       setPreparedFirstMap(true);
     }
 
-    // reset the first attribute algorithm
+    // reset the first set algorithm
     setFinishedFirst(false);
     // hide the edges of the FirstNodes (we only need edges between sccs)
     setFirstNodeEdgesHidden(true);
 
-    // Prepare the first attribute map
+    // Prepare the first set map
     // This maps each SCC (groupnode) to a FirstAlgorithmNodeMap
     // The FirstAlgorithmNodeMap contains the following information:
     // active: boolean, whether the button (SCC) is active (already processed)
     // incomingFirst: Map<string, string[] | undefined>, maps each incoming
-    // SCC (groupnode) to the first attribute of the incoming SCC or undefined
+    // SCC (groupnode) to the first set of the incoming SCC or undefined
     // if it was not yet processed
-    // first: Set<string>, the first attribute of the current SCC (groupnode)
+    // first: Set<string>, the first set of the current SCC (groupnode)
     // as far as it was already processed
     const newFirstNodeMap = new Map<string, FirstAlgorithmNodeMap>();
     for (const node of firstNodes) {
@@ -846,7 +846,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       if (node.type === "group") {
         const name: string = node.id;
         // Get all incoming SCCs (groupnodes)
-        // Those are relevant since this SCC gets its first attributes from them
+        // Those are relevant since this SCC gets its first set from them
         const incomingNodeNames: string[] = firstEdges
           .filter((e) => e.target === node.id && e.source !== node.id)
           .map((e) => {
@@ -871,7 +871,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         for (const nodeName of incomingNodeNames) {
           newIncomingFirst.set(nodeName, undefined);
         }
-        // This will be the first attributes of the SCC
+        // This will be the first set of the SCC
         // It will be dynamically updated while processing the SCC
         // unless this is one of the leaves of the graph ("{terminalname}")
         // If so, we need to add terminalname to the array.
@@ -1007,7 +1007,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             return cb();
           } else {
             showSnackbar(
-              "Please finish the first attribute algorithm!",
+              "Please finish the first set algorithm!",
               "error",
               true,
             );

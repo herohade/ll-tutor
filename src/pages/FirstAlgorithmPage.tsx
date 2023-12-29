@@ -25,7 +25,7 @@ const StyledSpan = styled("span")({});
 /*
 This is the seventh page of the webtutor.
 It lets the user apply the first algorithm to the grammar,
-to propagate the first attributes through the graph.
+to propagate the first sets through the graph.
 */
 function FirstAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
@@ -88,9 +88,9 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     // The FirstAlgorithmNodeMap contains the following information:
     // active: boolean, whether the button (SCC) is active (already processed)
     // incomingFirst: Map<string, string[] | undefined>, maps each incoming
-    // SCC (groupnode) to the first attribute of the incoming SCC or undefined
+    // SCC (groupnode) to the first set of the incoming SCC or undefined
     // if it was not yet processed
-    // first: Set<string>, the first attribute of the current SCC (groupnode)
+    // first: Set<string>, the first set of the current SCC (groupnode)
     // as far as it was already processed
     const newFirstNodeMap = new Map<string, FirstAlgorithmNodeMap>();
     for (const node of firstNodes) {
@@ -98,7 +98,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
       if (node.type === "group") {
         const name: string = node.id;
         // Get all incoming SCCs (groupnodes)
-        // Those are relevant since this SCC gets its first attributes from them
+        // Those are relevant since this SCC gets its first set from them
         const incomingNodeNames: string[] = firstEdges
           .filter((e) => e.target === node.id && e.source !== node.id)
           .map((e) => {
@@ -123,7 +123,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
         for (const nodeName of incomingNodeNames) {
           newIncomingFirst.set(nodeName, undefined);
         }
-        // This will be the first attributes of the SCC
+        // This will be the first set of the SCC
         // It will be dynamically updated while processing the SCC
         // unless this is one of the leaves of the graph ("{terminalname}")
         // If so, we need to add terminalname to the array.
@@ -149,7 +149,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
   };
 
   const solveGraph = () => {
-    // We start with the leafs, from there we propagate the first attributes
+    // We start with the leafs, from there we propagate the first sets
     // through the graph.
     const leafIds = firstNodes
       .filter((n) => n.type === "group")
@@ -410,7 +410,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
                 if (checkGraph()) {
                   setFinishedFirst(true);
                   showSnackbar(
-                    "Congratulations! You have calculated the first attributes!",
+                    "Congratulations! You have calculated the first sets!",
                     "success",
                     true,
                   );

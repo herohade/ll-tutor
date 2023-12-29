@@ -73,7 +73,7 @@ const steps: { label: string; content: string[] }[] = [
     label: "Calculate First Sets",
     content: [
       "Model the first set inequality system as a graph by adding edges where necessary and grouping the (Non-)Terminals into Strongly Connected Components.",
-      "Propagate the first attributes through the dependency graph.",
+      "Propagate the first sets through the dependency graph.",
     ],
   },
   { label: "Calculate Follow Sets", content: ["TODO", "TODO"] },

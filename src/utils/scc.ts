@@ -76,7 +76,7 @@ function groupNodesBySCC(
   if (import.meta.env.DEV) {
     if (nodes.some((node) => node.type != "first")) {
       console.error(
-        "groupNodesBySCC: nodes must be first attribute nodes",
+        "groupNodesBySCC: nodes must be first set nodes",
         nodes,
       );
     }
@@ -93,7 +93,7 @@ function groupNodesBySCC(
       })
     ) {
       console.error(
-        "groupNodesBySCC: edges must be between first attribute nodes",
+        "groupNodesBySCC: edges must be between first set nodes",
         edges,
       );
     }

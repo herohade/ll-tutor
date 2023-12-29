@@ -33,7 +33,7 @@ const StyledSpan = styled("span")({});
 This is the sixth page of the webtutor.
 It shows the user the grammer, color coded regarding the empty
 attributes. The user has to group the FirstNodes into Strongly Connected
-Components (grou nodes). These are used to calculate the first attributes
+Components (grou nodes). These are used to calculate the first sets
 in the next step.
 */
 function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {

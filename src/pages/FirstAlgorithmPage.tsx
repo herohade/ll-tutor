@@ -153,7 +153,12 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     // through the graph.
     const leafIds = firstNodes
       .filter((n) => n.type === "group")
-      .filter((n) => n.data.name.match(/{(.+)}/))
+      .filter(
+        (n) =>
+          firstEdges.find((e) => {
+            return e.target === n.id && e.source !== n.id;
+          }) === undefined,
+      )
       .map((n) => n.id);
 
     const newFirstNodeMap = new Map(firstNodeMap);

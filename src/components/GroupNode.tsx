@@ -171,6 +171,17 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     }
     return false;
   }, [page, thisFirstNodeMap]);
+  const someIncoming = useMemo(() => {
+    if (!disabledBecauseOfIncoming || !thisFirstNodeMap) {
+      return false;
+    } else {
+      for (const incomingFirstSet of thisFirstNodeMap.incomingFirst.values()) {
+        if (incomingFirstSet !== undefined) {
+          return true;
+        }
+      }
+    }
+  }, [disabledBecauseOfIncoming, thisFirstNodeMap]);
 
   // We don't want group nodes to be smaller than the content. But (constantly)
   // calculating the minimum size is expensive. So we set the minimum size to
@@ -416,24 +427,40 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         variant="contained"
         sx={{
           bgcolor: thisFirstNodeMap?.active
-            ? "first.selected"
+            ? (theme) =>
+                theme.palette.mode === "light"
+                  ? "primary.light"
+                  : "primary.dark"
             : "secondary.dark",
           color: thisFirstNodeMap?.active
-            ? "first.contrastText"
+            ? "primary.contrastText"
             : "secondary.contrastText",
           "& .isInFirstSet": {
             color: thisFirstNodeMap?.active ? "success.dark" : "success.light",
+            // color: "success.light",
+            // WebkitTextStroke: "0.05em black",
           },
-          // TODO: maybe use a third color for disabled
           ":disabled": {
             bgcolor: thisFirstNodeMap?.active
               ? "first.selected"
-              : "background.paper",
+              : someIncoming
+                ? "first.charging"
+                : "background.paper",
             color: thisFirstNodeMap?.active
               ? "first.disabledText"
-              : "",
+              : someIncoming
+                ? "first.disabledText"
+                : "",
             "& .isInFirstSet": {
               opacity: 0.5,
+              color: thisFirstNodeMap?.active
+                ? (theme) =>
+                    theme.palette.mode === "light"
+                      ? "success.light"
+                      : "success.dark"
+                : "success.dark",
+              // color: "success.light",
+              // WebkitTextStroke: "0.05em black",
             },
           },
           ":hover": {

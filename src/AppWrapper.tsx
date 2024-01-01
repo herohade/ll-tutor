@@ -1,5 +1,5 @@
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { indigo, orange } from "@mui/material/colors";
+import { indigo, pink } from "@mui/material/colors";
 import CssBaseline from "@mui/material/CssBaseline";
 import StyledEngineProvider from "@mui/material/StyledEngineProvider";
 import useMediaQuery from "@mui/material/useMediaQuery";
@@ -57,14 +57,14 @@ export default function AppWrapper() {
           old: NodeColor.older,
         },
         first: {
-          selected: orange.A400,
+          selected: userMode === "light" ? indigo.A200 : indigo.A100,
+          charging: userMode === "light" ? pink.A200 : pink.A100,
           contrastText: userMode === "light" ? "#fff" : "rgba(0, 0, 0, 0.87)",
           disabledText:
             userMode === "light"
               ? "rgba(255, 255, 255, 0.6)"
               : "rgba(0, 0, 0, 0.26)",
-          // TODO: change hover
-          hover: NodeColor.thisTurn,
+          hover: indigo.A700,
         },
       },
       // components: {

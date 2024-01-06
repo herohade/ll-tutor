@@ -254,7 +254,7 @@ const tutorialPages: tutorialPage[] = [
         title: "Color coding",
         content:
           // TODO: update colors since they will most likely change
-          "- A node's color will change depending on whether all its children have passed on their first sets to it and if it has passed on its first set to all its parents.\n- Nodes that have passed on their first sets to their parents will be colored orange.\n- Nodes that have not yet passed on their first sets to their parents but have received all first sets from their children will be colored purple.\n- Nodes that have yet to receive all first sets from their children will remain their original color.",
+          "- A node's color will change depending on whether all its children have passed on their first sets to it and if it has passed on its first set to all its parents.\n- Nodes that have passed on their first sets to their parents will be colored blue.\n- Nodes that have not yet passed on their first sets to their parents but have received all first sets from their children will be colored purple.\n- Nodes that have received some but not all first sets from their children will be colored pink.\n- Nodes that have not received any first set from their children will remain their original color.",
       },
     ],
   },

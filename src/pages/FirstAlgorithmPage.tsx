@@ -39,6 +39,8 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     productions: state.productions,
     nonTerminals: state.nonTerminals,
     terminals: state.terminals,
+    setNonTerminals: state.setNonTerminals,
+    setTerminals: state.setTerminals,
     // EmptyAlgorithmSlice
     emptyNonterminalMap: state.emptyNonterminalMap,
     // FirstNodeSlice
@@ -56,6 +58,8 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     productions,
     nonTerminals,
     terminals,
+    setNonTerminals,
+    setTerminals,
     // EmptyAlgorithmSlice
     emptyNonterminalMap,
     // FirstNodeSlice
@@ -327,6 +331,78 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
       //   }
       // }
     }
+
+    // update the first sets in the grammar
+    const newNonTerminals = [...nonTerminals];
+    const newTerminals = [...terminals];
+    for (const groupNode of firstNodes.filter((n) => n.type === "group")) {
+      // get the first set, all children, and the (non)terminals that they
+      // represent
+      const childNodeNames = firstNodes
+        .filter((n) => n.type === "first" && n.parentNode === groupNode.id)
+        .map((n) => n.data.name);
+      // here we map the Set<string> to Array<Terminal>
+      const firstSetStrings = firstNodeMap.get(groupNode.id)?.first;
+      const firstSet = firstSetStrings
+        ? [...firstSetStrings].map((t) =>
+            newTerminals.find((n) => n.name === t),
+          )
+        : undefined;
+      // this should never happen
+      if (firstSet === undefined || firstSet.some((t) => t === undefined)) {
+        if (import.meta.env.DEV) {
+          console.error("Error Code 13de33: firstSet is undefined!", firstSet);
+        }
+        showSnackbar(
+          "Error Code 13de33: Please contact the developer!",
+          "error",
+          true,
+        );
+        return false;
+      } else {
+        for (const symbolName of childNodeNames) {
+          // the leafs {terminalname} do not exist in the grammar
+          // so we skip them
+          if (symbolName.match(/{(.+)}/) !== null) {
+            if (import.meta.env.DEV) {
+              console.log(
+                "skipping leaf",
+                symbolName,
+                "with firstSet",
+                firstSet,
+              );
+            }
+            continue;
+          }
+          const symbol =
+            newNonTerminals.find((n) => n.name === symbolName) ??
+            newTerminals.find((n) => n.name === symbolName);
+          if (symbol === undefined) {
+            if (import.meta.env.DEV) {
+              console.error(
+                "Error Code d872df: symbol is undefined!",
+                symbol,
+                symbolName,
+              );
+            }
+            showSnackbar(
+              "Error Code d872df: Please contact the developer!",
+              "error",
+              true,
+            );
+            return false;
+          }
+          // we checked for undefined above, so we can do this safely
+          symbol.first = firstSet as Array<Nonterminal>;
+        }
+      }
+    }
+    if (import.meta.env.DEV) {
+      console.log("newNonTerminals", newNonTerminals);
+      console.log("newTerminals", newTerminals);
+    }
+    setTerminals(newTerminals);
+    setNonTerminals(newNonTerminals);
     return true;
   };
 

@@ -17,7 +17,7 @@ import {
 interface Props {
   DisplayButton: React.FC<{ onClick: () => void }>;
   title: string;
-  content: string;
+  content: JSX.Element | string;
   ariaTitle?: string;
   ariaDescription?: string;
 }
@@ -67,9 +67,6 @@ export default function ScrollableDialogComponent({
   if (!ariaTitle) {
     ariaTitle = title;
   }
-  if (!ariaDescription) {
-    ariaDescription = content;
-  }
 
   return (
     <>
@@ -89,6 +86,9 @@ export default function ScrollableDialogComponent({
             id={"scroll-dialog-" + title + "description"}
             ref={descriptionElementRef}
             tabIndex={-1}
+            sx={{
+              whiteSpace: "pre-line",
+            }}
           >
             {content}
           </DialogContentText>

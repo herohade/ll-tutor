@@ -42,7 +42,7 @@ function StartPage() {
           )}
           title={"What is LL Tutor?"}
           content={
-            <p>
+            <>
               <img
                 src={TUMLogo}
                 alt="LL Tutor Logo"
@@ -66,7 +66,7 @@ function StartPage() {
                 {import.meta.env.VITE_CONTACT_NAME}
               </a>
               .
-            </p>
+            </>
           }
         />
       </Stack>

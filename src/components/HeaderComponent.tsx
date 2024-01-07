@@ -922,6 +922,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       case 6: // page 5 <- (6)
       case 7: // page 6 <- (7)
       case 8: // page 7 <- (8)
+      case 9: // page 8 <- (9)
         return (cb) => {
           return cb();
         };
@@ -1018,7 +1019,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         return (cb) => {
           return cb();
         };
-      case 8: // page (8) -> 9, should never happen
+      case 8: // page (8) -> 9
+        return (cb) => {
+          return cb();
+        };
+      case 9: // page (9) -> 10, should never happen
       default:
         return () => {
           showSnackbar("You can not go forward!", "error", true);
@@ -1044,10 +1049,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 6: // page (6) <- 7
       case 7: // page (7) <- 8
+      case 8: // page (8) <- 9
         return () => {
           return true;
         };
-      case 8: // page (8) <- 9, should never happen
+      case 9: // page (9) <- 10, should never happen
       default:
         return () => {
           showSnackbar("You can not go back!", "error", true);
@@ -1084,6 +1090,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 7: // page 6 -> (7)
       case 8: // page 7 -> (8)
+      case 9: // page 8 -> (9)
         return () => {
           return true;
         };

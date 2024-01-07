@@ -5,3 +5,4 @@ export { default as PrepareEmptyAlgorithmPage } from "./PrepareEmptyAlgorithmPag
 export { default as EmptyAlgorithmPage } from "./EmptyAlgorithmPage";
 export { default as PrepareFirstAlgorithmPage } from "./PrepareFirstAlgorithmPage";
 export { default as FirstAlgorithmPage } from "./FirstAlgorithmPage";
+export { default as PrepareFollowAlgorithmPage } from "./PrepareFollowAlgorithmPage";

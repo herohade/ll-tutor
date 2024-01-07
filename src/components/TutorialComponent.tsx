@@ -282,6 +282,18 @@ const tutorialPages: tutorialPage[] = [
       },
     ],
   },
+  // page 9
+  {
+    ariaTitle: "TODO",
+    ariaDescription: "TODO",
+    title: "TODO",
+    contents: [
+      {
+        type: "text",
+        content: "TODO",
+      },
+    ],
+  },
 ];
 
 const collapsibleOpenInit: boolean[][] = tutorialPages.map((page) =>

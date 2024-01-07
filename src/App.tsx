@@ -22,6 +22,7 @@ import {
   FirstAlgorithmPage,
   PrepareEmptyAlgorithmPage,
   PrepareFirstAlgorithmPage,
+  PrepareFollowAlgorithmPage,
   ReadGrammarPage,
   SelectStartSymbolPage,
   StartPage,
@@ -307,6 +308,27 @@ export default function App() {
     </ReactFlow>
   );
 
+  const followGraphCanvas = (
+    // TODO: change to follow variables
+    <ReactFlow
+      nodes={firstNodes}
+      edges={firstEdges}
+      onNodesChange={onFirstNodesChange}
+      onEdgesChange={onFirstEdgesChange}
+      connectionLineComponent={ConnectionLine}
+      onConnect={onFirstConnect(showSnackbar)}
+      onNodeDragStop={onFirstNodeDragStop}
+      nodeTypes={firstNodeTypes}
+      edgeTypes={firstEdgeTypes}
+      fitView={true}
+      zoomOnDoubleClick={false}
+      selectNodesOnDrag={false}
+    >
+      {customControls}
+      <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+    </ReactFlow>
+  );
+
   // If the user is new (no localstorage -> never changed settings or completed
   // tutorial before) we want to show the tutorial dialog for the start page.
   // Here we pass an initializer function ()=>value instead of just value
@@ -363,6 +385,13 @@ export default function App() {
       content = (
         <ReactFlowProvider>
           <FirstAlgorithmPage graphCanvas={firstGraphCanvas} />
+        </ReactFlowProvider>
+      );
+      break;
+    case 7:
+      content = (
+        <ReactFlowProvider>
+          <PrepareFollowAlgorithmPage graphCanvas={followGraphCanvas} />
         </ReactFlowProvider>
       );
       break;

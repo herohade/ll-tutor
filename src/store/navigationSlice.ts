@@ -4,7 +4,7 @@ import { NavigationSlice } from "../types";
 
 export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) => ({
   minPage: 0,
-  maxPage: 8,
+  maxPage: 9,
   page: 0,
   open: window.innerWidth > window.innerHeight || window.innerWidth > 800,
   settings: JSON.parse(

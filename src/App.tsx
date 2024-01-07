@@ -398,7 +398,7 @@ export default function App() {
     default:
       content = (
         <>
-          <div className="mr-1 h-full w-1/3 overflow-scroll rounded-lg border-2 border-solid bg-red-600 bg-gradient-to-b from-green-600 p-2 text-left hover:from-green-400 hover:to-green-600">
+          <div className="mr-1 h-full w-1/3 overflow-auto rounded-lg border-2 border-solid bg-red-600 bg-gradient-to-b from-green-600 p-2 text-left hover:from-green-400 hover:to-green-600">
             <Typography variant="h4" component="h1" gutterBottom>
               Error:
             </Typography>
@@ -426,7 +426,7 @@ export default function App() {
         }}
       >
         <Toolbar />
-        <Box className="m-2 flex flex-grow overflow-scroll xs:m-4">
+        <Box className="m-2 flex flex-grow overflow-auto xs:m-4">
           {tutorialComponent}
           {content}
         </Box>

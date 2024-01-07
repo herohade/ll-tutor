@@ -483,7 +483,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   return (
     <>
       {/* left side, grammar description and information */}
-      <div className="mr-1 h-full w-1/2 overflow-scroll rounded-lg border-2 border-solid p-2 text-left sm:w-1/3">
+      <div className="mr-1 h-full w-1/2 overflow-auto rounded-lg border-2 border-solid p-2 text-left sm:w-1/3">
         <div className="flex h-full flex-col items-center justify-between">
           <div className="flex flex-col items-center">
             <p>The Nonterminals of the grammar are:</p>

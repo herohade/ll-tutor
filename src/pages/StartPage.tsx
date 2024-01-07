@@ -55,10 +55,10 @@ function StartPage() {
               />
               <br />
               The LL Tutor is a webtutor developed for the course Compiler
-              Construction at the chair I2 of the TUM School of Computation at
-              the Technical University of Munich. In this app, you will be
-              guided through the steps of constructing a look-ahead table for an
-              LL(1) grammar.
+              Construction at the chair I2 of the TUM School of Computation,
+              Information and Technology at the Technical University of Munich.
+              In this app, you will be guided through the steps of constructing
+              a look-ahead table for an LL(1) grammar.
               <br />
               <br />
               In case you found any bug, please report it to{" "}

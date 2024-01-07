@@ -1016,9 +1016,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           }
         };
       case 7: // page (7) -> 8
-        return (cb) => {
-          return cb();
-        };
       case 8: // page (8) -> 9
         return (cb) => {
           return cb();

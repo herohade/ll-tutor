@@ -54,29 +54,37 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
-const steps: { label: string; content: string[] }[] = [
+const steps: { label: string; content: JSX.Element[] }[] = [
   {
     label: "Select Grammar",
     content: [
-      "Enter a production of form A -> α.",
-      "Select the start symbol from the nonterminals.",
+      <>{"Enter a production of form A -> α."}</>,
+      <>{"Select the start symbol from the nonterminals."}</>,
     ],
   },
   {
     label: "Calculate Empty Attributes",
     content: [
-      "Set up the dependency graph for calculating the empty sets.",
-      "Propagate the empty attribute through the dependency graph.",
+      <>{"Set up the dependency graph for calculating the empty sets."}</>,
+      <>{"Propagate the empty attribute through the dependency graph."}</>,
     ],
   },
   {
     label: "Calculate First Sets",
     content: [
-      "Model the first set inequality system as a graph by adding edges where necessary and grouping the (Non-)Terminals into Strongly Connected Components.",
-      "Propagate the first sets through the dependency graph.",
+      <>
+        {"Model the "}F<sub>ε</sub>
+        {
+          "-set inequality system as a graph."
+        }
+      </>,
+      <>
+        {"Propagate the "}F<sub>ε</sub>
+        {"-sets through the dependency graph."}
+      </>,
     ],
   },
-  { label: "Calculate Follow Sets", content: ["TODO", "TODO"] },
+  { label: "Calculate Follow Sets", content: [<>{"TODO"}</>, <>{"TODO"}</>] },
 ];
 
 function ProgressDrawerComponent({ setTutorialOpen }: Props) {

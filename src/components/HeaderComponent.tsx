@@ -27,6 +27,7 @@ import {
   FirstAlgorithmNodeMap,
   FirstAlgorithmSlice,
   FirstNodeSlice,
+  FollowNodeSlice,
   GrammarSetupSlice,
   GrammarSlice,
   NavigationSlice,
@@ -73,7 +74,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       EmptyNodeSlice &
       EmptyAlgorithmSlice &
       FirstNodeSlice &
-      FirstAlgorithmSlice,
+      FirstAlgorithmSlice &
+      FollowNodeSlice,
   ) => ({
     // NavigationSlice
     minPage: state.minPage,
@@ -103,11 +105,13 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     preparedEmpty: state.preparedEmpty,
     preparedFirst: state.preparedFirst,
     preparedFirstMap: state.preparedFirstMap,
+    preparedFollow: state.preparedFollow,
     setSorted: state.setSorted,
     setReduced: state.setReduced,
     setPreparedEmpty: state.setPreparedEmpty,
     setPreparedFirst: state.setPreparedFirst,
     setPreparedFirstMap: state.setPreparedFirstMap,
+    setPreparedFollow: state.setPreparedFollow,
     // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
     emptyNodes: state.emptyNodes,
@@ -137,6 +141,16 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     finishedFirst: state.finishedFirst,
     setFinishedFirst: state.setFinishedFirst,
     setFirstNodeMap: state.setFirstNodeMap,
+    // FollowNodeSlice
+    followSetupComplete: state.followSetupComplete,
+    followNodes: state.followNodes,
+    followEdges: state.followEdges,
+    getFollowNodeId: state.getFollowNodeId,
+    getFollowEdgeId: state.getFollowEdgeId,
+    setFollowSetupComplete: state.setFollowSetupComplete,
+    setFollowNodes: state.setFollowNodes,
+    setFollowEdges: state.setFollowEdges,
+    setFollowNodeEdgesHidden: state.setFollowNodeEdgesHidden,
   });
   const {
     // NavigationSlice
@@ -167,11 +181,13 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     preparedEmpty,
     preparedFirst,
     preparedFirstMap,
+    preparedFollow,
     setSorted,
     setReduced,
     setPreparedEmpty,
     setPreparedFirst,
     setPreparedFirstMap,
+    setPreparedFollow,
     // EmptyNodeSlice
     emptySetupComplete,
     emptyNodes,
@@ -201,6 +217,16 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     finishedFirst,
     setFinishedFirst,
     setFirstNodeMap,
+    // FollowNodeSlice
+    followSetupComplete,
+    // followNodes,
+    // followEdges,
+    // getFollowNodeId,
+    // getFollowEdgeId,
+    setFollowSetupComplete,
+    // setFollowNodes,
+    // setFollowEdges,
+    setFollowNodeEdgesHidden,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -324,9 +350,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       setReduced(true);
       setEmptySetupComplete(false);
       setFirstSetupComplete(false);
+      setFollowSetupComplete(false);
       setPreparedEmpty(false);
       setPreparedFirst(false);
       setPreparedFirstMap(false);
+      setPreparedFollow(false);
     }
 
     // reset grammar in case it was already reduced and then changed again
@@ -898,6 +926,25 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
+  // TODO: implement
+  const prepareFollowAlgorithm = () => {
+    if (preparedFollow) {
+      if (import.meta.env.DEV) {
+        console.log("Follow set algorithm is already prepared!");
+      }
+      return true;
+    } else {
+      if (import.meta.env.DEV) {
+        console.log("Preparing follow set algorithm...");
+      }
+      setPreparedFollow(true);
+    }
+
+    // TODO:
+
+    return true;
+  };
+
   // Functions that are invoked when changing between pages
   // Indexed by current page - minimum page (=0)
   // What to do when leaving a page to go to the previous one:
@@ -1016,6 +1063,18 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           }
         };
       case 7: // page (7) -> 8
+        return (cb) => {
+          if (followSetupComplete) {
+            return cb();
+          } else {
+            showSnackbar(
+              "Please finish building the dependency graph!",
+              "error",
+              true,
+            );
+            return false;
+          }
+        };
       case 8: // page (8) -> 9
         return (cb) => {
           return cb();
@@ -1045,7 +1104,14 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           return true;
         };
       case 6: // page (6) <- 7
+        return () => {
+          return true;
+        };
       case 7: // page (7) <- 8
+        return () => {
+          setFollowNodeEdgesHidden(false);
+          return true;
+        };
       case 8: // page (8) <- 9
         return () => {
           return true;
@@ -1086,6 +1152,9 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           return prepareFirstMap();
         };
       case 7: // page 6 -> (7)
+        return () => {
+          return prepareFollowAlgorithm();
+        };
       case 8: // page 7 -> (8)
       case 9: // page 8 -> (9)
         return () => {

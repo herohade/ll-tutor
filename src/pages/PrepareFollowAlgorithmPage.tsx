@@ -17,6 +17,7 @@ import {
   EmptyAlgorithmSlice,
   EmptyNodeSlice,
   FirstNodeSlice,
+  FollowNodeSlice,
   GrammarSlice,
   NodeColor,
   NodeData,
@@ -29,16 +30,27 @@ type Props = {
 
 const StyledSpan = styled("span")({});
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// ATTENTION: This page is basically a copy of the PrepareFirstAlgorithmPage.tsx
+// As such it will not yet work!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 /*
-This is the sixth page of the webtutor.
-It shows the user the grammer, color coded regarding the empty
-attributes. The user has to group the FirstNodes into Strongly Connected
-Components (grou nodes). These are used to calculate the first sets
+This is the eighth page of the webtutor.
+It shows the user the grammar and the F-epsilon sets, color coded regarding the
+empty attributes. The user has to group the FollowNodes into Strongly Connected
+Components (group nodes). These are used to calculate the follow sets
 in the next step.
 */
 function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
-    state: GrammarSlice & EmptyNodeSlice & EmptyAlgorithmSlice & FirstNodeSlice,
+    state: GrammarSlice &
+      EmptyNodeSlice &
+      EmptyAlgorithmSlice &
+      FirstNodeSlice &
+      FollowNodeSlice,
   ) => ({
     // GrammarSlice
     epsilon: state.epsilon,
@@ -53,16 +65,21 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // EmptyAlgorithmSlice
     emptyNonterminalMap: state.emptyNonterminalMap,
     // FirstNodeSlice
-    firstSetupComplete: state.firstSetupComplete,
     firstNodes: state.firstNodes,
     firstEdges: state.firstEdges,
-    getFirstNodeId: state.getFirstNodeId,
-    getFirstEdgeId: state.getFirstEdgeId,
-    setFirstSetupComplete: state.setFirstSetupComplete,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
-    toggleFirstDeletableAndConnectable:
-      state.toggleFirstDeletableAndConnectable,
+    // FollowNodeSlice
+    followSetupComplete: state.followSetupComplete,
+    followNodes: state.followNodes,
+    followEdges: state.followEdges,
+    getFollowNodeId: state.getFollowNodeId,
+    getFollowEdgeId: state.getFollowEdgeId,
+    setFollowSetupComplete: state.setFollowSetupComplete,
+    setFollowNodes: state.setFollowNodes,
+    setFollowEdges: state.setFollowEdges,
+    toggleFollowDeletableAndConnectable:
+      state.toggleFollowDeletableAndConnectable,
   });
   const {
     // GrammarSlice
@@ -78,15 +95,20 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // EmptyAlgorithmSlice
     emptyNonterminalMap,
     // FirstNodeSlice
-    firstSetupComplete,
     firstNodes,
     firstEdges,
-    getFirstNodeId,
-    getFirstEdgeId,
-    setFirstSetupComplete,
     setFirstNodes,
     setFirstEdges,
-    toggleFirstDeletableAndConnectable,
+    // FollowNodeSlice
+    followSetupComplete,
+    followNodes,
+    followEdges,
+    getFollowNodeId,
+    getFollowEdgeId,
+    setFollowSetupComplete,
+    setFollowNodes,
+    setFollowEdges,
+    toggleFollowDeletableAndConnectable,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -112,47 +134,51 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
   );
 
   const { fitView } = useReactFlow();
 
   const reset = () => {
-    const newFirstNodes: Node<NodeData>[] = [];
-    const newFirstEdges: Edge<EdgeData>[] = [];
+    const newFollowNodes: Node<NodeData>[] = [];
+    const newFollowEdges: Edge<EdgeData>[] = [];
 
-    // add a new FirstNode for each (Non)terminal
+    // add a new FollowNode for each (Non)terminal
     for (const node of emptyNodes.filter((n) => n.data.name !== "ε")) {
       const newNode: Node<NodeData> = {
-        id: getFirstNodeId(),
-        type: "first",
+        id: getFollowNodeId(),
+        type: "follow",
         position: node.position,
         deletable: false,
         data: {
           ...node.data,
         },
       };
-      newFirstNodes.push(newNode);
+      newFollowNodes.push(newNode);
     }
 
-    // add a FirstNode {t} for each terminal t
+    // add a FollowNode {t} for each terminal t
     for (const terminal of terminals) {
-      const terminalNode: Node<NodeData> | undefined = newFirstNodes.find(
+      const terminalNode: Node<NodeData> | undefined = newFollowNodes.find(
         (n) => n.data.name === terminal.name,
       );
       if (!terminalNode) {
         if (import.meta.env.DEV) {
           console.error(
-            "Error Code 60c841: Terminal not found among newFirstNodes!",
+            "Error Code 244100: Terminal not found among newFollowNodes!",
             terminal,
           );
         }
         return;
       }
-      const nodeId = getFirstNodeId();
+      const nodeId = getFollowNodeId();
       const nodeName = `{${terminal.name}}`;
       const newNode: Node<NodeData> = {
         id: nodeId,
-        type: "first",
+        type: "follow",
         position: {
           x: terminalNode.position.x,
           y: terminalNode.position.y - (terminalNode.height ?? 50) - 50,
@@ -166,7 +192,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       };
       const edgeName = nodeName + "->" + terminalNode.data.name;
       const newEdge: Edge<EdgeData> = {
-        id: getFirstEdgeId(),
+        id: getFollowEdgeId(),
         type: "floating",
         source: nodeId,
         target: terminalNode.id,
@@ -189,28 +215,28 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           stroke: NodeColor.none,
         },
       };
-      newFirstNodes.push(newNode);
-      newFirstEdges.push(newEdge);
+      newFollowNodes.push(newNode);
+      newFollowEdges.push(newEdge);
     }
 
-    setFirstNodes(newFirstNodes);
-    setFirstEdges(newFirstEdges, fitView);
+    setFollowNodes(newFollowNodes);
+    setFollowEdges(newFollowEdges, fitView);
   };
 
   const addMissing = () => {
-    const setUpNodes = firstNodes
-      .filter((node) => node.type === "first")
+    const setUpNodes = followNodes
+      .filter((node) => node.type === "follow")
       .map((node) => {
         if (node.parentNode !== undefined) {
-          const parentNode = firstNodes.find(
+          const parentNode = followNodes.find(
             (parentNode) => parentNode.id === node.parentNode,
           );
           if (parentNode === undefined) {
             if (import.meta.env.DEV) {
               console.error(
-                "Error Code 58571d: Node not found",
+                "Error Code e8e5cc: Node not found",
                 node,
-                firstNodes,
+                followNodes,
               );
             }
             return node;
@@ -227,7 +253,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         }
         return node;
       });
-    const setUpEdges = firstEdges.filter(
+    const setUpEdges = followEdges.filter(
       (edge) =>
         edge.deletable === false &&
         setUpNodes.some((node) => node.id === edge.source) &&
@@ -249,7 +275,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     }
     const missingEdges: Edge<EdgeData>[] = Array.from(missingEdgesSet).map(
       (edgeName) => {
-        const id = getFirstNodeId();
+        const id = getFollowNodeId();
         const sourceNode = setUpNodes.find(
           (node) => node.data.name === edgeName.split("->")[0],
         );
@@ -259,14 +285,14 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         if (sourceNode === undefined || targetNode === undefined) {
           if (import.meta.env.DEV) {
             console.error(
-              "Error Code 83e442: Node not found",
+              "Error Code 6456d4: Node not found",
               edgeName,
               sourceNode,
               targetNode,
               setUpNodes,
             );
           }
-          throw new Error("Error Code 83e442: Please contact the developer!");
+          throw new Error("Error Code 6456d4: Please contact the developer!");
         }
         const isGroupEdge =
           sourceNode.type === "group" || targetNode.type === "group";
@@ -303,29 +329,30 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
   const check = () => {
     const { setUpNodes, setUpEdges, missingEdges } = addMissing();
     const { nodes, edges } = groupNodesBySCC(
+      "follow",
       setUpNodes,
       [...setUpEdges, ...missingEdges],
-      getFirstNodeId,
-      getFirstEdgeId,
+      getFollowNodeId,
+      getFollowEdgeId,
     );
     if (import.meta.env.DEV) {
       console.log("new nodes and edges after scc:", nodes, edges);
     }
     const missingSolutionNodes = nodes.filter(
       (node) =>
-        !firstNodes.some((firstNode) => {
+        !followNodes.some((followNode) => {
           if (
-            firstNode.type === node.type &&
-            firstNode.data.name === node.data.name
+            followNode.type === node.type &&
+            followNode.data.name === node.data.name
           ) {
-            if (node.type === "first") {
-              if (firstNode.parentNode && node.parentNode) {
-                const firstParentNode = firstNodes.find(
-                  (n) => n.id === firstNode.parentNode,
+            if (node.type === "follow") {
+              if (followNode.parentNode && node.parentNode) {
+                const followParentNode = followNodes.find(
+                  (n) => n.id === followNode.parentNode,
                 );
                 const parentNode = nodes.find((n) => n.id === node.parentNode);
-                if (firstParentNode && parentNode) {
-                  return firstParentNode.data.name === parentNode.data.name;
+                if (followParentNode && parentNode) {
+                  return followParentNode.data.name === parentNode.data.name;
                 }
               }
             } else {
@@ -339,19 +366,19 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     );
     const missingSolutionEdges = edges.filter(
       (edge) =>
-        !firstEdges.some((firstEdge) => {
+        !followEdges.some((followEdge) => {
           return (
-            firstEdge.data &&
+            followEdge.data &&
             edge.data &&
-            firstEdge.data.name === edge.data.name
+            followEdge.data.name === edge.data.name
           );
         }),
     );
     if (
       missingSolutionNodes.length === 0 &&
       missingSolutionEdges.length === 0 &&
-      nodes.length === firstNodes.length &&
-      edges.length === firstEdges.length
+      nodes.length === followNodes.length &&
+      edges.length === followEdges.length
     ) {
       showSnackbar("Correct, well done!", "success", true);
       return true;
@@ -363,7 +390,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           "solutionNodes",
           nodes,
           "userNodes",
-          firstNodes,
+          followNodes,
         );
       }
       showSnackbar(
@@ -381,7 +408,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           "solutionEdges",
           edges,
           "userEdges",
-          firstEdges,
+          followEdges,
         );
       }
       showSnackbar(
@@ -392,21 +419,21 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
-    const unnecessaryUserNodes = firstNodes.filter(
-      (firstNode) =>
+    const unnecessaryUserNodes = followNodes.filter(
+      (followNode) =>
         !nodes.find((node) => {
           if (
-            node.type === firstNode.type &&
-            node.data.name === firstNode.data.name
+            node.type === followNode.type &&
+            node.data.name === followNode.data.name
           ) {
-            if (firstNode.type === "first") {
-              if (node.parentNode && firstNode.parentNode) {
+            if (followNode.type === "follow") {
+              if (node.parentNode && followNode.parentNode) {
                 const parentNode = nodes.find((n) => n.id === node.parentNode);
-                const firstParentNode = firstNodes.find(
-                  (n) => n.id === firstNode.parentNode,
+                const followParentNode = followNodes.find(
+                  (n) => n.id === followNode.parentNode,
                 );
-                if (firstParentNode && parentNode) {
-                  return firstParentNode.data.name === parentNode.data.name;
+                if (followParentNode && parentNode) {
+                  return followParentNode.data.name === parentNode.data.name;
                 }
               }
             } else {
@@ -418,13 +445,13 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           return false;
         }),
     );
-    const unnecessaryUserEdges = firstEdges.filter(
-      (firstEdge) =>
+    const unnecessaryUserEdges = followEdges.filter(
+      (followEdge) =>
         !edges.find((edge) => {
           return (
-            firstEdge.data &&
+            followEdge.data &&
             edge.data &&
-            firstEdge.data.name === edge.data.name
+            followEdge.data.name === edge.data.name
           );
         }),
     );
@@ -434,7 +461,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     ) {
       if (import.meta.env.DEV) {
         console.error(
-          "Error Code 43db7d: Found no unnecessary nodes or edges when there should have been some:",
+          "Error Code 55b36a: Found no unnecessary nodes or edges when there should have been some:",
           unnecessaryUserNodes,
           unnecessaryUserEdges,
         );
@@ -446,7 +473,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         console.log(
           unnecessaryUserNodes,
           "userNodes",
-          firstNodes,
+          followNodes,
           "solutionNodes",
           nodes,
         );
@@ -464,7 +491,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         console.log(
           unnecessaryUserEdges,
           "userEdges",
-          firstEdges,
+          followEdges,
           "solutionEdges",
           edges,
         );
@@ -542,9 +569,10 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="error"
               onClick={() => {
+                showSnackbar("This is not yet implemented!", "error", true);
                 reset();
               }}
-              disabled={firstSetupComplete}
+              disabled={followSetupComplete}
             >
               Reset Graph
             </Button>
@@ -552,12 +580,14 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="success"
               onClick={() => {
+                showSnackbar("This is not yet implemented!", "error", true);
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
                 const { nodes, edges } = groupNodesBySCC(
+                  "follow",
                   setUpNodes,
                   [...setUpEdges, ...missingEdges],
-                  getFirstNodeId,
-                  getFirstEdgeId,
+                  getFollowNodeId,
+                  getFollowEdgeId,
                 );
 
                 layoutElements(
@@ -565,23 +595,24 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
                   undefined,
                   nodes,
                   edges,
-                  setFirstNodes,
-                  setFirstEdges,
+                  setFollowNodes,
+                  setFollowEdges,
                 );
               }}
-              disabled={firstSetupComplete}
+              disabled={followSetupComplete}
             >
               Show Solution
             </Button>
             <Button
               variant="contained"
               onClick={() => {
+                showSnackbar("This is not yet implemented!", "error", true);
                 if (check()) {
-                  toggleFirstDeletableAndConnectable(false, false);
-                  setFirstSetupComplete(true);
+                  toggleFollowDeletableAndConnectable(false, false);
+                  setFollowSetupComplete(true);
                 }
               }}
-              disabled={firstSetupComplete}
+              disabled={followSetupComplete}
             >
               Check Graph
             </Button>

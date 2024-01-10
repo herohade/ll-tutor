@@ -21,12 +21,16 @@ const useLayoutedElements = (
   firstEdges: Edge<EdgeData>[],
   setFirstNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void,
   setFirstEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
+  followNodes: Node<NodeData>[],
+  followEdges: Edge<EdgeData>[],
+  setFollowNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void,
+  setFollowEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
 ) => {
   const { fitView } = useReactFlow();
 
   const layoutElements = useCallback(
     (
-      whichNodes: "empty" | "first" | "provided",
+      whichNodes: "empty" | "first" | "follow" | "provided",
       options?: LayoutOptions,
       nodes?: Node<NodeData>[],
       edges?: Edge<EdgeData>[],
@@ -34,13 +38,33 @@ const useLayoutedElements = (
       setEdges?: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
     ) => {
       const relevantNodes =
-        nodes || (whichNodes === "empty" ? emptyNodes : firstNodes);
+        nodes ||
+        (whichNodes === "empty"
+          ? emptyNodes
+          : whichNodes === "first"
+            ? firstNodes
+            : followNodes);
       const relevantEdges =
-        edges || (whichNodes === "empty" ? emptyEdges : firstEdges);
+        edges ||
+        (whichNodes === "empty"
+          ? emptyEdges
+          : whichNodes === "first"
+            ? firstEdges
+            : followEdges);
       const relevantSetNodes =
-        setNodes || (whichNodes === "empty" ? setEmptyNodes : setFirstNodes);
+        setNodes ||
+        (whichNodes === "empty"
+          ? setEmptyNodes
+          : whichNodes === "first"
+            ? setFirstNodes
+            : setFollowNodes);
       const relevantSetEdges =
-        setEdges || (whichNodes === "empty" ? setEmpyEdges : setFirstEdges);
+        setEdges ||
+        (whichNodes === "empty"
+          ? setEmpyEdges
+          : whichNodes === "first"
+            ? setFirstEdges
+            : setFollowEdges);
 
       const direction = (
         options ? options["elk.direction"] : "RIGHT"
@@ -236,6 +260,10 @@ const useLayoutedElements = (
       firstEdges,
       setFirstNodes,
       setFirstEdges,
+      followNodes,
+      followEdges,
+      setFollowNodes,
+      setFollowEdges,
       fitView,
     ],
   );

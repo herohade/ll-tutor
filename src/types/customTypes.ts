@@ -151,12 +151,14 @@ export type GrammarSetupSlice = {
   preparedEmpty: boolean;
   preparedFirst: boolean;
   preparedFirstMap: boolean;
+  preparedFollow: boolean;
   setStart: (start: [name: Nonterminal, start: boolean][]) => void;
   setSorted: (sorted: boolean) => void;
   setReduced: (reduced: boolean) => void;
   setPreparedEmpty: (prepared: boolean) => void;
   setPreparedFirst: (prepared: boolean) => void;
   setPreparedFirstMap: (prepared: boolean) => void;
+  setPreparedFollow: (prepared: boolean) => void;
 };
 
 export enum NodeColor {
@@ -175,7 +177,6 @@ export type NodeData = {
   empty: boolean;
   color: NodeColor;
   labelSize?: { width: number; height: number };
-  groupNodeDeletable?: boolean;
 };
 
 export enum EdgePathType {
@@ -293,4 +294,36 @@ export type FirstAlgorithmSlice = {
   setFinishedFirst: (finished: boolean) => void;
   setFirstNodeMap: (map: Map<string, FirstAlgorithmNodeMap>) => void;
   changeFirstNodeMap: (nodeName: string, map: FirstAlgorithmNodeMap) => void;
+};
+
+export type FollowNodeSlice = {
+  followIdCounter: number;
+  followNodeTypes: NodeTypes;
+  followEdgeTypes: EdgeTypes;
+  followSetupComplete: boolean;
+  followNodes: Node<NodeData>[];
+  followEdges: Edge<EdgeData>[];
+  getFollowNodeId: () => string;
+  getFollowEdgeId: () => string;
+  setFollowSetupComplete: (complete: boolean) => void;
+  setFollowNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void;
+  setFollowEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void;
+  setLabelSize: (
+    nodeId: string,
+    size: { width: number; height: number } | undefined,
+  ) => void;
+  onFollowNodesChange: OnNodesChange;
+  onFollowEdgesChange: OnEdgesChange;
+  onFollowConnect: (
+    showSnackbar: (
+      message: string,
+      variant: VariantType,
+      preventDuplicate: boolean,
+    ) => void,
+  ) => OnConnect;
+  toggleFollowDeletableAndConnectable: (
+    deletable: boolean,
+    connectable: boolean,
+  ) => void;
+  setFollowNodeEdgesHidden: (hidden: boolean) => void;
 };

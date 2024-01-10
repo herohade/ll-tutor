@@ -10,6 +10,7 @@ import {
   EdgePathType,
   EmptyNodeSlice,
   FirstNodeSlice,
+  FollowNodeSlice,
   GrammarSlice,
   NodeColor,
   NodeData,
@@ -30,7 +31,7 @@ The user adds the nodes and edges to the graph to model
 the dependency graph for the empty set calculation.
 */
 function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
-  const selector = (state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice) => ({
+  const selector = (state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice) => ({
     // GrammarSlice
     epsilon: state.epsilon,
     productions: state.productions,
@@ -52,6 +53,11 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     firstEdges: state.firstEdges,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
+    // FollowNodeSlice
+    followNodes: state.followNodes,
+    followEdges: state.followEdges,
+    setFollowNodes: state.setFollowNodes,
+    setFollowEdges: state.setFollowEdges,
   });
   const {
     // GrammarSlice
@@ -74,6 +80,11 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
+    // FollowNodeSlice
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -99,6 +110,10 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
   );
 
   const check = () => {

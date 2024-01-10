@@ -16,6 +16,7 @@ import useBoundStore from "../store/store";
 import {
   EmptyNodeSlice,
   FirstNodeSlice,
+  FollowNodeSlice,
   NavigationSlice,
   NodeColor,
   NodeData,
@@ -63,7 +64,7 @@ function CustomControls() {
   }, []);
 
   const emptyNodeSelector = (
-    state: EmptyNodeSlice & FirstNodeSlice & NavigationSlice,
+    state: EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice & NavigationSlice,
   ) => ({
     // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
@@ -79,6 +80,13 @@ function CustomControls() {
     getFirstNodeId: state.getFirstNodeId,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
+    // FollowNodeSlice
+    followSetupComplete: state.followSetupComplete,
+    followNodes: state.followNodes,
+    followEdges: state.followEdges,
+    getFollowNodeId: state.getFollowNodeId,
+    setFollowNodes: state.setFollowNodes,
+    setFollowEdges: state.setFollowEdges,
     // NavigationSlice
     page: state.page,
   });
@@ -97,6 +105,13 @@ function CustomControls() {
     getFirstNodeId,
     setFirstNodes,
     setFirstEdges,
+    // FollowNodeSlice
+    followSetupComplete,
+    followNodes,
+    followEdges,
+    getFollowNodeId,
+    setFollowNodes,
+    setFollowEdges,
     // NavigationSlice
     page,
   } = useBoundStore(emptyNodeSelector, shallow);
@@ -112,6 +127,10 @@ function CustomControls() {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
   );
 
   const addEmptyNode = () => {
@@ -164,7 +183,7 @@ function CustomControls() {
     setEmptyNodes([...emptyNodes, newNode]);
   };
 
-  const addGroupNode = () => {
+  const addFirstGroupNode = () => {
     // Add the node in the center of the viewport.
     // calculation of center copied from: https://stackoverflow.com/a/76394786
 
@@ -215,11 +234,62 @@ function CustomControls() {
     setFirstNodes([...firstNodes, newNode]);
   };
 
+  const addFollowGroupNode = () => {
+    // Add the node in the center of the viewport.
+    // calculation of center copied from: https://stackoverflow.com/a/76394786
+
+    // Get the basic info about the viewport
+    const {
+      height,
+      width,
+      transform: [transformX, transformY, zoomLevel],
+    } = store.getState();
+    const zoomMultiplier = 1 / zoomLevel;
+
+    // Figure out the center of the current viewport
+    const centerX = -transformX * zoomMultiplier + (width * zoomMultiplier) / 2;
+    const centerY =
+      -transformY * zoomMultiplier + (height * zoomMultiplier) / 2;
+
+    const nodeWidth = 70;
+    const nodeHeighth = 60;
+
+    // Add offsets for the height/width of the new node
+    // (Assuming that you don't have to calculate this as well
+    const nodeWidthOffset = nodeWidth / 2;
+    const nodeHeightOffset = nodeHeighth / 2;
+
+    const randomXOffset = Math.round(
+      (Math.random() * 100 - 50) * zoomMultiplier,
+    );
+    const randomYOffset = Math.round(
+      (Math.random() * 100 - 50) * zoomMultiplier,
+    );
+
+    const center: { x: number; y: number } = {
+      x: centerX - nodeWidthOffset + randomXOffset,
+      y: centerY - nodeHeightOffset + randomYOffset,
+    };
+
+    const newNode: Node<NodeData> = {
+      id: getFollowNodeId(),
+      type: "group",
+      deletable: false,
+      data: {
+        name: "scc",
+        empty: false,
+        color: NodeColor.none,
+      },
+      position: center,
+    };
+    setFollowNodes([...followNodes, newNode]);
+  };
+
   return (
     <StyledControls className="shadow-none">
       <ControlButton
         onClick={() => {
-          const whichNodes = page < 5 ? "empty" : "first";
+          const whichNodes = page < 5 ? "empty" : page < 7 ? "first" : "follow";
           layoutElements(whichNodes, {
             // "elk.algorithm": "layered",
             // "elk.algorithm": "stress",
@@ -249,10 +319,21 @@ function CustomControls() {
       {page === 5 && (
         <ControlButton
           onClick={() => {
-            addGroupNode();
+            addFirstGroupNode();
           }}
           title="add node"
           disabled={firstSetupComplete}
+        >
+          <LibraryAddSharpIcon />
+        </ControlButton>
+      )}
+      {page === 7 && (
+        <ControlButton
+          onClick={() => {
+            addFollowGroupNode();
+          }}
+          title="add node"
+          disabled={followSetupComplete}
         >
           <LibraryAddSharpIcon />
         </ControlButton>

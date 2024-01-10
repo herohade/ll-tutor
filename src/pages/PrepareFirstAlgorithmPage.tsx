@@ -17,6 +17,7 @@ import {
   EmptyAlgorithmSlice,
   EmptyNodeSlice,
   FirstNodeSlice,
+  FollowNodeSlice,
   GrammarSlice,
   NodeColor,
   NodeData,
@@ -33,12 +34,16 @@ const StyledSpan = styled("span")({});
 This is the sixth page of the webtutor.
 It shows the user the grammer, color coded regarding the empty
 attributes. The user has to group the FirstNodes into Strongly Connected
-Components (grou nodes). These are used to calculate the first sets
+Components (group nodes). These are used to calculate the first sets
 in the next step.
 */
 function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
-    state: GrammarSlice & EmptyNodeSlice & EmptyAlgorithmSlice & FirstNodeSlice,
+    state: GrammarSlice &
+      EmptyNodeSlice &
+      EmptyAlgorithmSlice &
+      FirstNodeSlice &
+      FollowNodeSlice,
   ) => ({
     // GrammarSlice
     epsilon: state.epsilon,
@@ -63,6 +68,11 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     setFirstEdges: state.setFirstEdges,
     toggleFirstDeletableAndConnectable:
       state.toggleFirstDeletableAndConnectable,
+    // FollowNodeSlice
+    followNodes: state.followNodes,
+    followEdges: state.followEdges,
+    setFollowNodes: state.setFollowNodes,
+    setFollowEdges: state.setFollowEdges,
   });
   const {
     // GrammarSlice
@@ -87,6 +97,11 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     setFirstNodes,
     setFirstEdges,
     toggleFirstDeletableAndConnectable,
+    // FollowNodeSlice
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -112,6 +127,10 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
   );
 
   const { fitView } = useReactFlow();
@@ -303,6 +322,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   const check = () => {
     const { setUpNodes, setUpEdges, missingEdges } = addMissing();
     const { nodes, edges } = groupNodesBySCC(
+      "first",
       setUpNodes,
       [...setUpEdges, ...missingEdges],
       getFirstNodeId,
@@ -554,6 +574,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               onClick={() => {
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
                 const { nodes, edges } = groupNodesBySCC(
+                  "first",
                   setUpNodes,
                   [...setUpEdges, ...missingEdges],
                   getFirstNodeId,

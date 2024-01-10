@@ -56,7 +56,9 @@ type TarjanEdge = {
   target: TarjanNode;
 };
 
-function sortFirstAndGroupNodes(a: Node<NodeData>, b: Node<NodeData>): number {
+// sorts group nodes before child nodes
+// this is required by reactflow
+function sortChildAndGroupNodes(a: Node<NodeData>, b: Node<NodeData>): number {
   if (a.type === b.type) {
     return 0;
   }
@@ -65,18 +67,19 @@ function sortFirstAndGroupNodes(a: Node<NodeData>, b: Node<NodeData>): number {
 
 // Returns a List of strongly connected components (sets of nodes and edges)
 function groupNodesBySCC(
+  nodeType: "first" | "follow",
   nodes: Node<NodeData>[],
   edges: Edge<EdgeData>[],
-  getFirstNodeId: () => string,
-  getFirstEdgeId: () => string,
+  getNodeId: () => string,
+  getEdgeId: () => string,
 ): {
   nodes: Node<NodeData>[];
   edges: Edge<EdgeData>[];
 } {
   if (import.meta.env.DEV) {
-    if (nodes.some((node) => node.type != "first")) {
+    if (nodes.some((node) => node.type != nodeType)) {
       console.error(
-        "groupNodesBySCC: nodes must be first set nodes",
+        "groupNodesBySCC: nodes must be " + nodeType + " set nodes",
         nodes,
       );
     }
@@ -87,38 +90,38 @@ function groupNodesBySCC(
         return (
           sourceNode === undefined ||
           targetNode === undefined ||
-          sourceNode.type !== "first" ||
-          targetNode.type !== "first"
+          sourceNode.type !== nodeType ||
+          targetNode.type !== nodeType
         );
       })
     ) {
       console.error(
-        "groupNodesBySCC: edges must be between first set nodes",
+        "groupNodesBySCC: edges must be between " + nodeType + " set nodes",
         edges,
       );
     }
   }
-  const firstAttributeNodes: Node<NodeData>[] = nodes.filter(
-    (node) => node.type === "first",
+  const firstOrFollowAttributeNodes: Node<NodeData>[] = nodes.filter(
+    (node) => node.type === nodeType,
   );
-  const firstAttributeEdges: Edge<EdgeData>[] = edges.filter((edge) => {
-    const sourceNode = firstAttributeNodes.find(
+  const firstOrFollowAttributeEdges: Edge<EdgeData>[] = edges.filter((edge) => {
+    const sourceNode = firstOrFollowAttributeNodes.find(
       (node) => node.id === edge.source,
     );
-    const targetNode = firstAttributeNodes.find(
+    const targetNode = firstOrFollowAttributeNodes.find(
       (node) => node.id === edge.target,
     );
     return sourceNode !== undefined && targetNode !== undefined;
   });
 
-  const tarjanNodes: TarjanNode[] = firstAttributeNodes.map((node) => ({
+  const tarjanNodes: TarjanNode[] = firstOrFollowAttributeNodes.map((node) => ({
     id: node.id,
     name: node.data.name,
     index: undefined,
     lowlink: undefined,
     onStack: false,
   }));
-  const tarjanEdges: TarjanEdge[] = firstAttributeEdges.map((edge) => ({
+  const tarjanEdges: TarjanEdge[] = firstOrFollowAttributeEdges.map((edge) => ({
     id: edge.id,
     name: edge.data!.name,
     source: tarjanNodes.find((node) => node.id === edge.source)!,
@@ -140,9 +143,11 @@ function groupNodesBySCC(
     const nodeGroup: Node<NodeData>[] = [];
     const edgeGroup: Edge<EdgeData>[] = [];
     for (const node of scc) {
-      nodeGroup.push(firstAttributeNodes.find((n) => n.id === node.id)!);
+      nodeGroup.push(
+        firstOrFollowAttributeNodes.find((n) => n.id === node.id)!,
+      );
     }
-    for (const edge of firstAttributeEdges) {
+    for (const edge of firstOrFollowAttributeEdges) {
       if (nodeGroup.some((node) => node.id === edge.source)) {
         if (nodeGroup.some((node) => node.id === edge.target)) {
           edgeGroup.push(edge);
@@ -162,10 +167,10 @@ function groupNodesBySCC(
   }
 
   const newNodes: Node<NodeData>[] = [];
-  const newEdges: Edge<EdgeData>[] = [...firstAttributeEdges];
+  const newEdges: Edge<EdgeData>[] = [...firstOrFollowAttributeEdges];
 
   for (const nodeGroup of groupedNodes) {
-    const superNodeId = getFirstNodeId();
+    const superNodeId = getNodeId();
     const leftuppermostNode = nodeGroup.reduce((prev, curr) =>
       prev.position.x < curr.position.x ||
       (prev.position.x === curr.position.x && prev.position.y < curr.position.y)
@@ -208,7 +213,7 @@ function groupNodesBySCC(
   // Here we only add edges between two different
   // strongly connected components
   // If we also wanted self-edges, we would have to
-  // change ungroupedEdges to firstAttributeEdges
+  // change ungroupedEdges to first/follow-AttributeEdges
   for (const edge of ungroupedEdges) {
     const sourceSccId = newNodes.find(
       (node) => node.id === edge.source,
@@ -225,7 +230,7 @@ function groupNodesBySCC(
     const isGroupEdge =
       sourceScc.type === "group" && targetScc.type === "group";
     newEdges.push({
-      id: getFirstEdgeId(),
+      id: getEdgeId(),
       type: "floating",
       source: sourceSccId,
       target: targetSccId,
@@ -250,7 +255,7 @@ function groupNodesBySCC(
   }
 
   return {
-    nodes: newNodes.sort(sortFirstAndGroupNodes),
+    nodes: newNodes.sort(sortChildAndGroupNodes),
     edges: newEdges,
   };
 }

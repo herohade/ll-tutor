@@ -30,7 +30,7 @@ import {
 
 type Props = NodeProps<NodeData>;
 
-function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
+function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const selector = (
     state: GrammarSlice &
       FirstNodeSlice &
@@ -587,4 +587,4 @@ function GroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   );
 }
 
-export default GroupNode;
+export default FirstGroupNode;

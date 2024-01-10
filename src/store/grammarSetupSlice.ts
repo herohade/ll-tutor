@@ -20,6 +20,7 @@ export const createGrammarSetupSlice: StateCreator<GrammarSetupSlice> = (
   preparedEmpty: false,
   preparedFirst: false,
   preparedFirstMap: false,
+  preparedFollow: false,
   setStart: (start: [name: Nonterminal, start: boolean][]) => {
     set({ start: start });
   },
@@ -37,5 +38,8 @@ export const createGrammarSetupSlice: StateCreator<GrammarSetupSlice> = (
   },
   setPreparedFirstMap: (setup: boolean) => {
     set({ preparedFirstMap: setup });
+  },
+  setPreparedFollow: (setup: boolean) => {
+    set({ preparedFollow: setup });
   },
 });

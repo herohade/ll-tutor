@@ -40,6 +40,7 @@ import {
   EdgeData,
   EmptyNodeSlice,
   FirstNodeSlice,
+  FollowNodeSlice,
   NavigationSlice,
   NodeData,
 } from "./types";
@@ -49,7 +50,7 @@ import "reactflow/dist/base.css";
 
 export default function App() {
   const selector = (
-    state: NavigationSlice & EmptyNodeSlice & FirstNodeSlice,
+    state: NavigationSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice,
   ) => ({
     // NavigationSlice
     page: state.page,
@@ -71,6 +72,16 @@ export default function App() {
     onFirstNodesChange: state.onFirstNodesChange,
     onFirstEdgesChange: state.onFirstEdgesChange,
     onFirstConnect: state.onFirstConnect,
+    // FollowNodeSlice
+    followNodeTypes: state.followNodeTypes,
+    followEdgeTypes: state.followEdgeTypes,
+    followNodes: state.followNodes,
+    followEdges: state.followEdges,
+    setFollowNodes: state.setFollowNodes,
+    setFollowEdges: state.setFollowEdges,
+    onFollowNodesChange: state.onFollowNodesChange,
+    onFollowEdgesChange: state.onFollowEdgesChange,
+    onFollowConnect: state.onFollowConnect,
   });
   const {
     // NavigationSlice
@@ -93,6 +104,16 @@ export default function App() {
     onFirstNodesChange,
     onFirstEdgesChange,
     onFirstConnect,
+    // FollowNodeSlice
+    followNodeTypes,
+    followEdgeTypes,
+    followNodes,
+    followEdges,
+    setFollowNodes,
+    setFollowEdges,
+    onFollowNodesChange,
+    onFollowEdgesChange,
+    onFollowConnect,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -265,6 +286,130 @@ export default function App() {
     [setFirstNodes, firstNodes, setFirstEdges, firstEdges],
   );
 
+  // Function to add a group node as a follow nodes parent
+  // if the dragged follow node does not already have one
+  // and is dragged on top of a group node
+  const onFollowNodeDragStop = useCallback(
+    (_event: ReactMouseEvent, node: Node<NodeData>) => {
+      if (node.type !== "follow" || node.parentNode) {
+        return;
+      }
+      if (import.meta.env.DEV) {
+        console.log("Drag stopped");
+      }
+
+      const intersections: Node<NodeData>[] = getIntersectingGroupNodes(
+        node,
+        followNodes,
+      );
+      // it seems that later elements are rendered on top of earlier ones and
+      // it is more natural to have the node bind to the group node that is
+      // the most visible one / the one on top (if there are multiple)
+      const groupNode = intersections[intersections.length - 1];
+      if (import.meta.env.DEV) {
+        console.log(intersections);
+      }
+
+      // when there is an intersection on drag stop, we want to attach the node to its new parent
+      if (intersections.length) {
+        const newNodes: Node<NodeData>[] = followNodes.map((n) => {
+          if (n.id === node.id) {
+            const position = {
+              x: node.position.x - groupNode.position.x,
+              y: node.position.y - groupNode.position.y,
+            };
+
+            return {
+              ...n,
+              position,
+              parentNode: groupNode.id,
+              extent: "parent",
+              // we need to set dragging = false, because the internal change of the dragging state
+              // is not applied yet, so the node would be rendered as dragging
+              dragging: false,
+            } as Node<NodeData>;
+          } else {
+            if (n.id === groupNode.id) {
+              // add new name
+              if (import.meta.env.DEV) {
+                console.log(
+                  "old groupnode name",
+                  groupNode.data.name.split(", "),
+                );
+              }
+              // name is something like scc, A, B, C
+              // TODO: get a better name. maybe with JSON.stringify?
+              const newName = groupNode.data.name
+                .split(", ")
+                .filter((name) => name.length > 0)
+                .concat([node.data.name])
+                .sort((a, b) => {
+                  if (a === "scc") {
+                    return -1; // "scc" comes first
+                  } else if (b === "scc") {
+                    return 1; // "scc" comes before other strings
+                  } else {
+                    return a.localeCompare(b); // lexicographical sorting for other strings
+                  }
+                })
+                .join(", ");
+              if (import.meta.env.DEV) {
+                console.log("new groupnode name", newName);
+              }
+              return {
+                ...n,
+                data: {
+                  ...groupNode.data,
+                  name: newName,
+                },
+              } as Node<NodeData>;
+            }
+          }
+
+          return n;
+        });
+        // We also need to update the edge names (sourcename->targetname)
+        const newEdges: Edge<EdgeData>[] = followEdges.map((edge) => {
+          // get the new names/nodes if they exist, else use the old ones
+          if (edge.source === groupNode.id || edge.target === groupNode.id) {
+            const newSource =
+              edge.source === groupNode.id ? groupNode.id : edge.source;
+            const newSourceNode: Node<NodeData> | undefined =
+              edge.source === groupNode.id
+                ? newNodes.find((node) => node.id === groupNode.id)
+                : edge.sourceNode;
+            const newTarget =
+              edge.target === groupNode.id ? groupNode.id : edge.target;
+            const newTargetNode: Node<NodeData> | undefined =
+              edge.target === groupNode.id
+                ? newNodes.find((node) => node.id === groupNode.id)
+                : edge.targetNode;
+            if (!newSourceNode || !newTargetNode || !edge.data) {
+              throw new Error("new source or target node not found or no data");
+            }
+            return {
+              ...edge,
+              source: newSource,
+              sourceNode: newSourceNode,
+              target: newTarget,
+              targetNode: newTargetNode,
+              data: {
+                ...edge.data,
+                name: newSourceNode.data.name + "->" + newTargetNode.data.name,
+              },
+            };
+          } else {
+            return edge;
+          }
+        });
+
+        setFollowNodes(newNodes);
+        setFollowEdges(newEdges);
+      }
+    },
+    [setFollowNodes, followNodes, setFollowEdges, followEdges],
+  );
+
   // ReactFlow canvas, stays the same between pages
   const customControls = <CustomControls />;
   const emptyGraphCanvas = (
@@ -309,17 +454,16 @@ export default function App() {
   );
 
   const followGraphCanvas = (
-    // TODO: change to follow variables
     <ReactFlow
-      nodes={firstNodes}
-      edges={firstEdges}
-      onNodesChange={onFirstNodesChange}
-      onEdgesChange={onFirstEdgesChange}
+      nodes={followNodes}
+      edges={followEdges}
+      onNodesChange={onFollowNodesChange}
+      onEdgesChange={onFollowEdgesChange}
       connectionLineComponent={ConnectionLine}
-      onConnect={onFirstConnect(showSnackbar)}
-      onNodeDragStop={onFirstNodeDragStop}
-      nodeTypes={firstNodeTypes}
-      edgeTypes={firstEdgeTypes}
+      onConnect={onFollowConnect(showSnackbar)}
+      onNodeDragStop={onFollowNodeDragStop}
+      nodeTypes={followNodeTypes}
+      edgeTypes={followEdgeTypes}
       fitView={true}
       zoomOnDoubleClick={false}
       selectNodesOnDrag={false}

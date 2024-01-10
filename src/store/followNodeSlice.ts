@@ -13,18 +13,18 @@ import {
 
 import { VariantType } from "notistack";
 
-import { FirstNode, FirstGroupNode, FloatingEdge } from "../components";
+import { FollowNode, FloatingEdge, FollowGroupNode } from "../components";
 
 import {
-  FirstNodeSlice,
+  FollowNodeSlice,
   NodeData,
   NodeColor,
   EdgeData,
   EdgePathType,
 } from "../types";
 
-// Function to sort group nodes before first nodes
-const sortFirstAndGroupNodes = (
+// Function to sort group nodes before follow nodes
+const sortFollowAndGroupNodes = (
   a: Node<NodeData>,
   b: Node<NodeData>,
 ): number => {
@@ -34,49 +34,49 @@ const sortFirstAndGroupNodes = (
   return a.type === "group" && b.type !== "group" ? -1 : 1;
 };
 
-export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
+export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
   set,
   get,
 ) => ({
-  firstIdCounter: 0,
-  firstNodeTypes: {
-    first: FirstNode,
-    group: FirstGroupNode,
+  followIdCounter: 0,
+  followNodeTypes: {
+    follow: FollowNode,
+    group: FollowGroupNode,
   },
-  firstEdgeTypes: {
+  followEdgeTypes: {
     floating: FloatingEdge,
   },
-  firstSetupComplete: false,
-  firstNodes: [],
-  firstEdges: [],
-  getFirstNodeId: () => {
-    const counter = get().firstIdCounter;
-    set({ firstIdCounter: counter + 1 });
-    return "FirstNode" + counter;
+  followSetupComplete: false,
+  followNodes: [],
+  followEdges: [],
+  getFollowNodeId: () => {
+    const counter = get().followIdCounter;
+    set({ followIdCounter: counter + 1 });
+    return "FollowNode" + counter;
   },
-  getFirstEdgeId: () => {
-    const counter = get().firstIdCounter;
-    set({ firstIdCounter: counter + 1 });
-    return "FirstEdge" + counter;
+  getFollowEdgeId: () => {
+    const counter = get().followIdCounter;
+    set({ followIdCounter: counter + 1 });
+    return "FollowEdge" + counter;
   },
-  setFirstSetupComplete: (complete: boolean) => {
-    set({ firstSetupComplete: complete });
+  setFollowSetupComplete: (complete: boolean) => {
+    set({ followSetupComplete: complete });
   },
-  setFirstNodes: (nodes: Node<NodeData>[], fitView?: () => void) => {
-    set({ firstNodes: nodes.sort(sortFirstAndGroupNodes) });
+  setFollowNodes: (nodes: Node<NodeData>[], fitView?: () => void) => {
+    set({ followNodes: nodes.sort(sortFollowAndGroupNodes) });
     if (fitView) {
       setTimeout(() => fitView(), 0);
     }
   },
-  setFirstEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => {
-    set({ firstEdges: edges });
+  setFollowEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => {
+    set({ followEdges: edges });
     if (fitView) {
       setTimeout(() => fitView(), 0);
     }
   },
   setLabelSize(nodeId, size) {
     set({
-      firstNodes: get().firstNodes.map((node) => {
+      followNodes: get().followNodes.map((node) => {
         if (node.id === nodeId) {
           node.data = {
             ...node.data,
@@ -87,20 +87,20 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
       }),
     });
   },
-  onFirstNodesChange: (changes: NodeChange[]) => {
-    const firstNodes = get().firstNodes;
+  onFollowNodesChange: (changes: NodeChange[]) => {
+    const followNodes = get().followNodes;
     set({
-      firstNodes: applyNodeChanges(changes, firstNodes),
+      followNodes: applyNodeChanges(changes, followNodes),
     });
     return;
   },
-  onFirstEdgesChange: (changes: EdgeChange[]) => {
-    const firstEdges = get().firstEdges;
+  onFollowEdgesChange: (changes: EdgeChange[]) => {
+    const followEdges = get().followEdges;
     set({
-      firstEdges: applyEdgeChanges(changes, firstEdges),
+      followEdges: applyEdgeChanges(changes, followEdges),
     });
   },
-  onFirstConnect:
+  onFollowConnect:
     (
       showSnackbar: (
         message: string,
@@ -117,7 +117,7 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
         }
         return;
       }
-      const nodes = get().firstNodes;
+      const nodes = get().followNodes;
       const sourceNode = nodes.find((n) => n.id === connection.source);
       const targetNode = nodes.find((n) => n.id === connection.target);
       if (!sourceNode || !targetNode) {
@@ -131,8 +131,8 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
       const edgeName = sourceNode.data.name + "->" + targetNode.data.name;
       const isGroupEdge =
         sourceNode.type === "group" || targetNode.type === "group";
-      const edges = get().firstEdges;
-      const id = get().getFirstEdgeId();
+      const edges = get().followEdges;
+      const id = get().getFollowEdgeId();
 
       if (
         edges.some(
@@ -172,15 +172,15 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
         },
       };
       set({
-        firstEdges: addEdge(params, edges),
+        followEdges: addEdge(params, edges),
       });
     },
-  toggleFirstDeletableAndConnectable: (
+  toggleFollowDeletableAndConnectable: (
     deletable: boolean,
     connectable: boolean,
   ) => {
     set({
-      firstNodes: get().firstNodes.map((node) => {
+      followNodes: get().followNodes.map((node) => {
         return {
           ...node,
           connectable: connectable,
@@ -190,15 +190,15 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
               : { ...node.data, deletable: deletable },
         };
       }),
-      firstEdges: get().firstEdges.map((edge) => {
+      followEdges: get().followEdges.map((edge) => {
         edge.deletable = deletable;
         return edge;
       }),
     });
   },
-  setFirstNodeEdgesHidden: (hidden: boolean) => {
+  setFollowNodeEdgesHidden: (hidden: boolean) => {
     set({
-      firstEdges: get().firstEdges.map((edge) => {
+      followEdges: get().followEdges.map((edge) => {
         if (!edge.data?.isGroupEdge) {
           return {
             ...edge,

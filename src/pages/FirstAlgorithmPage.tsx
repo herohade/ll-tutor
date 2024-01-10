@@ -14,6 +14,7 @@ import {
   FirstNodeSlice,
   GrammarSlice,
   Nonterminal,
+  Terminal,
 } from "../types";
 
 type Props = {
@@ -393,7 +394,9 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
             return false;
           }
           // we checked for undefined above, so we can do this safely
-          symbol.first = firstSet as Array<Nonterminal>;
+          symbol.first = symbol.empty
+            ? ([...firstSet, epsilon] as Array<Terminal>)
+            : (firstSet as Array<Terminal>);
         }
       }
     }

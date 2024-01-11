@@ -124,7 +124,9 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "The allowed characters are:\n- 0123456789\n- abcdefghijklmnopqrstuvwxyz\n- ABCDEFGHIJKLMNOPQRSTUVWXYZ\n- !\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~\n(notice that space is not allowed)."
+              // ascii characters from 33 to 126 except:
+              // " "(space), "$" and "|"
+              'The allowed characters are:\n- 0123456789\n- abcdefghijklmnopqrstuvwxyz\n- ABCDEFGHIJKLMNOPQRSTUVWXYZ\n- !"#%&\'()*+,-./:;<=>?@[\\]^_`{}~\n(notice that space(" "), "$", and "|" are not allowed as they might be confusing).'
             }
           </>
         ),

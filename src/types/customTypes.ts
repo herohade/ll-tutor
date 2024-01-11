@@ -326,4 +326,5 @@ export type FollowNodeSlice = {
     connectable: boolean,
   ) => void;
   setFollowNodeEdgesHidden: (hidden: boolean) => void;
+  setExpandParent: (expand: boolean) => void;
 };

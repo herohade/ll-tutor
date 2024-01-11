@@ -71,6 +71,14 @@ export default function SettingsComponent({ DisplayButton }: Props) {
     setScroll(scrollType);
   };
 
+  const handleClickTutorial = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSettings({
+      ...settings,
+      tutorial: event.target.checked,
+    });
+    setTutorialPage(page + 1);
+  };
+
   const handleClose = (keepChanges: boolean) => {
     if (keepChanges) {
       setOldSettings(settings);
@@ -111,13 +119,7 @@ export default function SettingsComponent({ DisplayButton }: Props) {
             <Typography>Off</Typography>
             <Switch
               checked={settings.tutorial}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                setSettings({
-                  ...settings,
-                  tutorial: event.target.checked,
-                });
-                setTutorialPage(page + 1);
-              }}
+              onChange={handleClickTutorial}
               inputProps={{ "aria-label": "ant design" }}
             />
             <Typography>On</Typography>

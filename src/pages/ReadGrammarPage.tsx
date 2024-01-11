@@ -27,14 +27,10 @@ import {
 } from "../types";
 
 // Allowed (non)terminal characters
-const allowedSymbols: string = (() => {
-  let s: string = "";
-  // 33 instead of 32 because we don't want the space character
-  for (let i = 33; i <= 126; i++) {
-    s += String.fromCharCode(i);
-  }
-  return s;
-})();
+// ascii characters from 33 to 126 except:
+// " "(space), "$" and "|" as they might be confusing
+const allowedSymbols: string =
+  "!\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{}~";
 
 // This function adds Printables (Terminals, Nonterminals and Productions) to
 // a given array.
@@ -168,7 +164,8 @@ function ReadGrammarPage() {
     for (const c of right) {
       if (!allowedSymbols.includes(c)) {
         showSnackbar(
-          "The right side of the production must only contain allowed symbols!",
+          "The right side of the production must only contain allowed symbols!" +
+            ` ("${c}")`,
           "error",
           true,
         );
@@ -213,10 +210,6 @@ function ReadGrammarPage() {
     return true;
   };
 
-  // TODO: add help button with
-  // - allowed terminals
-  // - allowed nonterminals
-  // - production structure
   // TODO: add up-/download grammar button
   // TODO: add example grammars
   return (

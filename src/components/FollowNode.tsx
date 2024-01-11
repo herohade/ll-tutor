@@ -38,6 +38,8 @@ function FollowNode({ id, xPos, yPos, data, isConnectable }: Props) {
   } = useBoundStore(selector, shallow);
 
   const parentId = followNodes.find((node) => node.id === id)?.parentNode;
+  
+  const isFollow = data.name.startsWith("Follow");
 
   const onDetach = () => {
     const oldParentId = parentId;
@@ -122,11 +124,18 @@ function FollowNode({ id, xPos, yPos, data, isConnectable }: Props) {
 
   const isConnecting = !!connectionNodeId;
 
-  const content = <Typography className="min-w-6">{data.name}</Typography>;
+  const content = (
+    <Typography className="min-w-6">
+      {
+        // name looks something like Follow(name) or Fe(name)
+        data.name.match(/\((.+)\)/)?.[1] ?? data.name
+      }
+    </Typography>
+  );
 
   return (
     <>
-      {!followSetupComplete && (
+      {!followSetupComplete && isFollow && (
         <NodeToolbar className="nodrag">
           {parentId !== undefined && (
             <Button variant="outlined" color="error" onClick={onDetach}>

@@ -209,4 +209,17 @@ export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
       }),
     });
   },
+  setExpandParent: (expand: boolean) => {
+    set({
+      followNodes: get().followNodes.map((node) => {
+        if (node.type !== "group") {
+          return {
+            ...node,
+            expandParent: expand,
+          };
+        }
+        return node;
+      }),
+    });
+  },
 });

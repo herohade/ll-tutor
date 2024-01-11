@@ -28,9 +28,7 @@ type Props = NodeProps<NodeData>;
 
 function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const selector = (
-    state: GrammarSlice &
-      FollowNodeSlice &
-      NavigationSlice,
+    state: GrammarSlice & FollowNodeSlice & NavigationSlice,
   ) => ({
     // GrammarSlice
     terminals: state.terminals,
@@ -84,6 +82,8 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
       );
     }
   }, [id, ref, setLabelSize]);
+
+  const isFollow = data.name.startsWith("Follow");
 
   // We don't want group nodes to be smaller than the content. But (constantly)
   // calculating the minimum size is expensive. So we set the minimum size to
@@ -195,11 +195,15 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const content =
     page === 7 ? (
       <p className="m-0 whitespace-nowrap">
-        <b>
-          {/* TODO: differentiate between new ones (follow) and the firstSet ones (F-epsilon) */}
-          {/* F<sub>ε</sub>: */}
-          Follow<sub>1</sub>:
-        </b>
+        {isFollow ? (
+          <b>
+            Follow<sub>1</sub>:
+          </b>
+        ) : (
+          <b>
+            F<sub>ε</sub>:
+          </b>
+        )}
         <br />
         {terminals.map((terminal) => {
           // const isInFollowSet = thisFollowNodeMap
@@ -226,9 +230,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         })}
       </p>
     ) : (
-      <>
-        TODO
-      </>
+      <>TODO</>
     );
 
   return (
@@ -240,7 +242,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           borderWidth: 1,
         }}
       />
-      {!followSetupComplete && (
+      {!followSetupComplete && isFollow && (
         <NodeToolbar className="nodrag">
           <Stack
             direction={{ xs: "column", sm: "row" }}

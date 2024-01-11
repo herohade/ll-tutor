@@ -7,6 +7,10 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
   maxPage: 9,
   page: 0,
   open: window.innerWidth > window.innerHeight || window.innerWidth > 800,
+  // settings to store in local storage
+  // tutorial: whether to show tutorial (default: true)
+  // colorScheme: dark (default), light, or system
+  // language: en (default) (not implemented)
   settings: JSON.parse(
     localStorage.getItem("settings") ||
       '{"tutorial": true, "colorScheme": "system", "language": "en"}',

@@ -276,7 +276,7 @@ function CustomControls() {
       type: "group",
       deletable: false,
       data: {
-        name: "scc",
+        name: "Follow(scc)",
         empty: false,
         color: NodeColor.none,
       },

@@ -268,7 +268,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     }
     const missingEdges: Edge<EdgeData>[] = Array.from(missingEdgesSet).map(
       (edgeName) => {
-        const id = getFirstNodeId();
+        const id = getFirstEdgeId();
         const sourceNode = setUpNodes.find(
           (node) => node.data.name === edgeName.split("->")[0],
         );
@@ -298,7 +298,6 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
           targetNode: targetNode,
           deletable: true,
           data: {
-            sections: [],
             pathType: EdgePathType.Straight,
             isGroupEdge: isGroupEdge,
             name: edgeName,

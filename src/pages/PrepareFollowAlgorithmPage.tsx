@@ -22,6 +22,7 @@ import {
   NodeColor,
   NodeData,
   Nonterminal,
+  Terminal,
 } from "../types";
 
 type Props = {
@@ -46,6 +47,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       FollowNodeSlice,
   ) => ({
     // GrammarSlice
+    startSymbol: state.startSymbol,
     epsilon: state.epsilon,
     productions: state.productions,
     nonTerminals: state.nonTerminals,
@@ -73,9 +75,11 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowEdges: state.setFollowEdges,
     toggleFollowDeletableAndConnectable:
       state.toggleFollowDeletableAndConnectable,
+    setExpandParent: state.setExpandParent,
   });
   const {
     // GrammarSlice
+    startSymbol,
     epsilon,
     productions,
     nonTerminals,
@@ -102,6 +106,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowNodes,
     setFollowEdges,
     toggleFollowDeletableAndConnectable,
+    setExpandParent,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -136,90 +141,285 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
   const { fitView } = useReactFlow();
 
   const reset = () => {
+    // This is pretty much a copy/paste of the setup in HeaderComponent:
     const newFollowNodes: Node<NodeData>[] = [];
     const newFollowEdges: Edge<EdgeData>[] = [];
 
-    // add a new FollowNode for each (Non)terminal
-    for (const node of emptyNodes.filter((n) => n.data.name !== "ε")) {
+    // since we can't use the elk layouting algorithm here,
+    // we will just eyeball the positions of the nodes
+    // (Actually here, unlike in HeaderComponent, we could,
+    // but I think it's better if it looks the same as when
+    // you actually first get to this step so we keep it)
+    const maxXY: { x: number; y: number } = { x: 0, y: 0 };
+
+    // Add all FirstNodes as FollowNodes (we need F_epsilon again)
+    for (const node of firstNodes) {
+      // group nodes stay group nodes, first nodes become follow nodes
+      const type = node.type === "group" ? "group" : "follow";
+      const parentNodeName: string | undefined = node.parentNode
+        ? firstNodes.find((n) => n.id === node.parentNode)?.data.name
+        : undefined;
+      const parentNode: string | undefined = parentNodeName
+        ? newFollowNodes.find(
+            (n) => n.data.name === "Fε(" + parentNodeName + ")",
+          )?.id
+        : undefined;
+
+      // update the furthest position of a node
+      if (node.position.x < maxXY.x) {
+        maxXY.x = node.position.x;
+      }
+      if (node.position.y < maxXY.y) {
+        maxXY.y = node.position.y;
+      }
+
       const newNode: Node<NodeData> = {
         id: getFollowNodeId(),
-        type: "follow",
+        type,
         position: node.position,
+        width: node.width,
+        height: node.height,
+        parentNode,
+        extent: node.extent,
+        expandParent: type !== "group" ? true : undefined,
         deletable: false,
         data: {
           ...node.data,
+          name: "Fε(" + node.data.name + ")",
+          // TODO: change color-scheme to distinguish between Follow_1 and this
         },
       };
       newFollowNodes.push(newNode);
     }
 
-    // add a FollowNode {t} for each terminal t
-    for (const terminal of terminals) {
-      const terminalNode: Node<NodeData> | undefined = newFollowNodes.find(
-        (n) => n.data.name === terminal.name,
-      );
-      if (!terminalNode) {
-        if (import.meta.env.DEV) {
-          console.error(
-            "Error Code 244100: Terminal not found among newFollowNodes!",
-            terminal,
-          );
-        }
-        return;
-      }
-      const nodeId = getFollowNodeId();
-      const nodeName = `{${terminal.name}}`;
+    // move the position of the first node to the top left
+    maxXY.x -= 300;
+    // afterwards alternate between moving left and up
+    let leftOrUp = false;
+
+    // Add FollowNode {$} (Part of Follow set for S')
+    // Also add it's group node, since that one should display
+    // F_epsilon. If all nodes added by the user were Follow
+    // group nodes, that would be nicer.
+    const dollarGroupNodeId = getFollowNodeId();
+
+    const dollarGroupNode: Node<NodeData> = {
+      id: dollarGroupNodeId,
+      type: "group",
+      position: {
+        x: maxXY.x,
+        y: maxXY.y,
+      },
+      deletable: false,
+      data: {
+        name: "Fε(SCC({$}))",
+        empty: false,
+        // TODO: change color-scheme to distinguish between Follow_1 and this
+        color: NodeColor.none,
+      },
+    };
+
+    const dollarNode: Node<NodeData> = {
+      id: getFollowNodeId(),
+      type: "follow",
+      position: {
+        x: 140,
+        y: 130,
+      },
+      parentNode: dollarGroupNodeId,
+      extent: "parent",
+      expandParent: true,
+      deletable: false,
+      data: {
+        name: "Fε({$})",
+        empty: false,
+        // TODO: change color-scheme to distinguish between Follow_1 and this
+        color: NodeColor.none,
+      },
+    };
+
+    newFollowNodes.push(dollarGroupNode);
+    newFollowNodes.push(dollarNode);
+
+    // Add new FollowNode for all Nonterminals (these will not be for F_epsilon
+    // but for Follow_1. These are the nodes the user has to connect and group)
+    for (const nonterminal of nonTerminals) {
+      // move the position of the next node
+      maxXY.x -= leftOrUp ? 150 : 0;
+      maxXY.y -= leftOrUp ? 0 : 150;
+      leftOrUp = !leftOrUp;
+      const position = {
+        x: maxXY.x,
+        y: maxXY.y,
+      };
+
       const newNode: Node<NodeData> = {
-        id: nodeId,
+        id: getFollowNodeId(),
         type: "follow",
-        position: {
-          x: terminalNode.position.x,
-          y: terminalNode.position.y - (terminalNode.height ?? 50) - 50,
-        },
+        position,
         deletable: false,
         data: {
-          name: nodeName,
-          empty: false,
-          color: NodeColor.none,
+          name: "Follow(" + nonterminal.name + ")",
+          empty: nonterminal.empty,
+          // TODO: change color-scheme to distinguish between F_epsilon and this
+          color: nonterminal.empty ? NodeColor.older : NodeColor.none,
         },
       };
-      const edgeName = nodeName + "->" + terminalNode.data.name;
+      newFollowNodes.push(newNode);
+    }
+
+    // Add Edge {$} -> S' (Part of Follow set for S')
+    const sourceNode: Node<NodeData> = dollarNode;
+    const targetNode: Node<NodeData> | undefined = newFollowNodes.find(
+      (n) => n.data.name === "Follow(" + startSymbol.name + ")",
+    );
+    if (!targetNode) {
+      if (import.meta.env.DEV) {
+        console.error(
+          "Error Code 5d1a2e: Start symbol not found among newFollowNodes!",
+          newFollowNodes,
+        );
+      }
+      showSnackbar(
+        "Error Code 5d1a2e: Please contact the developer!",
+        "error",
+        true,
+      );
+      return false;
+    }
+    const newEdge: Edge<EdgeData> = {
+      id: getFollowEdgeId(),
+      type: "floating",
+      source: sourceNode.id,
+      target: targetNode.id,
+      sourceNode,
+      targetNode,
+      deletable: false,
+      data: {
+        pathType: EdgePathType.Straight,
+        isGroupEdge: false,
+        name: sourceNode.data.name + "->" + targetNode.data.name,
+      },
+      animated: true,
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        orient: "auto",
+        // TODO: change color-scheme to distinguish between Follow_1 and this
+        color: NodeColor.none,
+      },
+      style: {
+        strokeWidth: 2,
+        // TODO: change color-scheme to distinguish between Follow_1 and this
+        stroke: NodeColor.none,
+      },
+    };
+    newFollowEdges.push(newEdge);
+
+    // Add all FirstNode edges as FollowNode edges (we need F_epsilon again)
+    for (const firstEdge of firstEdges) {
+      // we only care about the edges between the group nodes
+      // so instead of hiding them again we just ignore them here
+      if (firstEdge.data?.isGroupEdge !== true) {
+        continue;
+      }
+
+      const sourceNode: Node<NodeData> | undefined = newFollowNodes.find(
+        (n) => n.data.name === "Fε(" + firstEdge.sourceNode?.data.name + ")",
+      );
+      const targetNode: Node<NodeData> | undefined = newFollowNodes.find(
+        (n) => n.data.name === "Fε(" + firstEdge.targetNode?.data.name + ")",
+      );
+      if (!sourceNode || !targetNode) {
+        if (import.meta.env.DEV) {
+          console.error(
+            "Error Code 75123b: FirstNode not found among newFollowNodes!",
+            firstEdge,
+            newFollowNodes,
+          );
+        }
+        showSnackbar(
+          "Error Code 75123b: Please contact the developer!",
+          "error",
+          true,
+        );
+        return false;
+      }
+
       const newEdge: Edge<EdgeData> = {
         id: getFollowEdgeId(),
         type: "floating",
-        source: nodeId,
-        target: terminalNode.id,
-        sourceNode: newNode,
-        targetNode: terminalNode,
+        source: sourceNode.id,
+        target: targetNode.id,
+        sourceNode,
+        targetNode,
         deletable: false,
         data: {
           pathType: EdgePathType.Straight,
+          // the original nodes are group nodes, but we do not want to
+          // do anything with the group nodes here (we only care about the
+          // ones added by the user after this). So we set isGroupEdge to false
+          // and use the fact that only user added group edges will have this
+          // set to true to filter for them later.
+          // Maybe this variable should be renamed but I'm too lazy right now.
           isGroupEdge: false,
-          name: edgeName,
+          name: sourceNode.data.name + "->" + targetNode.data.name,
         },
         animated: true,
         markerEnd: {
           type: MarkerType.ArrowClosed,
           orient: "auto",
+          // TODO: change color-scheme to distinguish between Follow_1 and this
           color: NodeColor.none,
         },
         style: {
           strokeWidth: 2,
+          // TODO: change color-scheme to distinguish between Follow_1 and this
           stroke: NodeColor.none,
         },
       };
-      newFollowNodes.push(newNode);
+
       newFollowEdges.push(newEdge);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("firstNodes", firstNodes);
+      console.log("firstEdges", firstEdges);
+      console.log("newFollowNodes", newFollowNodes);
+      console.log("newFollowEdges", newFollowEdges);
     }
 
     setFollowNodes(newFollowNodes);
     setFollowEdges(newFollowEdges, fitView);
+
+    // above we set expandParent to true, so that groupnodes automatically
+    // expant to fit their children
+    // This is not something we usually want, so we set it back to false after
+    // the page (hopefully) has loaded
+    // setExpandParent(false);
+    setTimeout(() => {
+      setExpandParent(false);
+    }, 1000);
   };
 
   const addMissing = () => {
+    // first we "restore" the original state by filtering out all nodes
+    // and edges that were added by the user
     const setUpNodes = followNodes
-      .filter((node) => node.type === "follow")
+      .filter((node) => {
+        // this filters out all Follow-GroupNodes, which are exactly the
+        // nodes added by the user
+        if (node.type === "follow") {
+          return true;
+        } else {
+          if (node.data.name.startsWith("Fε(")) {
+            return true;
+          }
+          return false;
+        }
+      })
       .map((node) => {
+        // if a node has a parent that is user added, we need to remove
+        // it from the parent (as they will not be in the new array)
         if (node.parentNode !== undefined) {
           const parentNode = followNodes.find(
             (parentNode) => parentNode.id === node.parentNode,
@@ -234,15 +434,18 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
             }
             return node;
           }
-          return {
-            ...node,
-            position: {
-              x: parentNode.position.x + node.position.x,
-              y: parentNode.position.y + node.position.y,
-            },
-            parentNode: undefined,
-            extent: undefined,
-          };
+          // exactly the user added nodes are Follow-GroupNodes
+          if (parentNode.data.name.startsWith("Follow(")) {
+            return {
+              ...node,
+              position: {
+                x: parentNode.position.x + node.position.x,
+                y: parentNode.position.y + node.position.y,
+              },
+              parentNode: undefined,
+              extent: undefined,
+            };
+          }
         }
         return node;
       });
@@ -252,23 +455,65 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         setUpNodes.some((node) => node.id === edge.source) &&
         setUpNodes.some((node) => node.id === edge.target),
     );
-    const missingEdgesSet = new Set<string>();
+
+    // now we add the missing edges by going through all productions
+    // and adding edges a->A for right sides ..Aa..., as well as
+    // edges A->B for productions B->...Aα, where α can be empty
+    // missingFirstEdgesSet contains edges Fε(a)->Follow(A) and
+    // missingFollowEdgesSet contains edges Follow(A)->Follow(B)
+    const missingFirstEdgesSet = new Set<string>();
+    const missingFollowEdgesSet = new Set<string>();
     for (const production of productions) {
-      let empty = true;
       let i = 0;
-      while (empty && i < production.rightSide.length) {
+      while (i < production.rightSide.length) {
         const symbol = production.rightSide[i];
+        // if the production is just A-> we can skip it
         if (symbol.name === "ε") {
           break;
         }
-        missingEdgesSet.add(symbol.name + "->" + production.leftSide.name);
-        empty = symbol.empty;
+        // We don't need to calculate follow sets for terminals
+        // so we skip them if they are on the right side
+        if (symbol instanceof Terminal) {
+          i++;
+          continue;
+        }
+        // Here we add all symbols after the current one until one is
+        // not empty
+        let empty = true;
+        let j = i + 1;
+        while (empty && j < production.rightSide.length) {
+          const nextSymbol = production.rightSide[j];
+          // we need their Fε sets, so we add them to missingFirstEdgesSet
+          missingFirstEdgesSet.add(
+            "Fε(" + nextSymbol.name + ")->Follow(" + symbol.name,
+          ) + ")";
+          empty = nextSymbol.empty;
+          j++;
+        }
+        // If all of them were empty, we also need to add an edge
+        // from the left side of the profuction to the current symbol
+        if (empty) {
+          // we need their Follow sets, so we add them to missingFollowEdgesSet
+          missingFollowEdgesSet.add(
+            "Follow(" +
+              production.leftSide.name +
+              ")->Follow(" +
+              symbol.name +
+              ")",
+          );
+        }
+
         i++;
       }
     }
-    const missingEdges: Edge<EdgeData>[] = Array.from(missingEdgesSet).map(
+    if (import.meta.env.DEV) {
+      console.log("missingFirstEdgesSet", missingFirstEdgesSet);
+      console.log("missingFollowEdgesSet", missingFollowEdgesSet);
+    }
+    // First we add all edges Fε(a)->Follow(A)
+    const missingEdges: Edge<EdgeData>[] = Array.from(missingFirstEdgesSet).map(
       (edgeName) => {
-        const id = getFollowNodeId();
+        const id = getFollowEdgeId();
         const sourceNode = setUpNodes.find(
           (node) => node.data.name === edgeName.split("->")[0],
         );
@@ -287,8 +532,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           }
           throw new Error("Error Code 6456d4: Please contact the developer!");
         }
-        const isGroupEdge =
-          sourceNode.type === "group" || targetNode.type === "group";
         return {
           id: id,
           type: "floating",
@@ -298,24 +541,81 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           targetNode: targetNode,
           deletable: true,
           data: {
-            sections: [],
             pathType: EdgePathType.Straight,
-            isGroupEdge: isGroupEdge,
+            isGroupEdge: false,
             name: edgeName,
           },
           animated: true,
           markerEnd: {
             type: MarkerType.ArrowClosed,
             orient: "auto",
+            // TODO: change color-scheme to distinguish between Follow_1 and this
             color: NodeColor.none,
           },
           style: {
             strokeWidth: 2,
+            // TODO: change color-scheme to distinguish between Follow_1 and this
             stroke: NodeColor.none,
           },
         } as Edge<EdgeData>;
       },
     );
+    // Then we add all edges Follow(A)->Follow(B)
+    for (const edgeName of missingFollowEdgesSet) {
+      const id = getFollowEdgeId();
+      const sourceNode = setUpNodes.find(
+        (node) => node.data.name === edgeName.split("->")[0],
+      );
+      const targetNode = setUpNodes.find(
+        (node) => node.data.name === edgeName.split("->")[1],
+      );
+      if (sourceNode === undefined || targetNode === undefined) {
+        if (import.meta.env.DEV) {
+          console.error(
+            "Error Code 6456d4: Node not found",
+            edgeName,
+            sourceNode,
+            targetNode,
+            setUpNodes,
+          );
+        }
+        throw new Error("Error Code 6456d4: Please contact the developer!");
+      }
+      const newEdge: Edge<EdgeData> = {
+        id: id,
+        type: "floating",
+        source: sourceNode.id,
+        target: targetNode.id,
+        sourceNode: sourceNode,
+        targetNode: targetNode,
+        deletable: true,
+        data: {
+          pathType: EdgePathType.Straight,
+          isGroupEdge: false,
+          name: edgeName,
+        },
+        animated: true,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          orient: "auto",
+          // TODO: change color-scheme to distinguish between F_epsilon and this
+          color: NodeColor.none,
+        },
+        style: {
+          strokeWidth: 2,
+          // TODO: change color-scheme to distinguish between F_epsilon and this
+          stroke: NodeColor.none,
+        },
+      };
+      missingEdges.push(newEdge);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("setUpNodes", setUpNodes);
+      console.log("setUpEdges", setUpEdges);
+      console.log("missingEdges", missingEdges);
+    }
+
     return { setUpNodes, setUpEdges, missingEdges };
   };
 
@@ -562,7 +862,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="error"
               onClick={() => {
-                showSnackbar("This is not yet implemented!", "error", true);
                 reset();
               }}
               disabled={followSetupComplete}
@@ -573,8 +872,13 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="success"
               onClick={() => {
-                showSnackbar("This is not yet implemented!", "error", true);
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
+
+                // TODO: remove this once groupNodesBySCC is rewritten to work
+                // for follow
+                showSnackbar("This is not yet implemented!", "error", true);
+                return;
+
                 const { nodes, edges } = groupNodesBySCC(
                   "follow",
                   setUpNodes,

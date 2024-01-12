@@ -1156,13 +1156,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         deletable: false,
         data: {
           pathType: EdgePathType.Straight,
-          // the original nodes are group nodes, but we do not want to
-          // do anything with the group nodes here (we only care about the
-          // ones added by the user after this). So we set isGroupEdge to false
-          // and use the fact that only user added group edges will have this
-          // set to true to filter for them later.
-          // Maybe this variable should be renamed but I'm too lazy right now.
-          isGroupEdge: false,
+          isGroupEdge: true,
           name: sourceNode.data.name + "->" + targetNode.data.name,
         },
         animated: true,

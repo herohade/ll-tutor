@@ -278,7 +278,8 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
               ...node,
               data: {
                 ...node.data,
-                name: "scc",
+                // TODO: do I also need to update this ones edges?
+                name: "SCC()",
               },
             };
           }
@@ -406,8 +407,6 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
                 (node) => node.data.name === "{" + terminal.name + "}",
               );
           return (
-            // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
-            // and color the terminals if they belong to the first set of this scc
             <StyledSpan
               key={terminal.name}
               className={

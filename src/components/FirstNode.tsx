@@ -54,30 +54,36 @@ function FirstNode({ id, xPos, yPos, data, isConnectable }: Props) {
         };
       } else {
         if (node.id === oldParentId) {
+          const oldGroupNodeName = node.data.name;
+          const [, matchedName] = oldGroupNodeName.match(/^SCC\((.*)\)$/) || [
+            undefined,
+            undefined,
+          ];
+
           if (import.meta.env.DEV) {
-            console.log("old parentnode name", node.data.name.split(", "));
+            console.log("old parentnode name", oldGroupNodeName, matchedName);
           }
-          const newName = node.data.name
+
+          if (matchedName === undefined) {
+            throw new Error("no matched name");
+          }
+
+          const newName = matchedName!
             .split(", ")
             .filter((n) => n !== data.name)
-            .sort((a, b) => {
-              if (a === "scc") {
-                return -1; // "scc" comes first
-              } else if (b === "scc") {
-                return 1; // "scc" comes before other strings
-              } else {
-                return a.localeCompare(b); // lexicographical sorting for other strings
-              }
-            })
             .join(", ");
+
+          const newGroupNodeName = "SCC(" + newName + ")";
+
           if (import.meta.env.DEV) {
-            console.log("new parentnode name", newName);
+            console.log("new groupnode name", newName, newGroupNodeName);
           }
+
           return {
             ...node,
             data: {
               ...node.data,
-              name: newName,
+              name: newGroupNodeName,
             },
           };
         }

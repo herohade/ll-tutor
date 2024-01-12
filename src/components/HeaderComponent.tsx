@@ -993,7 +993,55 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       newFollowNodes.push(newNode);
     }
 
-    let leftOrUp = true;
+    // move the position of the first node to the top left
+    maxXY.x -= 300;
+    // afterwards alternate between moving left and up
+    let leftOrUp = false;
+
+    // Add FollowNode {$} (Part of Follow set for S')
+    // Also add it's group node, since that one should display
+    // F_epsilon. If all nodes added by the user were Follow
+    // group nodes, that would be nicer.
+    const dollarGroupNodeId = getFollowNodeId();
+
+    const dollarGroupNode: Node<NodeData> = {
+      id: dollarGroupNodeId,
+      type: "group",
+      position: {
+        x: maxXY.x,
+        y: maxXY.y,
+      },
+      deletable: false,
+      data: {
+        name: "Fε(SCC({$}))",
+        empty: false,
+        // TODO: change color-scheme to distinguish between Follow_1 and this
+        color: NodeColor.none,
+      },
+    };
+
+    const dollarNode: Node<NodeData> = {
+      id: getFollowNodeId(),
+      type: "follow",
+      position: {
+        x: 140,
+        y: 130,
+      },
+      parentNode: dollarGroupNodeId,
+      extent: "parent",
+      expandParent: true,
+      deletable: false,
+      data: {
+        name: "Fε({$})",
+        empty: false,
+        // TODO: change color-scheme to distinguish between Follow_1 and this
+        color: NodeColor.none,
+      },
+    };
+
+    newFollowNodes.push(dollarGroupNode);
+    newFollowNodes.push(dollarNode);
+
     // Add new FollowNode for all Nonterminals (these will not be for F_epsilon
     // but for Follow_1. These are the nodes the user has to connect and group)
     for (const nonterminal of nonTerminals) {
@@ -1020,28 +1068,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       };
       newFollowNodes.push(newNode);
     }
-
-    // Add FollowNode {$} (Part of Follow set for S')
-    // move the position of the next node
-    maxXY.x -= leftOrUp ? 150 : 0;
-    maxXY.y -= leftOrUp ? 0 : 150;
-    leftOrUp = !leftOrUp;
-    const dollarNode: Node<NodeData> = {
-      id: getFollowNodeId(),
-      type: "follow",
-      position: {
-        x: maxXY.x,
-        y: maxXY.y,
-      },
-      deletable: false,
-      data: {
-        name: "Fε({$})",
-        empty: false,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
-        color: NodeColor.none,
-      },
-    };
-    newFollowNodes.push(dollarNode);
 
     // Add Edge {$} -> S' (Part of Follow set for S')
     const sourceNode: Node<NodeData> = dollarNode;

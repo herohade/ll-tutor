@@ -177,20 +177,27 @@ function groupNodesBySCC(
         ? prev
         : curr,
     );
+    // For Follow nodes, the names would be Follow(A), instead of A
+    // so we have to extract the name from the node data
+    const arrToName = nodeGroup
+      .map((node) => node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name)
+      .sort()
+      .join(", ");
+    // FirstNodes will be SCC(A, B, C)
+    // FollowNodes will be Follow(SCC(A, B, C)) or Fε(SCC(A, B, C))
+    // but the Fε ones should already exists, with this algorithm
+    // we only create the Follow(SCC(A, B, C)) groupNodes
+    const name =
+      nodeType === "follow"
+        ? "Follow(SCC(" + arrToName + "))"
+        : "SCC(" + arrToName + ")";
     const superNode: Node<NodeData> = {
       id: superNodeId,
       type: "group",
       position: leftuppermostNode.position,
       deletable: false,
       data: {
-        name: [
-          "scc",
-          ...nodeGroup
-            .map((node) => node.data.name)
-            .sort((a, b) => {
-              return a.localeCompare(b);
-            }),
-        ].join(", "),
+        name,
         empty: false,
         color: NodeColor.none,
       },

@@ -180,7 +180,8 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
               ...node,
               data: {
                 ...node.data,
-                name: "scc",
+                // TODO: do I also need to update this ones edges?
+                name: isFollow ? "Follow(SCC())" : "Fε(SCC())",
               },
             };
           }

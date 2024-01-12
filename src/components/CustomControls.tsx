@@ -225,7 +225,7 @@ function CustomControls() {
       type: "group",
       deletable: false,
       data: {
-        name: "scc",
+        name: "SCC()",
         empty: false,
         color: NodeColor.none,
       },
@@ -276,7 +276,7 @@ function CustomControls() {
       type: "group",
       deletable: false,
       data: {
-        name: "Follow(scc)",
+        name: "Follow(SCC())",
         empty: false,
         color: NodeColor.none,
       },

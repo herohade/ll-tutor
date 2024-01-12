@@ -118,17 +118,16 @@ export default function App() {
 
   const { enqueueSnackbar } = useSnackbar();
 
-  const showSnackbar = (
-    message: string,
-    variant: VariantType,
-    preventDuplicate: boolean,
-  ) => {
-    // variant could be success, error, warning, info, or default
-    enqueueSnackbar(message, {
-      variant,
-      preventDuplicate,
-    });
-  };
+  const showSnackbar = useCallback(
+    (message: string, variant: VariantType, preventDuplicate: boolean) => {
+      // variant could be success, error, warning, info, or default
+      enqueueSnackbar(message, {
+        variant,
+        preventDuplicate,
+      });
+    },
+    [enqueueSnackbar],
+  );
 
   const getIntersectingGroupNodes = (
     node: Node<NodeData>,
@@ -187,7 +186,7 @@ export default function App() {
       }
 
       // when there is an intersection on drag stop, we want to attach the node to its new parent
-      if (intersections.length) {
+      if (groupNode !== undefined) {
         const newNodes: Node<NodeData>[] = firstNodes.map((n) => {
           if (n.id === node.id) {
             const position = {
@@ -206,37 +205,73 @@ export default function App() {
             } as Node<NodeData>;
           } else {
             if (n.id === groupNode.id) {
-              // add new name
+              // We get something like F...(SCC(A, B, C)) or SCC(A, B, C)
+              // with F... either Follow or Fepsilon
+              //
+              // This matches name from F...(SCC(name)) in result[2]
+              // and name from SCC(name) in result[3]. F... if it exists
+              // is matched in result[1], else it's undefined:
+              // .match(/(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/)
+              //
+              // With name.split(", ") we get an array of names.
+              // This also works if a name is ",".
+              // ("A, ,,B" ===> "A" and "," and "B")
+              //
+              // With array.join(", ") we get the original string.
+              //
+              // With result[1] + (SCC(string)) or SCC(string), we get the
+              // original group node name.
+
+              const oldGroupNodeName = groupNode.data.name;
+              const [, matchedName] = oldGroupNodeName.match(
+                /^SCC\((.*)\)$/,
+              ) || [undefined, undefined];
+
+              if (matchedName === undefined) {
+                if (import.meta.env.DEV) {
+                  console.log(
+                    "Error Code b538b0: no name matched in group node name",
+                    oldGroupNodeName,
+                    matchedName,
+                  );
+                }
+                showSnackbar(
+                  "Error Code b538b0: Please contact the developer!",
+                  "error",
+                  true,
+                );
+                return n;
+              }
+
               if (import.meta.env.DEV) {
                 console.log(
                   "old groupnode name",
-                  groupNode.data.name.split(", "),
+                  oldGroupNodeName,
+                  "matched name",
+                  matchedName,
                 );
               }
-              // name is something like scc, A, B, C
-              // TODO: get a better name. maybe with JSON.stringify?
-              const newName = groupNode.data.name
-                .split(", ")
-                .filter((name) => name.length > 0)
-                .concat([node.data.name])
-                .sort((a, b) => {
-                  if (a === "scc") {
-                    return -1; // "scc" comes first
-                  } else if (b === "scc") {
-                    return 1; // "scc" comes before other strings
-                  } else {
-                    return a.localeCompare(b); // lexicographical sorting for other strings
-                  }
-                })
-                .join(", ");
+
+              const newName =
+                matchedName.length > 0
+                  ? matchedName
+                      .split(", ")
+                      .concat([node.data.name])
+                      .sort()
+                      .join(", ")
+                  : node.data.name;
+
+              const newGroupNodeName = "SCC(" + newName + ")";
+
               if (import.meta.env.DEV) {
-                console.log("new groupnode name", newName);
+                console.log("new groupnode name", newName, newGroupNodeName);
               }
+
               return {
                 ...n,
                 data: {
                   ...groupNode.data,
-                  name: newName,
+                  name: newGroupNodeName,
                 },
               } as Node<NodeData>;
             }
@@ -283,7 +318,7 @@ export default function App() {
         setFirstEdges(newEdges);
       }
     },
-    [setFirstNodes, firstNodes, setFirstEdges, firstEdges],
+    [firstNodes, firstEdges, setFirstNodes, setFirstEdges, showSnackbar],
   );
 
   // Function to add a group node as a follow nodes parent
@@ -311,7 +346,29 @@ export default function App() {
       }
 
       // when there is an intersection on drag stop, we want to attach the node to its new parent
-      if (intersections.length) {
+      if (groupNode !== undefined) {
+        // We don't want to add a Follow child node to a F-epsilon group node
+        // or vice versa (though the latter should not happen anyway)
+        const gName = groupNode.data.name;
+        const cName = node.data.name;
+        const gPrefix = gName.match(/(^[^(]+)\(.*\)$/)?.[1];
+        const cPrefix = cName.match(/(^[^(]+)\(.*\)$/)?.[1];
+        if (gPrefix !== cPrefix) {
+          if (import.meta.env.DEV) {
+            console.log("child:", cName, "group:", gName);
+          }
+          showSnackbar(
+            "Error: You can not add a " +
+              cPrefix +
+              " node to a " +
+              gPrefix +
+              " group node!",
+            "error",
+            true,
+          );
+          return;
+        }
+
         const newNodes: Node<NodeData>[] = followNodes.map((n) => {
           if (n.id === node.id) {
             const position = {
@@ -330,37 +387,84 @@ export default function App() {
             } as Node<NodeData>;
           } else {
             if (n.id === groupNode.id) {
-              // add new name
+              // We get something like F...(SCC(A, B, C)) or SCC(A, B, C)
+              // with F... either Follow or Fepsilon
+              //
+              // This matches name from F...(SCC(name)) in result[2]
+              // and name from SCC(name) in result[3]. F... if it exists
+              // is matched in result[1], else it's undefined:
+              // .match(/(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/)
+              //
+              // With name.split(", ") we get an array of names.
+              // This also works if a name is ",".
+              // ("A, ,,B" ===> "A" and "," and "B")
+              //
+              // With array.join(", ") we get the original string.
+              //
+              // With result[1] + (SCC(string)) or SCC(string), we get the
+              // original group node name.
+
+              const oldGroupNodeName = groupNode.data.name;
+              const [, prefix, nameIfPrefix, nameIfNoPrefix] =
+                oldGroupNodeName.match(
+                  /(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/,
+                ) || [undefined, undefined, undefined, undefined];
+
+              const matchedName = nameIfPrefix ?? nameIfNoPrefix;
+
+              if (matchedName === undefined) {
+                if (import.meta.env.DEV) {
+                  console.log(
+                    "Error Code 73deac: no name matched in group node name",
+                    oldGroupNodeName,
+                    matchedName,
+                    nameIfPrefix,
+                    nameIfNoPrefix,
+                  );
+                }
+                showSnackbar(
+                  "Error Code 73deac: Please contact the developer!",
+                  "error",
+                  true,
+                );
+                return n;
+              }
+
               if (import.meta.env.DEV) {
                 console.log(
                   "old groupnode name",
-                  groupNode.data.name.split(", "),
+                  oldGroupNodeName,
+                  "matched name",
+                  matchedName,
                 );
               }
-              // name is something like scc, A, B, C
-              // TODO: get a better name. maybe with JSON.stringify?
-              const newName = groupNode.data.name
-                .split(", ")
-                .filter((name) => name.length > 0)
-                .concat([node.data.name])
-                .sort((a, b) => {
-                  if (a === "scc") {
-                    return -1; // "scc" comes first
-                  } else if (b === "scc") {
-                    return 1; // "scc" comes before other strings
-                  } else {
-                    return a.localeCompare(b); // lexicographical sorting for other strings
-                  }
-                })
-                .join(", ");
+
+              const newName =
+                matchedName.length > 0
+                  ? matchedName
+                      .split(", ")
+                      .concat([
+                        // returns name even if the data.name is Follow(name)
+                        // and not name. Also works on Follow(() -> name = ")"
+                        node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name,
+                      ])
+                      .sort()
+                      .join(", ")
+                  : node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name;
+
+              const newGroupNodeName = nameIfPrefix !== undefined
+                ? prefix + "(SCC(" + newName + "))"
+                : "SCC(" + newName + ")";
+
               if (import.meta.env.DEV) {
-                console.log("new groupnode name", newName);
+                console.log("new groupnode name", newName, newGroupNodeName);
               }
+
               return {
                 ...n,
                 data: {
                   ...groupNode.data,
-                  name: newName,
+                  name: newGroupNodeName,
                 },
               } as Node<NodeData>;
             }
@@ -407,7 +511,7 @@ export default function App() {
         setFollowEdges(newEdges);
       }
     },
-    [setFollowNodes, followNodes, setFollowEdges, followEdges],
+    [followNodes, followEdges, setFollowNodes, setFollowEdges, showSnackbar],
   );
 
   // ReactFlow canvas, stays the same between pages

@@ -38,7 +38,7 @@ function FollowNode({ id, xPos, yPos, data, isConnectable }: Props) {
   } = useBoundStore(selector, shallow);
 
   const parentId = followNodes.find((node) => node.id === id)?.parentNode;
-  
+
   const isFollow = data.name.startsWith("Follow");
 
   const onDetach = () => {
@@ -56,30 +56,43 @@ function FollowNode({ id, xPos, yPos, data, isConnectable }: Props) {
         };
       } else {
         if (node.id === oldParentId) {
+          const oldGroupNodeName = node.data.name;
+          const [, prefix, nameIfPrefix, nameIfNoPrefix] =
+            oldGroupNodeName.match(
+              /(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/,
+            ) || [undefined, undefined, undefined, undefined];
+
+          const matchedName = nameIfPrefix ?? nameIfNoPrefix;
+
           if (import.meta.env.DEV) {
-            console.log("old parentnode name", node.data.name.split(", "));
+            console.log("old parentnode name", oldGroupNodeName, matchedName);
           }
-          const newName = node.data.name
+
+          if (matchedName === undefined) {
+            throw new Error("no matched name");
+          }
+
+          const newName = matchedName!
             .split(", ")
-            .filter((n) => n !== data.name)
-            .sort((a, b) => {
-              if (a === "scc") {
-                return -1; // "scc" comes first
-              } else if (b === "scc") {
-                return 1; // "scc" comes before other strings
-              } else {
-                return a.localeCompare(b); // lexicographical sorting for other strings
-              }
-            })
+            .filter(
+              (n) => n !== (data.name.match(/\((.+)\)/)?.[1] ?? data.name),
+            )
             .join(", ");
+
+          const newGroupNodeName =
+            nameIfPrefix !== undefined
+              ? prefix + "(SCC(" + newName + "))"
+              : "SCC(" + newName + ")";
+
           if (import.meta.env.DEV) {
-            console.log("new parentnode name", newName);
+            console.log("new groupnode name", newName, newGroupNodeName);
           }
+
           return {
             ...node,
             data: {
               ...node.data,
-              name: newName,
+              name: newGroupNodeName,
             },
           };
         }

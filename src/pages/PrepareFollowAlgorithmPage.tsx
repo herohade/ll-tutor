@@ -485,8 +485,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           const nextSymbol = production.rightSide[j];
           // we need their Fε sets, so we add them to missingFirstEdgesSet
           missingFirstEdgesSet.add(
-            "Fε(" + nextSymbol.name + ")->Follow(" + symbol.name,
-          ) + ")";
+            "Fε(" + nextSymbol.name + ")->Follow(" + symbol.name + ")",
+          );
           empty = nextSymbol.empty;
           j++;
         }
@@ -530,6 +530,11 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               setUpNodes,
             );
           }
+          showSnackbar(
+            "Error Code 6456d4: Please contact the developer!",
+            "error",
+            true,
+          );
           throw new Error("Error Code 6456d4: Please contact the developer!");
         }
         return {
@@ -572,14 +577,19 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       if (sourceNode === undefined || targetNode === undefined) {
         if (import.meta.env.DEV) {
           console.error(
-            "Error Code 6456d4: Node not found",
+            "Error Code 5709da: Node not found",
             edgeName,
             sourceNode,
             targetNode,
             setUpNodes,
           );
         }
-        throw new Error("Error Code 6456d4: Please contact the developer!");
+        showSnackbar(
+          "Error Code 5709da: Please contact the developer!",
+          "error",
+          true,
+        );
+        throw new Error("Error Code 5709da: Please contact the developer!");
       }
       const newEdge: Edge<EdgeData> = {
         id: id,

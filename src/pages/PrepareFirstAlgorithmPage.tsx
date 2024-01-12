@@ -285,6 +285,11 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               setUpNodes,
             );
           }
+          showSnackbar(
+            "Error Code 83e442: Please contact the developer!",
+            "error",
+            true,
+          );
           throw new Error("Error Code 83e442: Please contact the developer!");
         }
         const isGroupEdge =

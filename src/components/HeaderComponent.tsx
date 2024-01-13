@@ -1119,10 +1119,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     // Add all FirstNode edges as FollowNode edges (we need F_epsilon again)
     for (const firstEdge of firstEdges) {
       // we only care about the edges between the group nodes
-      // so instead of hiding them again we just ignore them here
-      if (firstEdge.data?.isGroupEdge !== true) {
-        continue;
-      }
+      // but we need them for the SCC algorithm so we hide them
+      const hidden = firstEdge.data?.isGroupEdge !== true;
 
       const sourceNode: Node<NodeData> | undefined = newFollowNodes.find(
         (n) => n.data.name === "Fε(" + firstEdge.sourceNode?.data.name + ")",
@@ -1154,6 +1152,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         sourceNode,
         targetNode,
         deletable: false,
+        hidden,
         data: {
           pathType: EdgePathType.Straight,
           isGroupEdge: true,

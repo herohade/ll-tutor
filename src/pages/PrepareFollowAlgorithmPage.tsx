@@ -318,10 +318,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // Add all FirstNode edges as FollowNode edges (we need F_epsilon again)
     for (const firstEdge of firstEdges) {
       // we only care about the edges between the group nodes
-      // so instead of hiding them again we just ignore them here
-      if (firstEdge.data?.isGroupEdge !== true) {
-        continue;
-      }
+      // but we need them for the SCC algorithm so we hide them
+      const hidden = firstEdge.data?.isGroupEdge !== true;
 
       const sourceNode: Node<NodeData> | undefined = newFollowNodes.find(
         (n) => n.data.name === "Fε(" + firstEdge.sourceNode?.data.name + ")",
@@ -353,6 +351,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         sourceNode,
         targetNode,
         deletable: false,
+        hidden,
         data: {
           pathType: EdgePathType.Straight,
           // the original nodes are group nodes, but we do not want to
@@ -630,6 +629,19 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
   };
 
   const check = () => {
+    // There are two ways to check the graph:
+    // 1. Check if these conditions are met:
+    // no edges between Fe and Fe, that are user generated
+    // no edges between Follow and Fe
+    // only correct edges between Fe and Follow
+    // only correct edges between Follow and Follow
+    // 2. Copy/paste the check algorithm from the first algorithm page
+    // That might be more expensive, because it generates the so
+    // and compares it to the graph, but it saves me time, so...
+
+    // Option 2 it is:
+    // This is pretty much a copy/paste of the check function in the
+    // PrepareFirstAlgorithmPage, with some minor changes
     const { setUpNodes, setUpEdges, missingEdges } = addMissing();
     const { nodes, edges } = groupNodesBySCC(
       "follow",
@@ -884,11 +896,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               onClick={() => {
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
 
-                // TODO: remove this once groupNodesBySCC is rewritten to work
-                // for follow
-                showSnackbar("This is not yet implemented!", "error", true);
-                return;
-
                 const { nodes, edges } = groupNodesBySCC(
                   "follow",
                   setUpNodes,
@@ -913,7 +920,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
             <Button
               variant="contained"
               onClick={() => {
-                showSnackbar("This is not yet implemented!", "error", true);
                 if (check()) {
                   toggleFollowDeletableAndConnectable(false, false);
                   setFollowSetupComplete(true);

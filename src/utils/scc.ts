@@ -77,6 +77,9 @@ function groupNodesBySCC(
   edges: Edge<EdgeData>[];
 } {
   if (import.meta.env.DEV) {
+    // Currently we do not actually filter those from the followNodes
+    // so we will get an error here when checking the graph or
+    // generating the solution in the follow setup page.
     if (nodes.some((node) => node.type != nodeType)) {
       console.error(
         "groupNodesBySCC: nodes must be " + nodeType + " set nodes",
@@ -170,13 +173,6 @@ function groupNodesBySCC(
   const newEdges: Edge<EdgeData>[] = [...firstOrFollowAttributeEdges];
 
   for (const nodeGroup of groupedNodes) {
-    const superNodeId = getNodeId();
-    const leftuppermostNode = nodeGroup.reduce((prev, curr) =>
-      prev.position.x < curr.position.x ||
-      (prev.position.x === curr.position.x && prev.position.y < curr.position.y)
-        ? prev
-        : curr,
-    );
     // For Follow nodes, the names would be Follow(A), instead of A
     // so we have to extract the name from the node data
     const arrToName = nodeGroup
@@ -185,24 +181,46 @@ function groupNodesBySCC(
       .join(", ");
     // FirstNodes will be SCC(A, B, C)
     // FollowNodes will be Follow(SCC(A, B, C)) or Fε(SCC(A, B, C))
-    // but the Fε ones should already exists, with this algorithm
-    // we only create the Follow(SCC(A, B, C)) groupNodes
     const name =
       nodeType === "follow"
-        ? "Follow(SCC(" + arrToName + "))"
+        ? nodeGroup[0].data.name.startsWith("Follow(")
+          ? "Follow(SCC(" + arrToName + "))"
+          : "Fε(SCC(" + arrToName + "))"
         : "SCC(" + arrToName + ")";
-    const superNode: Node<NodeData> = {
-      id: superNodeId,
-      type: "group",
-      position: leftuppermostNode.position,
-      deletable: false,
-      data: {
-        name,
-        empty: false,
-        color: NodeColor.none,
-      },
-    };
+
+    // get the original node if it exists
+    const oldNode: Node<NodeData> | undefined =
+      nodeType === "follow" && nodeGroup[0].data.name.startsWith("Fε(")
+        ? nodes.find((node) => node.data.name === name)
+        : undefined;
+
+    let superNode;
+    if (oldNode !== undefined) {
+      superNode = oldNode;
+    } else {
+      const leftuppermostNode = nodeGroup.reduce((prev, curr) =>
+        prev.position.x < curr.position.x ||
+        (prev.position.x === curr.position.x &&
+          prev.position.y < curr.position.y)
+          ? prev
+          : curr,
+      );
+      superNode = {
+        id: getNodeId(),
+        type: "group",
+        position: leftuppermostNode.position,
+        deletable: false,
+        data: {
+          name,
+          empty: false,
+          // TODO: change color-scheme if type is followNode
+          color: NodeColor.none,
+        },
+      };
+    }
+
     newNodes.push(superNode);
+
     for (const node of nodeGroup) {
       newNodes.push({
         ...node,
@@ -210,7 +228,7 @@ function groupNodesBySCC(
           x: node.position.x - superNode.position.x,
           y: node.position.y - superNode.position.y,
         },
-        parentNode: superNodeId,
+        parentNode: superNode.id,
         extent: "parent",
       });
     }
@@ -234,6 +252,27 @@ function groupNodesBySCC(
     const [sourceSccId, targetSccId] = missingEdge.split("->");
     const sourceScc = newNodes.find((node) => node.id === sourceSccId)!;
     const targetScc = newNodes.find((node) => node.id === targetSccId)!;
+
+    if (
+      sourceScc.data.name.startsWith("Fε(SCC(") &&
+      targetScc.data.name.startsWith("Fε(SCC(")
+    ) {
+      const oldEdge = edges.find(
+        (edge) =>
+          edge.data?.name === sourceScc.data.name + "->" + targetScc.data.name,
+      );
+      if (oldEdge !== undefined) {
+        newEdges.push({
+          ...oldEdge,
+          source: sourceSccId,
+          target: targetSccId,
+          sourceNode: newNodes.find((node) => node.id === sourceSccId)!,
+          targetNode: newNodes.find((node) => node.id === targetSccId)!,
+        });
+        continue;
+      }
+    }
+
     const isGroupEdge =
       sourceScc.type === "group" && targetScc.type === "group";
     newEdges.push({
@@ -252,10 +291,12 @@ function groupNodesBySCC(
       markerEnd: {
         type: MarkerType.ArrowClosed,
         orient: "auto",
+        // TODO: change color-scheme if type is followNode
         color: NodeColor.none,
       },
       style: {
         strokeWidth: 2,
+        // TODO: change color-scheme if type is followNode
         stroke: NodeColor.none,
       },
     });

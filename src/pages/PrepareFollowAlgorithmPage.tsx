@@ -160,9 +160,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
 
     // since we can't use the elk layouting algorithm here,
     // we will just eyeball the positions of the nodes
-    // (Actually here, unlike in HeaderComponent, we could,
-    // but I think it's better if it looks the same as when
-    // you actually first get to this step so we keep it)
     const maxXY: { x: number; y: number } = { x: 0, y: 0 };
 
     // Add all FirstNodes as FollowNodes (we need F_epsilon again)
@@ -367,13 +364,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         hidden,
         data: {
           pathType: EdgePathType.Straight,
-          // the original nodes are group nodes, but we do not want to
-          // do anything with the group nodes here (we only care about the
-          // ones added by the user after this). So we set isGroupEdge to false
-          // and use the fact that only user added group edges will have this
-          // set to true to filter for them later.
-          // Maybe this variable should be renamed but I'm too lazy right now.
-          isGroupEdge: false,
+          isGroupEdge: true,
           name: sourceNode.data.name + "->" + targetNode.data.name,
         },
         animated: true,
@@ -434,13 +425,13 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           if (!followNode) {
             if (import.meta.env.DEV) {
               console.error(
-                "Error Code 616d54: FirstNode not found among followNodes!",
+                "Error Code 4fc921: FirstNode not found among followNodes!",
                 firstName,
                 newFollowNodes,
               );
             }
             showSnackbar(
-              "Error Code 616d54: Please contact the developer!",
+              "Error Code 4fc921: Please contact the developer!",
               "error",
               true,
             );

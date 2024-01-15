@@ -20,6 +20,7 @@ import { shallow } from "zustand/shallow";
 import {
   EmptyAlgorithmPage,
   FirstAlgorithmPage,
+  FollowAlgorithmPage,
   PrepareEmptyAlgorithmPage,
   PrepareFirstAlgorithmPage,
   PrepareFollowAlgorithmPage,
@@ -452,9 +453,10 @@ export default function App() {
                       .join(", ")
                   : node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name;
 
-              const newGroupNodeName = nameIfPrefix !== undefined
-                ? prefix + "(SCC(" + newName + "))"
-                : "SCC(" + newName + ")";
+              const newGroupNodeName =
+                nameIfPrefix !== undefined
+                  ? prefix + "(SCC(" + newName + "))"
+                  : "SCC(" + newName + ")";
 
               if (import.meta.env.DEV) {
                 console.log("new groupnode name", newName, newGroupNodeName);
@@ -640,6 +642,13 @@ export default function App() {
       content = (
         <ReactFlowProvider>
           <PrepareFollowAlgorithmPage graphCanvas={followGraphCanvas} />
+        </ReactFlowProvider>
+      );
+      break;
+    case 8:
+      content = (
+        <ReactFlowProvider>
+          <FollowAlgorithmPage graphCanvas={followGraphCanvas} />
         </ReactFlowProvider>
       );
       break;

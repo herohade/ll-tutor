@@ -66,6 +66,16 @@ export default function AppWrapper() {
               : "rgba(0, 0, 0, 0.26)",
           hover: indigo.A700,
         },
+        follow: {
+          selected: userMode === "light" ? indigo.A200 : indigo.A100,
+          charging: userMode === "light" ? pink.A200 : pink.A100,
+          contrastText: userMode === "light" ? "#fff" : "rgba(0, 0, 0, 0.87)",
+          disabledText:
+            userMode === "light"
+              ? "rgba(255, 255, 255, 0.6)"
+              : "rgba(0, 0, 0, 0.26)",
+          hover: indigo.A700,
+        },
       },
       // components: {
       //   MuiCssBaseline: {

@@ -3,6 +3,8 @@ import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 
+import { VariantType, useSnackbar } from "notistack";
+
 import {
   Handle,
   NodeProps,
@@ -15,22 +17,29 @@ import {
 import useBoundStore from "../store/store";
 import { shallow } from "zustand/shallow";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
+  FollowAlgorithmNodeMap,
+  FollowAlgorithmSlice,
   FollowNodeSlice,
   GrammarSlice,
   NavigationSlice,
   NodeData,
+  Terminal,
 } from "../types";
 
 type Props = NodeProps<NodeData>;
 
 function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const selector = (
-    state: GrammarSlice & FollowNodeSlice & NavigationSlice,
+    state: GrammarSlice &
+      FollowNodeSlice &
+      FollowAlgorithmSlice &
+      NavigationSlice,
   ) => ({
     // GrammarSlice
+    endOfInput: state.endOfInput,
     terminals: state.terminals,
     // FollowNodeSlice
     followSetupComplete: state.followSetupComplete,
@@ -39,11 +48,16 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     setFollowNodes: state.setFollowNodes,
     setFollowEdges: state.setFollowEdges,
     setLabelSize: state.setLabelSize,
+    // FollowAlgorithmSlice
+    finishedFollow: state.finishedFollow,
+    followNodeMap: state.followNodeMap,
+    setFollowNodeMap: state.setFollowNodeMap,
     // NavigationSlice
     page: state.page,
   });
   const {
     // GrammarSlice
+    endOfInput,
     terminals,
     // FollowNodeSlice
     followSetupComplete,
@@ -52,6 +66,10 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     setFollowNodes,
     setFollowEdges,
     setLabelSize,
+    // FollowAlgorithmSlice
+    finishedFollow,
+    followNodeMap,
+    setFollowNodeMap,
     // NavigationSlice
     page,
   } = useBoundStore(selector, shallow);
@@ -84,6 +102,111 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   }, [id, ref, setLabelSize]);
 
   const isFollow = data.name.startsWith("Follow");
+
+  const followSymbols: Terminal[] = useMemo(() => {
+    return [endOfInput, ...terminals];
+  }, [endOfInput, terminals]);
+
+  const { enqueueSnackbar } = useSnackbar();
+
+  const showSnackbar = useCallback(
+    (message: string, variant: VariantType, preventDuplicate: boolean) => {
+      // variant could be success, error, warning, info, or default
+      enqueueSnackbar(message, {
+        variant,
+        preventDuplicate,
+      });
+    },
+    [enqueueSnackbar],
+  );
+
+  const outgoingNodeMaps: Map<string, FollowAlgorithmNodeMap> | undefined =
+    useMemo(() => {
+      const outgoingNodeMaps: Map<string, FollowAlgorithmNodeMap> = new Map();
+      followEdges.forEach((edge) => {
+        // At this point the graph is still incomplete, so we skip the edges
+        // to newly user created nodes.
+        if (page === 7) {
+          if (edge.data?.name.match(/Follow\(/) !== null) {
+            return;
+          }
+        }
+
+        // Now that we have the complete graph, we can look at the
+        // outgoing edges. But we do not need to propagate to
+        // Fe(SCC()) nodes, since we already calculated the Fe sets.
+        // So we skip edges that have no Follow(SCC()) in them
+        if (edge.data?.name.match(/Follow\(SCC\(/) === null) {
+          return;
+        }
+
+        if (edge.source === id && edge.target !== id) {
+          const outgoingNodeMap = followNodeMap.get(edge.target);
+          if (!outgoingNodeMap) {
+            if (import.meta.env.DEV) {
+              console.log(
+                "Error Code 92fbcf: outgoingNodeMap not found",
+                edge.target,
+              );
+            }
+            showSnackbar(
+              "Error Code 92fbcf: Please contact the developer!",
+              "error",
+              true,
+            );
+            return;
+          }
+          outgoingNodeMaps.set(edge.target, outgoingNodeMap);
+        }
+      });
+      return outgoingNodeMaps;
+    }, [followEdges, followNodeMap, id, page, showSnackbar]);
+  const thisFollowNodeMap: FollowAlgorithmNodeMap | undefined = useMemo(() => {
+    return followNodeMap.get(id);
+  }, [followNodeMap, id]);
+  // A node (button) is disabled if any outgoing node is active.
+  const disabledBecauseOfOutgoing = useMemo(() => {
+    if (page === 7) {
+      return false;
+    }
+    if (!outgoingNodeMaps) {
+      return false;
+    }
+    let disabled = !isFollow;
+    for (const outgoingNodeMap of outgoingNodeMaps.values()) {
+      if (outgoingNodeMap.active) {
+        return true;
+      } else {
+        disabled = false;
+      }
+    }
+    return disabled;
+  }, [isFollow, outgoingNodeMaps, page]);
+  const disabledBecauseOfIncoming = useMemo(() => {
+    if (page === 7) {
+      return false;
+    }
+    if (!thisFollowNodeMap) {
+      return false;
+    }
+    for (const incomingFollowSet of thisFollowNodeMap.incomingFollow.values()) {
+      if (incomingFollowSet === undefined) {
+        return true;
+      }
+    }
+    return false;
+  }, [page, thisFollowNodeMap]);
+  const someIncoming = useMemo(() => {
+    if (!disabledBecauseOfIncoming || !thisFollowNodeMap) {
+      return false;
+    } else {
+      for (const incomingFollowSet of thisFollowNodeMap.incomingFollow.values()) {
+        if (incomingFollowSet !== undefined) {
+          return true;
+        }
+      }
+    }
+  }, [disabledBecauseOfIncoming, thisFollowNodeMap]);
 
   // We don't want group nodes to be smaller than the content. But (constantly)
   // calculating the minimum size is expensive. So we set the minimum size to
@@ -191,6 +314,108 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     );
   };
 
+  const handleClickGroupNode = () => {
+    if (thisFollowNodeMap) {
+      if (thisFollowNodeMap.active) {
+        const newFollowNodeMap = new Map(followNodeMap);
+        // toggle active
+        newFollowNodeMap.set(id, {
+          ...thisFollowNodeMap,
+          active: false,
+        });
+        // update outgoung node's follow algorithm sets:
+        // - update their incoming node's follow sets (in particular this one's)
+        // - update their follow sets by re-calculating them with the new
+        // incoming node follow sets
+        for (const [
+          incomingNodeId,
+          incomingFollowAlgorithmNodeMap,
+        ] of outgoingNodeMaps!) {
+          // copy the outgoing node's incoming node's follow sets
+          const newIncomingFollowMap = new Map(
+            incomingFollowAlgorithmNodeMap.incomingFollow,
+          );
+          // remove this node's follow set from the outgoing node's set
+          // by setting it to undefined
+          newIncomingFollowMap.set(id, undefined);
+          // re-calculate the outgoing node's follow set
+          const relevantIncomingFollowSets: string[][] = [
+            ...newIncomingFollowMap.values(),
+          ].filter((followArr) => followArr !== undefined) as string[][];
+          const newFollowSet = new Set(relevantIncomingFollowSets.flat());
+          const newIncomingFollowAlgorithmNodeMap = {
+            active: incomingFollowAlgorithmNodeMap.active,
+            incomingFollow: newIncomingFollowMap,
+            follow: newFollowSet,
+          };
+          // save the outgoing node's new follow algorithm set
+          newFollowNodeMap.set(incomingNodeId, newIncomingFollowAlgorithmNodeMap);
+        }
+        if (import.meta.env.DEV) {
+          console.log(
+            "newFollowNodeMap after clicking " + id + ":",
+            newFollowNodeMap,
+          );
+        }
+        setFollowNodeMap(newFollowNodeMap);
+      } else {
+        const newFollowNodeMap = new Map(followNodeMap);
+        // toggle active
+        newFollowNodeMap.set(id, {
+          ...thisFollowNodeMap,
+          active: true,
+        });
+        // update outgoung node's follow algorithm sets:
+        // - update their incoming node's follow sets (in particular this one's)
+        // - update their follow sets by re-calculating them with the new
+        // incoming node follow sets
+        const myFollowSet: Set<string> = thisFollowNodeMap.follow;
+        for (const [
+          incomingNodeId,
+          incomingFollowAlgorithmNodeMap,
+        ] of outgoingNodeMaps!) {
+          // copy the outgoing node's incoming node's follow sets
+          const newIncomingFollowMap = new Map(
+            incomingFollowAlgorithmNodeMap.incomingFollow,
+          );
+          // update this node's follow set in the outgoing node's set
+          newIncomingFollowMap.set(id, [...myFollowSet]);
+          // re-calculate the outgoing node's follow set
+          const newFollowSet = new Set([
+            ...incomingFollowAlgorithmNodeMap.follow,
+            ...myFollowSet,
+          ]);
+          const newIncomingFollowAlgorithmNodeMap = {
+            active: incomingFollowAlgorithmNodeMap.active,
+            incomingFollow: newIncomingFollowMap,
+            follow: newFollowSet,
+          };
+          // save the outgoing node's new follow algorithm set
+          newFollowNodeMap.set(incomingNodeId, newIncomingFollowAlgorithmNodeMap);
+        }
+        if (import.meta.env.DEV) {
+          console.log(
+            "newFollowNodeMap after clicking " + id + ":",
+            newFollowNodeMap,
+          );
+        }
+        setFollowNodeMap(newFollowNodeMap);
+      }
+    } else {
+      if (import.meta.env.DEV) {
+        console.log(
+          "Error Code 955767: thisFollowNodeMap not found",
+          thisFollowNodeMap,
+        );
+      }
+      showSnackbar(
+        "Error Code 955767: Please contact the developer!",
+        "error",
+        true,
+      );
+    }
+  };
+
   const StyledSpan = styled("span")({});
 
   const content =
@@ -206,16 +431,9 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           </b>
         )}
         <br />
-        {terminals.map((terminal) => {
-          // const isInFollowSet = thisFollowNodeMap
-          //   ? thisFollowNodeMap.follow.has(terminal.name)
-          //   : childNodes.some(
-          //       (node) => node.data.name === "{" + terminal.name + "}",
-          //     );
-          const isInFollowSet = false;
+        {followSymbols.map((terminal) => {
+          const isInFollowSet = thisFollowNodeMap?.follow.has(terminal.name);
           return (
-            // TODO: add mapping from scc (this) to terminals (instead of using childNodes)
-            // and color the terminals if they belong to the follow set of this scc
             <StyledSpan
               key={terminal.name}
               className={
@@ -231,7 +449,84 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         })}
       </p>
     ) : (
-      <>TODO</>
+      <Button
+        variant="contained"
+        sx={{
+          bgcolor: thisFollowNodeMap?.active
+            ? (theme) =>
+                theme.palette.mode === "light"
+                  ? "primary.light"
+                  : "primary.dark"
+            : "secondary.dark",
+          color: thisFollowNodeMap?.active
+            ? "primary.contrastText"
+            : "secondary.contrastText",
+          "& .isInFollowSet": {
+            color: thisFollowNodeMap?.active ? "success.dark" : "success.light",
+            // color: "success.light",
+            // WebkitTextStroke: "0.05em black",
+          },
+          ":disabled": {
+            bgcolor: thisFollowNodeMap?.active
+              ? "follow.selected"
+              : someIncoming
+                ? "follow.charging"
+                : "background.paper",
+            color: thisFollowNodeMap?.active
+              ? "follow.disabledText"
+              : someIncoming
+                ? "follow.disabledText"
+                : "",
+            "& .isInFollowSet": {
+              opacity: 0.5,
+              color: thisFollowNodeMap?.active
+                ? (theme) =>
+                    theme.palette.mode === "light"
+                      ? "success.light"
+                      : "success.dark"
+                : "success.dark",
+              // color: "success.light",
+              // WebkitTextStroke: "0.05em black",
+            },
+          },
+          ":hover": {
+            bgcolor: "follow.hover",
+          },
+        }}
+        className="nodrag size-full normal-case"
+        onClick={handleClickGroupNode}
+        disabled={
+          finishedFollow ||
+          disabledBecauseOfOutgoing ||
+          disabledBecauseOfIncoming
+        }
+      >
+        <p className="m-0 whitespace-nowrap">
+          {isFollow ? (
+            <b>
+              Follow<sub>1</sub>:
+            </b>
+          ) : (
+            <b>
+              F<sub>ε</sub>:
+            </b>
+          )}
+          <br />
+          {followSymbols.map((terminal) => {
+            const isInFollowSet = thisFollowNodeMap?.follow.has(terminal.name);
+            return (
+              <span
+                key={terminal.name}
+                className={
+                  isInFollowSet ? "isInFollowSet font-semibold" : "opacity-50"
+                }
+              >
+                {terminal.name + " "}
+              </span>
+            );
+          })}
+        </p>
+      </Button>
     );
 
   return (

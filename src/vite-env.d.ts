@@ -6,11 +6,13 @@ declare module "@mui/material/styles" {
   interface Palette {
     empty?: PaletteColorOptions;
     first?: PaletteColorOptions;
+    follow?: PaletteColorOptions;
   }
 
   interface PaletteOptions {
     empty?: PaletteColorOptions;
     first?: PaletteColorOptions;
+    follow?: PaletteColorOptions;
   }
 
   interface SimplePaletteColorOptions {

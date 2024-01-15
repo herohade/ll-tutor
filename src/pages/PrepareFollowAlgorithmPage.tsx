@@ -16,7 +16,10 @@ import {
   EdgePathType,
   EmptyAlgorithmSlice,
   EmptyNodeSlice,
+  FirstAlgorithmSlice,
   FirstNodeSlice,
+  FollowAlgorithmNodeMap,
+  FollowAlgorithmSlice,
   FollowNodeSlice,
   GrammarSlice,
   NodeColor,
@@ -44,7 +47,9 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       EmptyNodeSlice &
       EmptyAlgorithmSlice &
       FirstNodeSlice &
-      FollowNodeSlice,
+      FirstAlgorithmSlice &
+      FollowNodeSlice &
+      FollowAlgorithmSlice,
   ) => ({
     // GrammarSlice
     startSymbol: state.startSymbol,
@@ -64,6 +69,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     firstEdges: state.firstEdges,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
+    // FirstAlgorithmSlice
+    firstNodeMap: state.firstNodeMap,
     // FollowNodeSlice
     followSetupComplete: state.followSetupComplete,
     followNodes: state.followNodes,
@@ -76,6 +83,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     toggleFollowDeletableAndConnectable:
       state.toggleFollowDeletableAndConnectable,
     setExpandParent: state.setExpandParent,
+    // FollowAlgorithmSlice
+    setFollowNodeMap: state.setFollowNodeMap,
   });
   const {
     // GrammarSlice
@@ -96,6 +105,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
+    // FirstAlgorithmSlice
+    firstNodeMap,
     // FollowNodeSlice
     followSetupComplete,
     followNodes,
@@ -107,6 +118,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowEdges,
     toggleFollowDeletableAndConnectable,
     setExpandParent,
+    // FollowAlgorithmSlice
+    setFollowNodeMap,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -387,6 +400,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       console.log("newFollowEdges", newFollowEdges);
     }
 
+    prepareFollowMap(newFollowNodes);
+
     setFollowNodes(newFollowNodes);
     setFollowEdges(newFollowEdges, fitView);
 
@@ -398,6 +413,122 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setTimeout(() => {
       setExpandParent(false);
     }, 1000);
+  };
+
+  // Set up the follow set map.
+  // Required for the reactflow nodes to keep track of their follow set.
+  const prepareFollowMap = (newFollowNodes: Node<NodeData>[]) => {
+    if (import.meta.env.DEV) {
+      console.log("Preparing follow set map...");
+    }
+
+    // A mapping from the id of a FirstNode to the equivalent FollowNode
+    const firstToFollowGroupNodeMap = new Map<string, string>(
+      firstNodes
+        .filter((n) => n.type === "group")
+        .map((n) => {
+          const firstName = "Fε(" + n.data.name + ")";
+          const followNode = newFollowNodes.find(
+            (n) => n.data.name === firstName,
+          );
+          if (!followNode) {
+            if (import.meta.env.DEV) {
+              console.error(
+                "Error Code 616d54: FirstNode not found among followNodes!",
+                firstName,
+                newFollowNodes,
+              );
+            }
+            showSnackbar(
+              "Error Code 616d54: Please contact the developer!",
+              "error",
+              true,
+            );
+            return ["", ""];
+          }
+          return [n.id, followNode.id];
+        }),
+    );
+
+    // Prepare the follow set map by copying the first set map with the
+    // FollowNodes equivalent ids
+
+    // 1. create a FollowAlgorithmNodeMap for each groupnode
+    const newFollowNodeMap = new Map<string, FollowAlgorithmNodeMap>(
+      newFollowNodes
+        .filter((n) => n.type === "group")
+        .map((n) => [
+          n.id,
+          {
+            active: false,
+            incomingFollow: new Map<string, string[] | undefined>(),
+            // The only new GroupNode we have at this point is the one for the
+            // {$} SCC. Since we copy the sets from the FirstNode map, we need
+            // to add $ to the follow set of the {$} SCC manually.
+            follow: new Set<string>(
+              [...firstToFollowGroupNodeMap.values()].some((v) => v === n.id)
+                ? []
+                : ["$"],
+            ),
+          },
+        ]),
+    );
+
+    // 2. copy the map from the FirstNodeMap
+    for (const [id, nodeMap] of firstNodeMap.entries()) {
+      const newId = firstToFollowGroupNodeMap.get(id);
+      if (!newId) {
+        if (import.meta.env.DEV) {
+          console.error(
+            "Error Code e208e8: FirstNode not found among followNodes!",
+            id,
+            firstToFollowGroupNodeMap,
+          );
+        }
+        showSnackbar(
+          "Error Code e208e8: Please contact the developer!",
+          "error",
+          true,
+        );
+        return false;
+      }
+
+      // We need to update the incomingFirst map to use the equivalent ids
+      const newIncomingFollow = new Map<string, string[] | undefined>();
+      for (const [id, follow] of nodeMap.incomingFirst.entries()) {
+        const newId = firstToFollowGroupNodeMap.get(id);
+        if (!newId) {
+          if (import.meta.env.DEV) {
+            console.error(
+              "Error Code 534755: FirstNode not found among followNodes!",
+              id,
+              firstToFollowGroupNodeMap,
+            );
+          }
+          showSnackbar(
+            "Error Code 534755: Please contact the developer!",
+            "error",
+            true,
+          );
+          return false;
+        }
+        newIncomingFollow.set(newId, follow);
+      }
+
+      const newNodeMap: FollowAlgorithmNodeMap = {
+        active: nodeMap.active,
+        incomingFollow: newIncomingFollow,
+        follow: nodeMap.first,
+      };
+
+      newFollowNodeMap.set(newId, newNodeMap);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("newFollowNodeMap", newFollowNodeMap);
+    }
+
+    setFollowNodeMap(newFollowNodeMap);
   };
 
   const addMissing = () => {

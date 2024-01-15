@@ -8,6 +8,7 @@ import { createEmptyAlgorithmSlice } from "./emptyAlgorithmSlice";
 import { createFirstNodeSlice } from "./firstNodeSlice";
 import { createFirstAlgorithmSlice } from "./firstAlgorithmSlice";
 import { createFollowNodeSlice } from "./followNodeSlice";
+import { createFollowAlgorithmSlice } from "./followAlgorithmSlice";
 
 import {
   NavigationSlice,
@@ -18,6 +19,7 @@ import {
   FirstNodeSlice,
   FirstAlgorithmSlice,
   FollowNodeSlice,
+  FollowAlgorithmSlice,
 } from "../types";
 
 // this is our useStore hook that we can use in our components to get parts of the store and call actions
@@ -29,7 +31,8 @@ const useBoundStore = createWithEqualityFn<
     EmptyAlgorithmSlice &
     FirstNodeSlice &
     FirstAlgorithmSlice &
-    FollowNodeSlice
+    FollowNodeSlice &
+    FollowAlgorithmSlice
 >((...args) => ({
   ...createNavigationSlice(...args),
   ...createGrammarSlice(...args),
@@ -39,6 +42,7 @@ const useBoundStore = createWithEqualityFn<
   ...createFirstNodeSlice(...args),
   ...createFirstAlgorithmSlice(...args),
   ...createFollowNodeSlice(...args),
+  ...createFollowAlgorithmSlice(...args),
 }));
 
 export default useBoundStore;

@@ -27,6 +27,8 @@ import {
   FirstAlgorithmNodeMap,
   FirstAlgorithmSlice,
   FirstNodeSlice,
+  FollowAlgorithmNodeMap,
+  FollowAlgorithmSlice,
   FollowNodeSlice,
   GrammarSetupSlice,
   GrammarSlice,
@@ -75,7 +77,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       EmptyAlgorithmSlice &
       FirstNodeSlice &
       FirstAlgorithmSlice &
-      FollowNodeSlice,
+      FollowNodeSlice &
+      FollowAlgorithmSlice,
   ) => ({
     // NavigationSlice
     minPage: state.minPage,
@@ -106,12 +109,14 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     preparedFirst: state.preparedFirst,
     preparedFirstMap: state.preparedFirstMap,
     preparedFollow: state.preparedFollow,
+    preparedFollowMap: state.preparedFollowMap,
     setSorted: state.setSorted,
     setReduced: state.setReduced,
     setPreparedEmpty: state.setPreparedEmpty,
     setPreparedFirst: state.setPreparedFirst,
     setPreparedFirstMap: state.setPreparedFirstMap,
     setPreparedFollow: state.setPreparedFollow,
+    setPreparedFollowMap: state.setPreparedFollowMap,
     // EmptyNodeSlice
     emptySetupComplete: state.emptySetupComplete,
     emptyNodes: state.emptyNodes,
@@ -139,6 +144,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFirstNodeEdgesHidden: state.setFirstNodeEdgesHidden,
     // FirstAlgorithmSlice
     finishedFirst: state.finishedFirst,
+    firstNodeMap: state.firstNodeMap,
     setFinishedFirst: state.setFinishedFirst,
     setFirstNodeMap: state.setFirstNodeMap,
     // FollowNodeSlice
@@ -152,6 +158,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFollowEdges: state.setFollowEdges,
     setFollowNodeEdgesHidden: state.setFollowNodeEdgesHidden,
     setExpandParent: state.setExpandParent,
+    // FollowAlgorithmSlice
+    finishedFollow: state.finishedFollow,
+    followNodeMap: state.followNodeMap,
+    setFinishedFollow: state.setFinishedFollow,
+    setFollowNodeMap: state.setFollowNodeMap,
   });
   const {
     // NavigationSlice
@@ -183,12 +194,14 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     preparedFirst,
     preparedFirstMap,
     preparedFollow,
+    preparedFollowMap,
     setSorted,
     setReduced,
     setPreparedEmpty,
     setPreparedFirst,
     setPreparedFirstMap,
     setPreparedFollow,
+    setPreparedFollowMap,
     // EmptyNodeSlice
     emptySetupComplete,
     emptyNodes,
@@ -216,12 +229,13 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFirstNodeEdgesHidden,
     // FirstAlgorithmSlice
     finishedFirst,
+    firstNodeMap,
     setFinishedFirst,
     setFirstNodeMap,
     // FollowNodeSlice
     followSetupComplete,
-    // followNodes,
-    // followEdges,
+    followNodes,
+    followEdges,
     getFollowNodeId,
     getFollowEdgeId,
     setFollowSetupComplete,
@@ -229,6 +243,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFollowEdges,
     setFollowNodeEdgesHidden,
     setExpandParent,
+    // FollowAlgorithmSlice
+    finishedFollow,
+    followNodeMap,
+    setFinishedFollow,
+    setFollowNodeMap,
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
@@ -357,6 +376,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       setPreparedFirst(false);
       setPreparedFirstMap(false);
       setPreparedFollow(false);
+      setPreparedFollowMap(false);
     }
 
     // reset grammar in case it was already reduced and then changed again
@@ -880,24 +900,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         // Those are relevant since this SCC gets its first set from them
         const incomingNodeNames: string[] = firstEdges
           .filter((e) => e.target === node.id && e.source !== node.id)
-          .map((e) => {
-            if (e.sourceNode) {
-              return e.sourceNode.id;
-            } else {
-              if (import.meta.env.DEV) {
-                console.error(
-                  "Error Code 7c164d: Source node not found for edge!",
-                  e,
-                );
-              }
-              showSnackbar(
-                "Error Code 7c164d: Please contact the developer!",
-                "error",
-                true,
-              );
-              return "";
-            }
-          });
+          .map((e) => e.source);
         const newIncomingFirst = new Map<string, string[] | undefined>();
         for (const nodeName of incomingNodeNames) {
           newIncomingFirst.set(nodeName, undefined);
@@ -1182,6 +1185,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       console.log("newFollowEdges", newFollowEdges);
     }
 
+    prepareFollowMap(newFollowNodes);
+
     setFollowNodes(newFollowNodes);
     setFollowEdges(newFollowEdges);
 
@@ -1193,6 +1198,217 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setTimeout(() => {
       setExpandParent(false);
     }, 1000);
+
+    return true;
+  };
+
+  // Set up the follow set map.
+  // Required for the reactflow nodes to keep track of their follow set.
+  const prepareFollowMap = (newFollowNodes: Node<NodeData>[]) => {
+    if (import.meta.env.DEV) {
+      console.log("Preparing follow set map...");
+    }
+
+    // A mapping from the id of a FirstNode to the equivalent FollowNode
+    const firstToFollowGroupNodeMap = new Map<string, string>(
+      firstNodes
+        .filter((n) => n.type === "group")
+        .map((n) => {
+          const firstName = "Fε(" + n.data.name + ")";
+          const followNode = newFollowNodes.find(
+            (n) => n.data.name === firstName,
+          );
+          if (!followNode) {
+            if (import.meta.env.DEV) {
+              console.error(
+                "Error Code 4fc921: FirstNode not found among followNodes!",
+                firstName,
+                newFollowNodes,
+              );
+            }
+            showSnackbar(
+              "Error Code 4fc921: Please contact the developer!",
+              "error",
+              true,
+            );
+            return ["", ""];
+          }
+          return [n.id, followNode.id];
+        }),
+    );
+
+    // Prepare the follow set map by copying the first set map with the
+    // FollowNodes equivalent ids
+
+    // 1. create a FollowAlgorithmNodeMap for each groupnode
+    const newFollowNodeMap = new Map<string, FollowAlgorithmNodeMap>(
+      newFollowNodes
+        .filter((n) => n.type === "group")
+        .map((n) => [
+          n.id,
+          {
+            active: false,
+            incomingFollow: new Map<string, string[] | undefined>(),
+            // The only new GroupNode we have at this point is the one for the
+            // {$} SCC. Since we copy the sets from the FirstNode map, we need
+            // to add $ to the follow set of the {$} SCC manually.
+            follow: new Set<string>(
+              [...firstToFollowGroupNodeMap.values()].some((v) => v === n.id)
+                ? []
+                : ["$"],
+            ),
+          },
+        ]),
+    );
+
+    // 2. copy the map from the FirstNodeMap
+    for (const [id, nodeMap] of firstNodeMap.entries()) {
+      const newId = firstToFollowGroupNodeMap.get(id);
+      if (!newId) {
+        if (import.meta.env.DEV) {
+          console.error(
+            "Error Code 68e1b4: FirstNode not found among followNodes!",
+            id,
+            firstToFollowGroupNodeMap,
+          );
+        }
+        showSnackbar(
+          "Error Code 68e1b4: Please contact the developer!",
+          "error",
+          true,
+        );
+        return false;
+      }
+
+      // We need to update the incomingFirst map to use the equivalent ids
+      const newIncomingFollow = new Map<string, string[] | undefined>();
+      for (const [id, follow] of nodeMap.incomingFirst.entries()) {
+        const newId = firstToFollowGroupNodeMap.get(id);
+        if (!newId) {
+          if (import.meta.env.DEV) {
+            console.error(
+              "Error Code dc38ed: FirstNode not found among followNodes!",
+              id,
+              firstToFollowGroupNodeMap,
+            );
+          }
+          showSnackbar(
+            "Error Code dc38ed: Please contact the developer!",
+            "error",
+            true,
+          );
+          return false;
+        }
+        newIncomingFollow.set(newId, follow);
+      }
+
+      const newNodeMap: FollowAlgorithmNodeMap = {
+        active: nodeMap.active,
+        incomingFollow: newIncomingFollow,
+        follow: nodeMap.first,
+      };
+
+      newFollowNodeMap.set(newId, newNodeMap);
+    }
+
+    if (import.meta.env.DEV) {
+      console.log("newFollowNodeMap", newFollowNodeMap);
+    }
+
+    setFollowNodeMap(newFollowNodeMap);
+  };
+
+  // Update the follow set map after the user has finished the set up step.
+  const updateFollowMap = () => {
+    if (preparedFollowMap) {
+      if (import.meta.env.DEV) {
+        console.log("Follow set map is already prepared!");
+      }
+      setFollowNodeEdgesHidden(true);
+      return true;
+    } else {
+      if (import.meta.env.DEV) {
+        console.log("Preparing follow set map...");
+      }
+      setPreparedFollowMap(true);
+    }
+
+    // reset the follow set algorithm
+    setFinishedFollow(false);
+    // hide the edges of the FollowNodes (we only need edges between sccs)
+    setFollowNodeEdgesHidden(true);
+
+    // Update the follow set map
+    // This maps each SCC (groupnode) to a FollowAlgorithmNodeMap
+    // The FollowAlgorithmNodeMap contains the following information:
+    // active: boolean, whether the button (SCC) is active (already processed)
+    // incomingFollow: Map<string, string[] | undefined>, maps each incoming
+    // SCC (groupnode) to the follow (or Fe) set of the incoming SCC or
+    // undefined if it was not yet processed
+    // follow: Set<string>, the follow (or Fe) set of the current SCC
+    // as far as it was already processed
+    const newFollowNodeMap = new Map<string, FollowAlgorithmNodeMap>(
+      followNodeMap,
+    );
+    for (const node of followNodes) {
+      // We only consider SCCs (groupnodes) here
+      if (node.type === "group") {
+        // Also we only need to update the newly user added (=Follow) nodes.
+        // Except for the old nodes that got a new outgoing edge, since
+        // those are all active from the first algorithm step, but
+        // need to be inactive for the user to click and propagate their set
+        if (node.data.name.startsWith("Follow(")) {
+          const name: string = node.id;
+          // Get all incoming SCCs (groupnodes)
+          // Those are relevant since this SCC gets its follow set from them
+          const incomingNodeNames: string[] = followEdges
+            .filter((e) => e.target === node.id && e.source !== node.id)
+            .map((e) => e.source);
+          const newIncomingFollow = new Map<string, string[] | undefined>();
+          for (const nodeName of incomingNodeNames) {
+            newIncomingFollow.set(nodeName, undefined);
+          }
+          // This will be the follow set of the SCC
+          // It will be dynamically updated while processing the SCC
+          const nodeMap: FollowAlgorithmNodeMap = {
+            active: false,
+            incomingFollow: newIncomingFollow,
+            follow: new Set<string>(),
+          };
+          newFollowNodeMap.set(name, nodeMap);
+        } else {
+          // If this is an old node that got a new outgoing edge,
+          // we need to set it to inactive
+          if (
+            followEdges
+              .filter((e) => e.source === node.id)
+              .some((e) => e.data?.name.match(/Follow\(SCC\(/) !== null)
+          ) {
+            const nodeMap = newFollowNodeMap.get(node.id);
+            if (!nodeMap) {
+              if (import.meta.env.DEV) {
+                console.error(
+                  "Error Code aca93b: FollowNode not found among followNodes!",
+                  node,
+                  newFollowNodeMap,
+                );
+              }
+              showSnackbar(
+                "Error Code aca93b: Please contact the developer!",
+                "error",
+                true,
+              );
+              return false;
+            }
+            newFollowNodeMap.set(node.id, { ...nodeMap, active: false });
+          }
+        }
+      }
+    }
+    if (import.meta.env.DEV) {
+      console.log("newFollowNodeMap", newFollowNodeMap);
+    }
+    setFollowNodeMap(newFollowNodeMap);
 
     return true;
   };
@@ -1329,7 +1545,16 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 8: // page (8) -> 9
         return (cb) => {
-          return cb();
+          if (finishedFollow) {
+            return cb();
+          } else {
+            showSnackbar(
+              "Please finish the follow set algorithm!",
+              "error",
+              true,
+            );
+            return false;
+          }
         };
       case 9: // page (9) -> 10, should never happen
       default:
@@ -1408,6 +1633,9 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           return prepareFollowAlgorithm();
         };
       case 8: // page 7 -> (8)
+        return () => {
+          return updateFollowMap();
+        };
       case 9: // page 8 -> (9)
         return () => {
           return true;

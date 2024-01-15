@@ -4,7 +4,6 @@ import { FirstAlgorithmNodeMap, FirstAlgorithmSlice } from "../types";
 
 export const createFirstAlgorithmSlice: StateCreator<FirstAlgorithmSlice> = (
   set,
-  get,
 ) => ({
   // Indicates whether the empty algorithm is finished
   // User can now proceed to the next page
@@ -16,10 +15,5 @@ export const createFirstAlgorithmSlice: StateCreator<FirstAlgorithmSlice> = (
   },
   setFirstNodeMap: (map: Map<string, FirstAlgorithmNodeMap>) => {
     set({ firstNodeMap: map });
-  },
-  changeFirstNodeMap: (nodeName: string, map: FirstAlgorithmNodeMap) => {
-    set({
-      firstNodeMap: new Map(get().firstNodeMap).set(nodeName, map),
-    });
   },
 });

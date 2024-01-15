@@ -6,3 +6,4 @@ export { default as EmptyAlgorithmPage } from "./EmptyAlgorithmPage";
 export { default as PrepareFirstAlgorithmPage } from "./PrepareFirstAlgorithmPage";
 export { default as FirstAlgorithmPage } from "./FirstAlgorithmPage";
 export { default as PrepareFollowAlgorithmPage } from "./PrepareFollowAlgorithmPage";
+export { default as FollowAlgorithmPage } from "./FollowAlgorithmPage";

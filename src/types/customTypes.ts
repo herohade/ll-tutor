@@ -152,6 +152,7 @@ export type GrammarSetupSlice = {
   preparedFirst: boolean;
   preparedFirstMap: boolean;
   preparedFollow: boolean;
+  preparedFollowMap: boolean;
   setStart: (start: [name: Nonterminal, start: boolean][]) => void;
   setSorted: (sorted: boolean) => void;
   setReduced: (reduced: boolean) => void;
@@ -159,6 +160,7 @@ export type GrammarSetupSlice = {
   setPreparedFirst: (prepared: boolean) => void;
   setPreparedFirstMap: (prepared: boolean) => void;
   setPreparedFollow: (prepared: boolean) => void;
+  setPreparedFollowMap: (prepared: boolean) => void;
 };
 
 export enum NodeColor {
@@ -274,7 +276,7 @@ export type FirstNodeSlice = {
 
 // Every FirstNode has a FirstAlgorithmNodeMap
 export type FirstAlgorithmNodeMap = {
-  // Wheter the node (=button) is active or not.
+  // Whether the node (=button) is active or not.
   // A node (button) is disabled if any outgoing node is active.
   active: boolean;
   // A map of all incoming nodes and their first sets.
@@ -283,17 +285,16 @@ export type FirstAlgorithmNodeMap = {
   // if it changes its incoming first value.
   // It is a set of unique terminals.
   first: Set<string>;
-}
+};
 
 export type FirstAlgorithmSlice = {
-  // Indicates whether the empty algorithm is finished
+  // Indicates whether the first algorithm is finished
   // User can now proceed to the next page
   finishedFirst: boolean;
   // A map of all nodes (ids) and their firstAlgorithmNodeMap.
   firstNodeMap: Map<string, FirstAlgorithmNodeMap>;
   setFinishedFirst: (finished: boolean) => void;
   setFirstNodeMap: (map: Map<string, FirstAlgorithmNodeMap>) => void;
-  changeFirstNodeMap: (nodeName: string, map: FirstAlgorithmNodeMap) => void;
 };
 
 export type FollowNodeSlice = {
@@ -327,4 +328,27 @@ export type FollowNodeSlice = {
   ) => void;
   setFollowNodeEdgesHidden: (hidden: boolean) => void;
   setExpandParent: (expand: boolean) => void;
+};
+
+// Every FollowNode has a FollowAlgorithmNodeMap
+export type FollowAlgorithmNodeMap = {
+  // Whether the node (=button) is active or not.
+  // A node (button) is disabled if any outgoing node is active.
+  active: boolean;
+  // A map of all incoming nodes and their follow sets.
+  incomingFollow: Map<string, string[] | undefined>;
+  // The follow set of this node. Needs to be updated by an incoming node
+  // if it changes its incoming follow value.
+  // It is a set of unique terminals (and $).
+  follow: Set<string>;
+};
+
+export type FollowAlgorithmSlice = {
+  // Indicates whether the follow algorithm is finished
+  // User can now proceed to the next page
+  finishedFollow: boolean;
+  // A map of all nodes (ids) and their followAlgorithmNodeMap.
+  followNodeMap: Map<string, FollowAlgorithmNodeMap>;
+  setFinishedFollow: (finished: boolean) => void;
+  setFollowNodeMap: (map: Map<string, FollowAlgorithmNodeMap>) => void;
 };

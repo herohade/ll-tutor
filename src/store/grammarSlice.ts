@@ -6,7 +6,7 @@ export const createGrammarSlice: StateCreator<GrammarSlice> = (set) => ({
   // Special (non)terminals we need regardless of the input grammar
   startSymbol: new Nonterminal("S'"),
   epsilon: new Terminal("ε"),
-  endOfInput: new Terminal("$'"),
+  endOfInput: new Terminal("$"),
   // Productions, Nonterminals and Terminals of the input grammar
   // Generated from User input
   productions: [],

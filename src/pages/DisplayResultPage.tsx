@@ -236,6 +236,7 @@ function DisplayResultPage() {
             // This should not move when scrolling left or right
             position: "sticky",
             left: 0,
+            py: 1,
           }}
         >
           Calcu&shy;lation of the LL(1)-Look&shy;ahead
@@ -263,6 +264,7 @@ function DisplayResultPage() {
                       color: "primary.main",
                       fontWeight: "bold",
                     },
+                    whiteSpace: "nowrap",
                   }}
                 >
                   <TableCell
@@ -299,6 +301,10 @@ function DisplayResultPage() {
                     <span className="tableSetOperator">)</span>
                   </TableCell>
 
+                  <TableCell align={"center"}>
+                    <span className="tableSetOperator">=</span>
+                  </TableCell>
+
                   <TableCell
                     align={"center"}
                     sx={{
@@ -320,6 +326,10 @@ function DisplayResultPage() {
                     </span>
 
                     <span className="tableSetOperator">{" }"}</span>
+                  </TableCell>
+
+                  <TableCell align={"center"}>
+                    <span className="tableSetOperator">=</span>
                   </TableCell>
 
                   <TableCell
@@ -344,41 +354,40 @@ function DisplayResultPage() {
         <Typography
           variant="h6"
           component="div"
-          className="pt-2"
           sx={{
             // This should not move when scrolling left or right
             position: "sticky",
             left: 0,
+            pb: 1,
           }}
         >
           LL(1)-Look&shy;ahead Table
         </Typography>
-        <div className="mx-2">
-          <Table stickyHeader aria-label="lookahead table">
-            <TableHead>
-              <TableRow>
-                <TableCell
-                  align={"center"}
-                  sx={{
-                    // make the first column (shows the nonterminal) sticky
-                    // if the screen is large enough
-                    position: { xs: "", sm: "sticky" },
-                    left: { xs: "", sm: 0 },
-                    zIndex: { xs: "", sm: "3" },
-                    backgroundColor: { xs: "", sm: "background.paper" },
-                    borderRight: (theme) =>
-                      theme.palette.mode === "dark"
-                        ? "1px solid #393939"
-                        : "1px solid #ebebeb",
-                  }}
-                  // TODO: Do I want to display the below or not?
-                  // If so I probably need to change xs: ... sm: ...
-                  // to xs: ... md: ... above and below
-                  // className="sm:p-0"
-                >
-                  {/* TODO: Do I want to display the below or not? If so I probably need to change xs: ... sm: ... to xs: ... md: ... above and below */}
-                  {/* Copied and modified from https://www.peterkrautzberger.org/0213/ */}
-                  {/* <div
+        <Table stickyHeader aria-label="lookahead table">
+          <TableHead>
+            <TableRow>
+              <TableCell
+                align={"center"}
+                sx={{
+                  // make the first column (shows the nonterminal) sticky
+                  // if the screen is large enough
+                  position: { xs: "", sm: "sticky" },
+                  left: { xs: "", sm: 0 },
+                  zIndex: { xs: "", sm: "3" },
+                  backgroundColor: { xs: "", sm: "background.paper" },
+                  borderRight: (theme) =>
+                    theme.palette.mode === "dark"
+                      ? "1px solid #393939"
+                      : "1px solid #ebebeb",
+                }}
+                // TODO: Do I want to display the below or not?
+                // If so I probably need to change xs: ... sm: ...
+                // to xs: ... md: ... above and below
+                // className="sm:p-0"
+              >
+                {/* TODO: Do I want to display the below or not? If so I probably need to change xs: ... sm: ... to xs: ... md: ... above and below */}
+                {/* Copied and modified from https://www.peterkrautzberger.org/0213/ */}
+                {/* <div
                   style={{
                     display: "grid",
                     width: "100%",
@@ -404,98 +413,97 @@ function DisplayResultPage() {
                     Nonterminal
                   </div>
                 </div> */}
+              </TableCell>
+              {followSymbols.map((followSymbol) => (
+                <TableCell key={followSymbol.name} align={"center"}>
+                  {followSymbol.name}
                 </TableCell>
-                {followSymbols.map((followSymbol) => (
-                  <TableCell key={followSymbol.name} align={"center"}>
-                    {followSymbol.name}
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {nonTerminals.map((nonTerminal) => {
-                const productionList = lookaheadTable.get(nonTerminal.name);
-                if (!productionList) {
-                  if (import.meta.env.DEV) {
-                    console.log(
-                      "ProductionList for",
-                      nonTerminal.name,
-                      "is undefined",
-                      lookaheadTable,
-                    );
-                  }
-                  return (
-                    <TableCell align={"center"}>{nonTerminal.name}</TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {nonTerminals.map((nonTerminal) => {
+              const productionList = lookaheadTable.get(nonTerminal.name);
+              if (!productionList) {
+                if (import.meta.env.DEV) {
+                  console.log(
+                    "ProductionList for",
+                    nonTerminal.name,
+                    "is undefined",
+                    lookaheadTable,
                   );
                 }
-
                 return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={nonTerminal.name}
+                  <TableCell align={"center"}>{nonTerminal.name}</TableCell>
+                );
+              }
+
+              return (
+                <TableRow
+                  hover
+                  role="checkbox"
+                  tabIndex={-1}
+                  key={nonTerminal.name}
+                >
+                  <TableCell
+                    align={"center"}
+                    sx={{
+                      // make the first column (shows the nonterminal) sticky
+                      // if the screen is large enough
+                      position: { xs: "", sm: "sticky" },
+                      left: { xs: "", sm: 0 },
+                      backgroundColor: { xs: "", sm: "background.paper" },
+                      borderRight: (theme) =>
+                        theme.palette.mode === "dark"
+                          ? "1px solid #393939"
+                          : "1px solid #ebebeb",
+                    }}
                   >
-                    <TableCell
-                      align={"center"}
-                      sx={{
-                        // make the first column (shows the nonterminal) sticky
-                        // if the screen is large enough
-                        position: { xs: "", sm: "sticky" },
-                        left: { xs: "", sm: 0 },
-                        backgroundColor: { xs: "", sm: "background.paper" },
-                        borderRight: (theme) =>
-                          theme.palette.mode === "dark"
-                            ? "1px solid #393939"
-                            : "1px solid #ebebeb",
-                      }}
-                    >
-                      {nonTerminal.name}
-                    </TableCell>
-                    {followSymbols.map((followSymbol) => {
-                      const productions = productionList.get(followSymbol.name);
-                      if (!productions) {
-                        if (import.meta.env.DEV) {
-                          console.log(
-                            "Productions for",
-                            nonTerminal.name,
-                            "and",
-                            followSymbol.name,
-                            "is undefined",
-                            lookaheadTable,
-                          );
-                        }
-                        return (
-                          <TableCell
-                            key={`${nonTerminal.name}-${followSymbol.name}`}
-                            align={"center"}
-                          >
-                            -
-                          </TableCell>
+                    {nonTerminal.name}
+                  </TableCell>
+                  {followSymbols.map((followSymbol) => {
+                    const productions = productionList.get(followSymbol.name);
+                    if (!productions) {
+                      if (import.meta.env.DEV) {
+                        console.log(
+                          "Productions for",
+                          nonTerminal.name,
+                          "and",
+                          followSymbol.name,
+                          "is undefined",
+                          lookaheadTable,
                         );
                       }
-
                       return (
                         <TableCell
                           key={`${nonTerminal.name}-${followSymbol.name}`}
                           align={"center"}
                         >
-                          {productions.map((production, index) => (
-                            <>
-                              ({production.leftSide.name},&nbsp;
-                              {production.number})
-                              {index < productions.length - 1 ? ", " : ""}
-                            </>
-                          ))}
+                          -
                         </TableCell>
                       );
-                    })}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                    }
+
+                    return (
+                      <TableCell
+                        key={`${nonTerminal.name}-${followSymbol.name}`}
+                        align={"center"}
+                      >
+                        {productions.map((production, index) => (
+                          <>
+                            ({production.leftSide.name},&nbsp;
+                            {production.number})
+                            {index < productions.length - 1 ? ", " : ""}
+                          </>
+                        ))}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </>
   );

@@ -216,10 +216,8 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     let workList: Array<Production> = [...productions];
     // with non-empty left side
     let fixpoint = false;
-    // TODO: perhaps remove this counter
     let counter = 0;
     while (!fixpoint && counter < 10000) {
-        // TODO: remove this counter
         counter++;
         fixpoint = true;
 
@@ -256,7 +254,6 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
         }
       }
     } else {
-      // TODO: maybe make canvas green or something
       showSnackbar(
         "Congratulations! You have calculated the empty attributes!",
         "success",
@@ -277,7 +274,7 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
 
   return (
     <>
-      {/* left side, task description and information */}
+      {/* left side, grammar information */}
       <div className="mr-1 h-full w-1/2 overflow-auto rounded-lg border-2 border-solid p-2 text-left sm:w-1/3">
         <div className="flex h-full flex-col items-center justify-between">
           <div className="flex flex-col items-center">

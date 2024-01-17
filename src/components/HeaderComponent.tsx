@@ -466,12 +466,9 @@ function HeaderComponent({ setTutorialOpen }: Props) {
 
     // here we remove now unused terminals
     if (workList.length !== 0) {
-      // TODO: check if Set really filters duplicates in this case
-      // if not, just remove the [Set()] step
       const unusedTerminals = [
         ...new Set(workList.map((p) => p.rightSide).flat()),
       ].filter((s) => s instanceof Terminal);
-      // TODO: check if Set really filtered the duplicates
       if (import.meta.env.DEV) {
         console.log(unusedTerminals.map((t) => t.representation).join(", "));
       }
@@ -990,7 +987,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         data: {
           ...node.data,
           name: "Fε(" + node.data.name + ")",
-          // TODO: change color-scheme to distinguish between Follow_1 and this
         },
       };
       newFollowNodes.push(newNode);
@@ -1018,7 +1014,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       data: {
         name: "Fε(SCC({$}))",
         empty: false,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         color: NodeColor.none,
       },
     };
@@ -1037,7 +1032,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       data: {
         name: "Fε({$})",
         empty: false,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         color: NodeColor.none,
       },
     };
@@ -1065,7 +1059,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         data: {
           name: "Follow(" + nonterminal.name + ")",
           empty: nonterminal.empty,
-          // TODO: change color-scheme to distinguish between F_epsilon and this
           color: nonterminal.empty ? NodeColor.older : NodeColor.none,
         },
       };
@@ -1108,12 +1101,10 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       markerEnd: {
         type: MarkerType.ArrowClosed,
         orient: "auto",
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         color: NodeColor.none,
       },
       style: {
         strokeWidth: 2,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         stroke: NodeColor.none,
       },
     };
@@ -1165,12 +1156,10 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         markerEnd: {
           type: MarkerType.ArrowClosed,
           orient: "auto",
-          // TODO: change color-scheme to distinguish between Follow_1 and this
           color: NodeColor.none,
         },
         style: {
           strokeWidth: 2,
-          // TODO: change color-scheme to distinguish between Follow_1 and this
           stroke: NodeColor.none,
         },
       };

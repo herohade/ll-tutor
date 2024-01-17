@@ -404,7 +404,6 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              // TODO: update colors since they will most likely change
               "- A node's color will change depending on whether all its children have passed on their "
             }
             F<sub>ε</sub>

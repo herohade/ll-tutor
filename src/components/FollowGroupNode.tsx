@@ -285,6 +285,12 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   };
 
   const onUngroup = () => {
+    // Do I also need to update this ones edges (the names)?
+    // Technically, the user is only allowed to the next step if the graph
+    // is correct. This can never be the case if the last action was ungrouping.
+    // As there would be more pressing errors, the user will be notified of
+    // them instead of any edge errors. This means we can probably be lazy
+    // here and not update the edges (their names).
     setFollowNodes(
       followNodes.map((node) => {
         if (node.parentNode === id) {
@@ -303,7 +309,6 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
               ...node,
               data: {
                 ...node.data,
-                // TODO: do I also need to update this ones edges?
                 name: isFollow ? "Follow(SCC())" : "Fε(SCC())",
               },
             };
@@ -349,7 +354,10 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             follow: newFollowSet,
           };
           // save the outgoing node's new follow algorithm set
-          newFollowNodeMap.set(incomingNodeId, newIncomingFollowAlgorithmNodeMap);
+          newFollowNodeMap.set(
+            incomingNodeId,
+            newIncomingFollowAlgorithmNodeMap,
+          );
         }
         if (import.meta.env.DEV) {
           console.log(
@@ -391,7 +399,10 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             follow: newFollowSet,
           };
           // save the outgoing node's new follow algorithm set
-          newFollowNodeMap.set(incomingNodeId, newIncomingFollowAlgorithmNodeMap);
+          newFollowNodeMap.set(
+            incomingNodeId,
+            newIncomingFollowAlgorithmNodeMap,
+          );
         }
         if (import.meta.env.DEV) {
           console.log(
@@ -569,23 +580,31 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         >
           <Box
             className="z-[10000] mx-6 my-5 aspect-square min-w-16 rounded-md border-2 border-solid"
-            sx={{
-              ":hover": {
-                bgcolor:
-                  isConnectable && isConnecting
-                    ? (theme) =>
-                        theme.palette.mode === "dark"
-                          ? "success.dark"
-                          : "success.light"
-                    : "",
-              },
-              ":hover .isColoredChild": {
-                color: (theme) =>
-                  theme.palette.mode === "dark" && isConnectable && isConnecting
-                    ? "success.light"
-                    : "",
-              },
-            }}
+            sx={
+              page === 7
+                ? {
+                    padding: "0.5rem",
+                    bgcolor: isFollow ? "" : "background.paper",
+                    ":hover": {
+                      bgcolor:
+                        isConnectable && isConnecting
+                          ? (theme) =>
+                              theme.palette.mode === "dark"
+                                ? "success.dark"
+                                : "success.light"
+                          : "",
+                    },
+                    ":hover .isColoredChild": {
+                      color: (theme) =>
+                        theme.palette.mode === "dark" &&
+                        isConnectable &&
+                        isConnecting
+                          ? "success.light"
+                          : "",
+                    },
+                  }
+                : {}
+            }
           >
             {content}
           </Box>

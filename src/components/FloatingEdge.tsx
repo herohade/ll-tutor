@@ -49,7 +49,7 @@ function FloatingEdge(props: Props) {
   // TODO: maybe add bidirectional edges, e.g. by giving nodes a
   // bidirectional array and checking here if the edge is in the array
 
-  // return a special self-loop edge if source and target are the same node
+  // This returns a special self-loop edge if source and target are the same
   // TODO: make self-loop for group-Nodes start and end at the outer div instead of content-div (label)
   if (sourceNode.id === targetNode.id) {
     if (

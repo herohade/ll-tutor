@@ -260,6 +260,12 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   };
 
   const onUngroup = () => {
+    // Do I also need to update this ones edges (the names)?
+    // Technically, the user is only allowed to the next step if the graph
+    // is correct. This can never be the case if the last action was ungrouping.
+    // As there would be more pressing errors, the user will be notified of
+    // them instead of any edge errors. This means we can probably be lazy
+    // here and not update the edges (their names).
     setFirstNodes(
       firstNodes.map((node) => {
         if (node.parentNode === id) {
@@ -278,7 +284,6 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
               ...node,
               data: {
                 ...node.data,
-                // TODO: do I also need to update this ones edges?
                 name: "SCC()",
               },
             };

@@ -74,9 +74,7 @@ const steps: { label: string; content: JSX.Element[] }[] = [
     content: [
       <>
         {"Model the "}F<sub>ε</sub>
-        {
-          "-set inequality system as a graph."
-        }
+        {"-set inequality system as a graph."}
       </>,
       <>
         {"Propagate the "}F<sub>ε</sub>
@@ -84,7 +82,13 @@ const steps: { label: string; content: JSX.Element[] }[] = [
       </>,
     ],
   },
-  { label: "Calculate Follow Sets", content: [<>{"TODO"}</>, <>{"TODO"}</>] },
+  {
+    label: "Calculate Follow Sets",
+    content: [
+      <>{"Model the Follow-set inequality system as a graph."}</>,
+      <>{"Propagate the Follow-sets through the dependency graph."}</>,
+    ],
+  },
 ];
 
 function ProgressDrawerComponent({ setTutorialOpen }: Props) {

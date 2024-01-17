@@ -7,3 +7,4 @@ export { default as PrepareFirstAlgorithmPage } from "./PrepareFirstAlgorithmPag
 export { default as FirstAlgorithmPage } from "./FirstAlgorithmPage";
 export { default as PrepareFollowAlgorithmPage } from "./PrepareFollowAlgorithmPage";
 export { default as FollowAlgorithmPage } from "./FollowAlgorithmPage";
+export { default as DisplayResultPage } from "./DisplayResultPage";

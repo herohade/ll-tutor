@@ -18,6 +18,7 @@ import useBoundStore from "./store/store";
 import { shallow } from "zustand/shallow";
 
 import {
+  DisplayResultPage,
   EmptyAlgorithmPage,
   FirstAlgorithmPage,
   FollowAlgorithmPage,
@@ -651,6 +652,9 @@ export default function App() {
           <FollowAlgorithmPage graphCanvas={followGraphCanvas} />
         </ReactFlowProvider>
       );
+      break;
+    case 9:
+      content = <DisplayResultPage />;
       break;
     default:
       content = (

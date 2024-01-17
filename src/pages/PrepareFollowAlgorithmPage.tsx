@@ -160,6 +160,9 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
 
     // since we can't use the elk layouting algorithm here,
     // we will just eyeball the positions of the nodes
+    // (Actually here, unlike in HeaderComponent, we could,
+    // but I think it's better if it looks the same as when
+    // you actually first get to this step so we keep it)
     const maxXY: { x: number; y: number } = { x: 0, y: 0 };
 
     // Add all FirstNodes as FollowNodes (we need F_epsilon again)
@@ -196,7 +199,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         data: {
           ...node.data,
           name: "Fε(" + node.data.name + ")",
-          // TODO: change color-scheme to distinguish between Follow_1 and this
         },
       };
       newFollowNodes.push(newNode);
@@ -224,7 +226,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       data: {
         name: "Fε(SCC({$}))",
         empty: false,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         color: NodeColor.none,
       },
     };
@@ -243,7 +244,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       data: {
         name: "Fε({$})",
         empty: false,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         color: NodeColor.none,
       },
     };
@@ -271,7 +271,6 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         data: {
           name: "Follow(" + nonterminal.name + ")",
           empty: nonterminal.empty,
-          // TODO: change color-scheme to distinguish between F_epsilon and this
           color: nonterminal.empty ? NodeColor.older : NodeColor.none,
         },
       };
@@ -314,12 +313,10 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       markerEnd: {
         type: MarkerType.ArrowClosed,
         orient: "auto",
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         color: NodeColor.none,
       },
       style: {
         strokeWidth: 2,
-        // TODO: change color-scheme to distinguish between Follow_1 and this
         stroke: NodeColor.none,
       },
     };
@@ -371,12 +368,10 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         markerEnd: {
           type: MarkerType.ArrowClosed,
           orient: "auto",
-          // TODO: change color-scheme to distinguish between Follow_1 and this
           color: NodeColor.none,
         },
         style: {
           strokeWidth: 2,
-          // TODO: change color-scheme to distinguish between Follow_1 and this
           stroke: NodeColor.none,
         },
       };
@@ -675,12 +670,10 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           markerEnd: {
             type: MarkerType.ArrowClosed,
             orient: "auto",
-            // TODO: change color-scheme to distinguish between Follow_1 and this
             color: NodeColor.none,
           },
           style: {
             strokeWidth: 2,
-            // TODO: change color-scheme to distinguish between Follow_1 and this
             stroke: NodeColor.none,
           },
         } as Edge<EdgeData>;
@@ -729,12 +722,10 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         markerEnd: {
           type: MarkerType.ArrowClosed,
           orient: "auto",
-          // TODO: change color-scheme to distinguish between F_epsilon and this
           color: NodeColor.none,
         },
         style: {
           strokeWidth: 2,
-          // TODO: change color-scheme to distinguish between F_epsilon and this
           stroke: NodeColor.none,
         },
       };

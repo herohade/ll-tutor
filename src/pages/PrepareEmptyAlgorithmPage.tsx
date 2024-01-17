@@ -392,7 +392,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
 
   return (
     <>
-      {/* left side, task description and information */}
+      {/* left side, grammar information */}
       <div className="mr-1 h-full w-1/2 overflow-auto rounded-lg border-2 border-solid p-2 text-left sm:w-1/3">
         <div className="flex h-full flex-col items-center justify-between">
           <div className="flex flex-col items-center">

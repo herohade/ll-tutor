@@ -213,7 +213,6 @@ function groupNodesBySCC(
         data: {
           name,
           empty: false,
-          // TODO: change color-scheme if type is followNode
           color: NodeColor.none,
         },
       };
@@ -291,12 +290,10 @@ function groupNodesBySCC(
       markerEnd: {
         type: MarkerType.ArrowClosed,
         orient: "auto",
-        // TODO: change color-scheme if type is followNode
         color: NodeColor.none,
       },
       style: {
         strokeWidth: 2,
-        // TODO: change color-scheme if type is followNode
         stroke: NodeColor.none,
       },
     });

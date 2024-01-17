@@ -2,7 +2,10 @@ import { StateCreator } from "zustand";
 
 import { NavigationSlice } from "../types";
 
-export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) => ({
+export const createNavigationSlice: StateCreator<NavigationSlice> = (
+  set,
+  get,
+) => ({
   minPage: 0,
   maxPage: 9,
   page: 0,
@@ -21,6 +24,9 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (set, get) =
   },
   nextPage: () => {
     set({ page: get().page + 1 });
+  },
+  setPage: (page) => {
+    set({ page });
   },
   toggleOpen: () => {
     set({ open: !get().open });

@@ -127,6 +127,7 @@ export type NavigationSlice = {
   tutorialPage: number;
   previousPage: () => void;
   nextPage: () => void;
+  setPage: (page: number) => void;
   toggleOpen: () => void;
   setSettings: (settings: localStoreSettings) => void;
   setTutorialPage: (tutorialPage: number) => void;

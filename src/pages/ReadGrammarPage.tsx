@@ -297,7 +297,7 @@ function ReadGrammarPage() {
       </div>
       <Box>
         <ValidationTextField
-          label="Enter a production of form A -> α"
+          label="Enter a production of form A -> 𝛼"
           variant="outlined"
           className="my-3"
           id="productionInput"

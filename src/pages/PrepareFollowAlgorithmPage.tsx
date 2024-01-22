@@ -574,7 +574,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
 
     // now we add the missing edges by going through all productions
     // and adding edges a->A for right sides ..Aa..., as well as
-    // edges A->B for productions B->...Aα, where α can be empty
+    // edges A->B for productions B->...A𝛼, where 𝛼 can be empty
     // missingFirstEdgesSet contains edges Fε(a)->Follow(A) and
     // missingFollowEdgesSet contains edges Follow(A)->Follow(B)
     const missingFirstEdgesSet = new Set<string>();

@@ -58,7 +58,7 @@ const steps: { label: string; content: JSX.Element[] }[] = [
   {
     label: "Select Grammar",
     content: [
-      <>{"Enter a production of form A -> α."}</>,
+      <>{"Enter a production of form A -> 𝛼."}</>,
       <>{"Select the start symbol from the nonterminals."}</>,
     ],
   },

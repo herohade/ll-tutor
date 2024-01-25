@@ -63,14 +63,14 @@ const steps: { label: string; content: JSX.Element[] }[] = [
     ],
   },
   {
-    label: "Calculate Empty Attributes",
+    label: "Compute Empty Attributes",
     content: [
-      <>{"Set up the dependency graph for calculating the empty sets."}</>,
+      <>{"Set up the dependency graph for computing the empty sets."}</>,
       <>{"Propagate the empty attribute through the dependency graph."}</>,
     ],
   },
   {
-    label: "Calculate First Sets",
+    label: "Compute First Sets",
     content: [
       <>
         {"Model the "}F<sub>ε</sub>
@@ -83,7 +83,7 @@ const steps: { label: string; content: JSX.Element[] }[] = [
     ],
   },
   {
-    label: "Calculate Follow Sets",
+    label: "Compute Follow Sets",
     content: [
       <>{"Model the Follow-set inequality system as a graph."}</>,
       <>{"Propagate the Follow-sets through the dependency graph."}</>,
@@ -119,7 +119,7 @@ function ProgressDrawerComponent({ setTutorialOpen }: Props) {
           // Math.floor(page / 2) is the same as page >> 1. We can do this since
           // there are always two pages per step. So we only need to dynamically
           // change the Task description (StepContent) between the two pages.
-          // We exclude the StartPage (page 0) from this calculation (page - 1).
+          // We exclude the StartPage (page 0) from this computation (page - 1).
           activeStep={(page - 1) >> 1}
           orientation="vertical"
           // TODO: fix padding, don't forget to change HeaderComponent, too

@@ -691,7 +691,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     // update nodes to reflece beginning of the first step
     updateAllEmptyNodeAndEdgeColors();
 
-    // calculate next steps solution
+    // Compute next steps solution
     /*
     // Full Algorithm:
     // 1. set terminal ε to empty = true

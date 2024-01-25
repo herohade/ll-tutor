@@ -28,7 +28,7 @@ type Props = {
 /*
 This is the fourth page of the webtutor.
 The user adds the nodes and edges to the graph to model
-the dependency graph for the empty set calculation.
+the dependency graph for the empty set computation.
 */
 function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
   const selector = (state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice) => ({

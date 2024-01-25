@@ -135,7 +135,7 @@ function CustomControls() {
 
   const addEmptyNode = () => {
     // Add the node in the center of the viewport.
-    // calculation of center copied from: https://stackoverflow.com/a/76394786
+    // computation of center copied from: https://stackoverflow.com/a/76394786
 
     // Get the basic info about the viewport
     const {
@@ -154,7 +154,7 @@ function CustomControls() {
     const nodeHeighth = 60;
 
     // Add offsets for the height/width of the new node
-    // (Assuming that you don't have to calculate this as well
+    // (Assuming that you don't have to compute this as well
     const nodeWidthOffset = nodeWidth / 2;
     const nodeHeightOffset = nodeHeighth / 2;
 
@@ -185,7 +185,7 @@ function CustomControls() {
 
   const addFirstGroupNode = () => {
     // Add the node in the center of the viewport.
-    // calculation of center copied from: https://stackoverflow.com/a/76394786
+    // computation of center copied from: https://stackoverflow.com/a/76394786
 
     // Get the basic info about the viewport
     const {
@@ -204,7 +204,7 @@ function CustomControls() {
     const nodeHeighth = 60;
 
     // Add offsets for the height/width of the new node
-    // (Assuming that you don't have to calculate this as well
+    // (Assuming that you don't have to compute this as well
     const nodeWidthOffset = nodeWidth / 2;
     const nodeHeightOffset = nodeHeighth / 2;
 
@@ -236,7 +236,7 @@ function CustomControls() {
 
   const addFollowGroupNode = () => {
     // Add the node in the center of the viewport.
-    // calculation of center copied from: https://stackoverflow.com/a/76394786
+    // computation of center copied from: https://stackoverflow.com/a/76394786
 
     // Get the basic info about the viewport
     const {
@@ -255,7 +255,7 @@ function CustomControls() {
     const nodeHeighth = 60;
 
     // Add offsets for the height/width of the new node
-    // (Assuming that you don't have to calculate this as well
+    // (Assuming that you don't have to compute this as well
     const nodeWidthOffset = nodeWidth / 2;
     const nodeHeightOffset = nodeHeighth / 2;
 

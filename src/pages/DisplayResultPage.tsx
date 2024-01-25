@@ -65,12 +65,12 @@ function DisplayResultPage() {
   // (can be multiple productions because of conflicts)
   // Nonterminal + FollowSymbol = Productions.
   //
-  // CalculationMap is a mapping from numbered production name
+  // ComputationMap is a mapping from numbered production name
   // to its first, follow and first ⊙_1 follow set.
   // Both store the same information, but in different formats.
   // The first is used to display the table, the second is used
-  // to display the calculations.
-  const [lookaheadTable, calculationMap]: [
+  // to display the computations.
+  const [lookaheadTable, computationMap]: [
     Map<string, Map<string, Production[]>>,
     Map<string, [Terminal[], Terminal[], Terminal[]]>,
   ] = useMemo(() => {
@@ -84,12 +84,12 @@ function DisplayResultPage() {
         ),
       ]),
     );
-    const newCalculationMap = new Map<
+    const newComputationMap = new Map<
       string,
       [Terminal[], Terminal[], Terminal[]]
     >();
 
-    // For all productions, calculate firstSet(right) ⊙_1 followSet(left).
+    // For all productions, compute firstSet(right) ⊙_1 followSet(left).
     for (const production of productions) {
       let emptyFirst = true;
       const first: Terminal[] = [];
@@ -127,8 +127,8 @@ function DisplayResultPage() {
         console.log("firstAndFollow", production, firstAndFollow);
       }
 
-      // Now we add the calculation to the calculation map.
-      newCalculationMap.set(production.numberedRepresentation(), [
+      // Now we add the computation to the computation map.
+      newComputationMap.set(production.numberedRepresentation(), [
         emptyFirst ? [epsilon, ...first] : [...first],
         [...production.leftSide.follow],
         [...firstAndFollow],
@@ -169,10 +169,10 @@ function DisplayResultPage() {
 
     if (import.meta.env.DEV) {
       console.log("newlookaheadTable", newlookaheadTable);
-      console.log("newCalculationMap", newCalculationMap);
+      console.log("newComputationMap", newComputationMap);
     }
 
-    return [newlookaheadTable, newCalculationMap];
+    return [newlookaheadTable, newComputationMap];
   }, [epsilon, followSymbols, nonTerminals, productions]);
 
   return (
@@ -228,7 +228,7 @@ function DisplayResultPage() {
       </div>
       {/* right side, reactflow canvas */}
       <div className="h-full w-1/2 overflow-auto rounded-lg border-2 border-solid sm:w-2/3">
-        {/* First we show the calculations for the lookahead table */}
+        {/* First we show the computations for the lookahead table */}
         <Typography
           variant="h6"
           component="div"
@@ -239,15 +239,15 @@ function DisplayResultPage() {
             py: 1,
           }}
         >
-          Calcu&shy;lation of the LL(1)-Look&shy;ahead
+          Compu&shy;tation of the LL(1)-Look&shy;ahead
         </Typography>
-        <Table stickyHeader aria-label="calculations">
+        <Table stickyHeader aria-label="computations">
           <TableBody>
             {productions.map((production) => {
               const [leftSide, rightSide] = production.name
                 .split("=>")
                 .map((s) => s.trim());
-              const [firstSet, followSet, lookaheadSet] = calculationMap.get(
+              const [firstSet, followSet, lookaheadSet] = computationMap.get(
                 production.numberedRepresentation(),
               ) ?? [[], [], []];
               return (

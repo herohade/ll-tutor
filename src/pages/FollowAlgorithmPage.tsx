@@ -248,7 +248,7 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
           }
         }
         if (newActive) {
-          // Calculate the follow set of the current SCC from the
+          // Compute the follow set of the current SCC from the
           // follow sets of the incoming SCCs
           const newCurrentNodeMap = {
             ...currentNodeMap,
@@ -328,7 +328,7 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
         showSnackbar("There are still buttons to be clicked!", "error", true);
         return false;
       }
-      // OPTION-2: or just require the follow sets to be calculated
+      // OPTION-2: or just require the follow sets to be computed
       // (does not require the last buttons (roots?) since these
       // SCCs do not need to propagate their follow sets)
       // for (const followArray of followAlgorithmNodeMap.incomingFollow.values()) {
@@ -494,7 +494,7 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
                 if (checkGraph()) {
                   setFinishedFollow(true);
                   showSnackbar(
-                    "Congratulations! You have calculated the follow sets!",
+                    "Congratulations! You have computed the follow sets!",
                     "success",
                     true,
                   );

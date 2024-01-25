@@ -184,7 +184,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   }, [disabledBecauseOfIncoming, thisFirstNodeMap]);
 
   // We don't want group nodes to be smaller than the content. But (constantly)
-  // calculating the minimum size is expensive. So we set the minimum size to
+  // computing the minimum size is expensive. So we set the minimum size to
   // the label size. This means that child nodes might be outside the group node
   /*
   // copied and modified from https://reactflow.dev/examples/nodes/dynamic-grouping
@@ -305,7 +305,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         });
         // update outgoung node's first algorithm sets:
         // - update their incoming node's first sets (in particular this one's)
-        // - update their first sets by re-calculating them with the new
+        // - update their first sets by re-computing them with the new
         // incoming node first sets
         for (const [
           incomingNodeId,
@@ -318,7 +318,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           // remove this node's first set from the outgoing node's set
           // by setting it to undefined
           newIncomingFirstMap.set(id, undefined);
-          // re-calculate the outgoing node's first set
+          // re-compute the outgoing node's first set
           const relevantIncomingFirstSets: string[][] = [
             ...newIncomingFirstMap.values(),
           ].filter((firstArr) => firstArr !== undefined) as string[][];
@@ -347,7 +347,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         });
         // update outgoung node's first algorithm sets:
         // - update their incoming node's first sets (in particular this one's)
-        // - update their first sets by re-calculating them with the new
+        // - update their first sets by re-compute them with the new
         // incoming node first sets
         const myFirstSet: Set<string> = thisFirstNodeMap.first;
         for (const [
@@ -360,7 +360,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           );
           // update this node's first set in the outgoing node's set
           newIncomingFirstMap.set(id, [...myFirstSet]);
-          // re-calculate the outgoing node's first set
+          // re-compute the outgoing node's first set
           const newFirstSet = new Set([
             ...incomingFirstAlgorithmNodeMap.first,
             ...myFirstSet,

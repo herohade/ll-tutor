@@ -242,7 +242,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
           }
         }
         if (newActive) {
-          // Calculate the first set of the current SCC from the
+          // Compute the first set of the current SCC from the
           // first sets of the incoming SCCs
           const newCurrentNodeMap = {
             ...currentNodeMap,
@@ -322,7 +322,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
         showSnackbar("There are still buttons to be clicked!", "error", true);
         return false;
       }
-      // OPTION-2: or just require the first sets to be calculated
+      // OPTION-2: or just require the first sets to be computed
       // (does not require the last buttons (roots?) since these
       // SCCs do not need to propagate their first sets)
       // for (const firstArray of firstAlgorithmNodeMap.incomingFirst.values()) {
@@ -489,7 +489,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
                 if (checkGraph()) {
                   setFinishedFirst(true);
                   showSnackbar(
-                    "Congratulations! You have calculated the first sets!",
+                    "Congratulations! You have computed the first sets!",
                     "success",
                     true,
                   );

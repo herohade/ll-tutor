@@ -134,7 +134,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
 
         // Now that we have the complete graph, we can look at the
         // outgoing edges. But we do not need to propagate to
-        // Fe(SCC()) nodes, since we already calculated the Fe sets.
+        // Fe(SCC()) nodes, since we already computed the Fe sets.
         // So we skip edges that have no Follow(SCC()) in them
         if (edge.data?.name.match(/Follow\(SCC\(/) === null) {
           return;
@@ -209,7 +209,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   }, [disabledBecauseOfIncoming, thisFollowNodeMap]);
 
   // We don't want group nodes to be smaller than the content. But (constantly)
-  // calculating the minimum size is expensive. So we set the minimum size to
+  // computing the minimum size is expensive. So we set the minimum size to
   // the label size. This means that child nodes might be outside the group node
   /*
   // copied and modified from https://reactflow.dev/examples/nodes/dynamic-grouping
@@ -330,7 +330,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         });
         // update outgoung node's follow algorithm sets:
         // - update their incoming node's follow sets (in particular this one's)
-        // - update their follow sets by re-calculating them with the new
+        // - update their follow sets by re-computing them with the new
         // incoming node follow sets
         for (const [
           incomingNodeId,
@@ -343,7 +343,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           // remove this node's follow set from the outgoing node's set
           // by setting it to undefined
           newIncomingFollowMap.set(id, undefined);
-          // re-calculate the outgoing node's follow set
+          // re-compute the outgoing node's follow set
           const relevantIncomingFollowSets: string[][] = [
             ...newIncomingFollowMap.values(),
           ].filter((followArr) => followArr !== undefined) as string[][];
@@ -375,7 +375,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         });
         // update outgoung node's follow algorithm sets:
         // - update their incoming node's follow sets (in particular this one's)
-        // - update their follow sets by re-calculating them with the new
+        // - update their follow sets by re-computing them with the new
         // incoming node follow sets
         const myFollowSet: Set<string> = thisFollowNodeMap.follow;
         for (const [
@@ -388,7 +388,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           );
           // update this node's follow set in the outgoing node's set
           newIncomingFollowMap.set(id, [...myFollowSet]);
-          // re-calculate the outgoing node's follow set
+          // re-compute the outgoing node's follow set
           const newFollowSet = new Set([
             ...incomingFollowAlgorithmNodeMap.follow,
             ...myFollowSet,

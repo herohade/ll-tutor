@@ -1,3 +1,5 @@
+/// <reference types="vite-plugin-svgr/client" />
+
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -5,6 +7,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import Zoom from "@mui/material/Zoom";
+import Box from "@mui/material/Box";
 import { TransitionProps } from "@mui/material/transitions";
 
 import {
@@ -18,6 +21,8 @@ import {
 } from "react";
 
 import { ExpanderComponent } from ".";
+
+import OneConcatDef from "../assets/OneConcatDef.svg?react";
 
 interface Props {
   page: number;
@@ -275,7 +280,7 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "To calculate the First-sets of the grammar, you will use the algorithm from the lecture. In this step, you will set up a dependency graph representing the "
+              "To compute the First-sets of the grammar, you will use the algorithm from the lecture. In this step, you will set up a dependency graph representing the "
             }
             F<sub>ε</sub>
             {
@@ -352,7 +357,7 @@ const tutorialPages: tutorialPage[] = [
   // page 6
   {
     ariaTitle: "The First-set algorithm",
-    ariaDescription: "This dialog explains how to calculate the First-sets.",
+    ariaDescription: "This dialog explains how to compute the First-sets.",
     title: "First-sets",
     contents: [
       {
@@ -397,7 +402,7 @@ const tutorialPages: tutorialPage[] = [
             }
             F<sub>ε</sub>
             {
-              "-sets to it.\n- If you want to dismiss the changes made to the graph, you can always reset it by pressing the 'reset step' button.\n- When you have toggled all root nodes, you have successfully calculated the "
+              "-sets to it.\n- If you want to dismiss the changes made to the graph, you can always reset it by pressing the 'reset graph' button.\n- When you have toggled all root nodes, you have successfully computed the "
             }
             F<sub>ε</sub>
             {
@@ -457,16 +462,14 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "To calculate the Follow-sets of the grammar, you will again set up a dependency graph representing the inequality system. For this, you will expand the "
+              "To compute the Follow-sets of the grammar, you will again set up a dependency graph representing the inequality system. For this, you will expand the "
             }
             F<sub>ε</sub>
             {
               "-graph of the previous step. Additionally, you are given a $-node indicating the end of the input and follow-nodes for each nonterminal of the grammar. The resulting graph will represent how the Follow-sets of the nonterminals arise from the "
             }
             F<sub>ε</sub>
-            {
-              "-sets."
-            }
+            {"-sets."}
           </>
         ),
       },
@@ -554,25 +557,138 @@ const tutorialPages: tutorialPage[] = [
   },
   // page 8
   {
-    ariaTitle: "TODO",
-    ariaDescription: "TODO",
-    title: "TODO",
+    ariaTitle: "The Follow-set algorithm",
+    ariaDescription: "This dialog explains how to compute the Follow-sets.",
+    title: "Follow-sets",
     contents: [
       {
         type: "text",
-        content: <>{"TODO"}</>,
+        content: (
+          <>{"Now, you will propagate the Follow-sets through the graph."}</>
+        ),
+      },
+      {
+        type: "collapsible",
+        title: "Your task",
+        content: (
+          <>
+            {"Propagate the "}F<sub>ε</sub>
+            {
+              "- and Follow-sets by toggling the buttons in the graph. Start from the "
+            }
+            F<sub>ε</sub>
+            {
+              "-nodes that have edges to Follow-nodes and work up to the root nodes. Remember to press the root node's button as well.\nOnce you believe your solution to be correct, click the 'check graph' button."
+            }
+          </>
+        ),
+      },
+      {
+        type: "collapsible",
+        title: "The algorithm",
+        content: (
+          <>
+            {"- You must start from the "}F<sub>ε</sub>
+            {
+              "-nodes that have edges to Follow-nodes.\n- Toggle a node's button to propagate their set along the outgoing edges to their parents.\n- A parent node becomes toggleable once all children have passed on their sets to it.\n- If you want to dismiss the changes made to the graph, you can always reset it by pressing the 'reset graph' button.\n- When you have toggled all root nodes, you have successfully computed the Follow-sets of all Strongly Connected Components and can click the 'check graph' button. All Nonterminals within an SCC will have that same Follow-set."
+            }
+          </>
+        ),
+      },
+      {
+        type: "collapsible",
+        title: "Color coding",
+        content: (
+          <>
+            {
+              "- A node's color will change depending on whether all its children have passed on their "
+            }
+            F<sub>ε</sub>
+            {
+              "-/Follow-sets to it and if it has passed on its set to all its parents.\n- Nodes that have passed on their sets to their parents will be colored blue.\n- Nodes that have not yet passed on their sets to their parents but have received all sets from their children will be colored purple.\n- Nodes that have received some but not all sets from their children will be colored pink.\n- Nodes that have not received any set from their children will remain their original color."
+            }
+          </>
+        ),
       },
     ],
   },
   // page 9
   {
-    ariaTitle: "TODO",
-    ariaDescription: "TODO",
-    title: "TODO",
+    ariaTitle: "The lookahead table",
+    ariaDescription: "This dialog explains the construction of the table.",
+    title: "Lookahead Table",
     contents: [
       {
         type: "text",
-        content: <>{"TODO"}</>,
+        content: (
+          <>
+            {
+              "Congratulations! You have successfully computed the First- and Follow-sets of all nonterminals. With this, the lookahead table can be constructed."
+            }
+          </>
+        ),
+      },
+      {
+        type: "collapsible",
+        title: "Your task",
+        content: (
+          <>{"Nothing. The lookahead table is constructed automatically."}</>
+        ),
+      },
+      {
+        type: "collapsible",
+        title: "The table",
+        content: (
+          <>
+            {
+              "The LL(1)-lookahead table maps the nonterminal on the stack and the next input symbol (lookahead) to the production rule used for parsing.\nThere may be at most one production in each cell of the table. If multiple productions exist in a cell, the grammar is not LL(1).\n"
+            }
+            <b>Example:</b>
+            {" You look at a grammar with the production rules S->aSb"}
+            <sup>0</sup>
+            {" and S->ε"}
+            <sup>1</sup>
+            {
+              ". While parsing an input string, the next symbol is 'b', and the nonterminal on the top of the stack is S. By using the lookahead table, you can determine the production rule to use. In this case, the table cell contains the production M[S, b] = 1, so you would use the production S->ε"
+            }
+            <sup>1</sup>
+            {"."}
+          </>
+        ),
+      },
+      {
+        type: "collapsible",
+        title: "Computing the table",
+        content: (
+          <>
+            {
+              "For each production, A->𝛼, add the production to the table cell (A, t) if the terminal t is in the set: "
+            }
+            First<sub>1</sub>(𝛼) ⊙<sub>1</sub> Follow<sub>1</sub>(A).
+            {"\nThe 1-concatenation operator "}⊙<sub>1</sub>
+            {" is defined as follows:"}
+            <Box
+              component="span"
+              sx={{
+                display: "block",
+                overflow: "auto",
+                m: 1,
+              }}
+            >
+              {/* 
+                Latex to generate svg
+                (then change golden color to "currentColor"):
+                \\
+                {\color{Golden} \text{Let } {\color{Blue} L_1},{\color{Blue} L_2} \subseteq {\color{Blue} T} \cup \left \{ {\color{Blue} \varepsilon} \right \} \text{with } {\color{Blue} L_1} \neq \varnothing \neq {\color{Blue} L_2}. \text{ Then:}} \\
+                {\color{Golden} {\color{Blue} L_1} \odot_{\color{Magenta} 1} {\color{Blue} L_2} = \begin{cases}
+                {\color{Blue} L_1} & \text{if } {\color{Blue} \varepsilon} \notin {\color{Blue} L_1} \\
+                ({\color{Blue} L_1}\backslash\left \{ {\color{Blue} \varepsilon} \right \}) \cup {\color{Blue} L_2} & \text{otherwise }
+                \end{cases}}
+              */}
+              <OneConcatDef />
+            </Box>
+          </>
+        ),
       },
     ],
   },

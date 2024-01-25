@@ -206,7 +206,7 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     setEmptyNonterminalMap(nonTerminals.map((n) => [n.name, n.empty]));
     setEmptyProductionMap(productions.map((p) => [p.name, p.empty]));
 
-    // calculate next steps solution
+    // Compute next steps solution
     /*
     // Full Algorithm:
     // 1. set terminal ε to empty = true
@@ -255,7 +255,7 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
       }
     } else {
       showSnackbar(
-        "Congratulations! You have calculated the empty attributes!",
+        "Congratulations! You have computed the empty attributes!",
         "success",
         true,
       );

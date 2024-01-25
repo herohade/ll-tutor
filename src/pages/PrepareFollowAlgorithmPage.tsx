@@ -38,7 +38,7 @@ const StyledSpan = styled("span")({});
 This is the eighth page of the webtutor.
 It shows the user the grammar and the F-epsilon sets, color coded regarding the
 empty attributes. The user has to group the FollowNodes into Strongly Connected
-Components (group nodes). These are used to calculate the follow sets
+Components (group nodes). These are used to compute the follow sets
 in the next step.
 */
 function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
@@ -587,7 +587,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
         if (symbol.name === "ε") {
           break;
         }
-        // We don't need to calculate follow sets for terminals
+        // We don't need to compute follow sets for terminals
         // so we skip them if they are on the right side
         if (symbol instanceof Terminal) {
           i++;

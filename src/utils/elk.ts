@@ -36,6 +36,10 @@ const useLayoutedElements = (
       edges?: Edge<EdgeData>[],
       setNodes?: (nodes: Node<NodeData>[], fitView?: () => void) => void,
       setEdges?: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
+      // Some algorithms use a loading indicator. Since this step can take a
+      // while, we want to set the loading indicator to false only once the
+      // layouting is done.
+      setLoading?: () => void,
     ) => {
       const relevantNodes =
         nodes ||
@@ -249,6 +253,10 @@ const useLayoutedElements = (
 
           relevantSetNodes(newNodes);
           relevantSetEdges(newEdges, fitView);
+
+          if (setLoading) {
+            setLoading();
+          }
         });
     },
     [

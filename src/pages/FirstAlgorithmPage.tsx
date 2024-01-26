@@ -1,8 +1,11 @@
 import { styled } from "@mui/material";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
 
 import { VariantType, useSnackbar } from "notistack";
+
+import { useState } from "react";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
@@ -86,6 +89,12 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
       preventDuplicate,
     });
   };
+
+  // resetting, solving and checking the graph takes some time,
+  // so we need to show the user a loading indicator
+  const [loading, setLoading] = useState<
+    "reset" | "solve" | "check" | undefined
+  >(undefined);
 
   // copied from prepareFirstMap() in HeaderComponent.tsx
   const resetGraph = () => {
@@ -470,22 +479,62 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
             <Button
               variant="contained"
               color="error"
-              onClick={resetGraph}
-              disabled={finishedFirst}
+              onClick={() => {
+                setLoading("reset");
+
+                resetGraph();
+
+                setLoading(undefined);
+              }}
+              disabled={finishedFirst || loading !== undefined}
             >
+              {loading === "reset" && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "inherit",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
               Reset Graph
             </Button>
             <Button
               variant="contained"
               color="success"
-              onClick={solveGraph}
-              disabled={finishedFirst}
+              onClick={() => {
+                setLoading("solve");
+
+                solveGraph();
+
+                setLoading(undefined);
+              }}
+              disabled={finishedFirst || loading !== undefined}
             >
+              {loading === "solve" && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "inherit",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
               Show Solution
             </Button>
             <Button
               variant="contained"
               onClick={() => {
+                setLoading("check");
+
                 if (checkGraph()) {
                   setFinishedFirst(true);
                   showSnackbar(
@@ -494,9 +543,24 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
                     true,
                   );
                 }
+
+                setLoading(undefined);
               }}
-              disabled={finishedFirst}
+              disabled={finishedFirst || loading !== undefined}
             >
+              {loading === "check" && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "inherit",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
               Check Graph
             </Button>
           </Stack>

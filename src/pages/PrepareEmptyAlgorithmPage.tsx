@@ -1,9 +1,12 @@
+import CircularProgress from "@mui/material/CircularProgress";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 
 import { Edge, MarkerType, Node } from "reactflow";
 
 import { VariantType, useSnackbar } from "notistack";
+
+import { useState } from "react";
 
 import {
   EdgeData,
@@ -31,7 +34,9 @@ The user adds the nodes and edges to the graph to model
 the dependency graph for the empty set computation.
 */
 function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
-  const selector = (state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice) => ({
+  const selector = (
+    state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice,
+  ) => ({
     // GrammarSlice
     epsilon: state.epsilon,
     productions: state.productions,
@@ -115,6 +120,12 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     setFollowNodes,
     setFollowEdges,
   );
+
+  // resetting, solving and checking the graph takes some time,
+  // so we need to show the user a loading indicator
+  const [loading, setLoading] = useState<
+    "reset" | "solve" | "check" | undefined
+  >(undefined);
 
   const check = () => {
     // for (const nonTerminal of newNonTerminals) {
@@ -387,6 +398,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       newEdges,
       setEmptyNodes,
       setEmptyEdges,
+      () => setLoading(undefined),
     );
   };
 
@@ -430,33 +442,83 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="error"
               onClick={() => {
+                setLoading("reset");
+
                 setEmptyNodes([]);
                 setEmptyEdges([]);
+
+                setLoading(undefined);
               }}
-              disabled={emptySetupComplete}
+              disabled={emptySetupComplete || loading !== undefined}
             >
+              {loading === "reset" && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "inherit",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
               Reset Graph
             </Button>
             <Button
               variant="contained"
               color="success"
               onClick={() => {
+                setLoading("solve");
+
+                // solve() sets loading to undefined when done
                 solve();
               }}
-              disabled={emptySetupComplete}
+              disabled={emptySetupComplete || loading !== undefined}
             >
+              {loading === "solve" && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "inherit",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
               Show Solution
             </Button>
             <Button
               variant="contained"
               onClick={() => {
+                setLoading("check");
+
                 if (check()) {
                   toggleEmptyDeletableAndConnectable(false, false);
                   setEmptySetupComplete(true);
                 }
+
+                setLoading(undefined);
               }}
-              disabled={emptySetupComplete}
+              disabled={emptySetupComplete || loading !== undefined}
             >
+              {loading === "check" && (
+                <CircularProgress
+                  size={24}
+                  sx={{
+                    color: "inherit",
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    marginTop: "-12px",
+                    marginLeft: "-12px",
+                  }}
+                />
+              )}
               Check Graph
             </Button>
           </Stack>

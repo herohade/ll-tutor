@@ -1,11 +1,11 @@
+import Zoom from "@mui/material/Zoom";
 import Button from "@mui/material/Button";
-import Dialog, { DialogProps } from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Zoom from "@mui/material/Zoom";
+import Dialog, { DialogProps } from "@mui/material/Dialog";
 import { TransitionProps } from "@mui/material/transitions";
+
 import {
   JSXElementConstructor,
   forwardRef,
@@ -17,7 +17,7 @@ import {
 interface Props {
   DisplayButton: React.FC<{ onClick: () => void }>;
   title: string;
-  content: JSX.Element | string;
+  content: JSX.Element;
   ariaTitle?: string;
   ariaDescription?: string;
 }
@@ -54,7 +54,7 @@ export default function ScrollableDialogComponent({
     setOpen(false);
   };
 
-  const descriptionElementRef = useRef<HTMLElement>(null);
+  const descriptionElementRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (open) {
       const { current: descriptionElement } = descriptionElementRef;
@@ -81,20 +81,19 @@ export default function ScrollableDialogComponent({
         aria-describedby={ariaDescription}
       >
         <DialogTitle id={"scroll-dialog-" + title}>{title}</DialogTitle>
-        <DialogContent dividers={scroll === "paper"}>
-          <DialogContentText
-            id={"scroll-dialog-" + title + "description"}
-            ref={descriptionElementRef}
-            tabIndex={-1}
-            sx={{
-              whiteSpace: "pre-line",
-            }}
-          >
-            {content}
-          </DialogContentText>
+        <DialogContent
+          dividers={scroll === "paper"}
+          tabIndex={-1}
+          sx={{
+            whiteSpace: "pre-line",
+          }}
+        >
+          {content}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Close</Button>
+          <Button ref={descriptionElementRef} onClick={handleClose}>
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </>

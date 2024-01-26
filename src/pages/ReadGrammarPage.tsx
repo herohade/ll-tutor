@@ -1,21 +1,28 @@
 import { styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
 import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import ListItem from "@mui/material/ListItem";
+import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import ListItemText from "@mui/material/ListItemText";
+import CircularProgress from "@mui/material/CircularProgress";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import CheckOutlinedIcon from "@mui/icons-material/CheckOutlined";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
-import TextField from "@mui/material/TextField";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import DialogContentText from "@mui/material/DialogContentText";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 import { VariantType, useSnackbar } from "notistack";
 
 import useBoundStore from "../store/store";
 import { shallow } from "zustand/shallow";
+
+import { ScrollableDialogComponent } from "../components";
 
 import {
   Production,
@@ -76,6 +83,36 @@ const ValidationTextField = styled(TextField)({
   },
 });
 
+const lectureExamples: [
+  grammarName: string,
+  startNonterminal: string,
+  productions: string[],
+][] = [
+  ["Example 1:", "S", ["S -> aSb", "S -> "]],
+  ["Example 2:", "S", ["S -> As", "A -> aA", "A -> "]],
+  [
+    "Example 3:",
+    "S",
+    ["S -> aAaB", "S -> bAbB", "A -> aA", "A -> a", "B -> aB", "B -> a"],
+  ],
+  [
+    "Example 4:",
+    "S",
+    [
+      "S -> P",
+      "P -> n->V",
+      "V -> O/V",
+      "V -> O",
+      "O -> L",
+      "O -> ",
+      "L -> YL",
+      "L -> Y",
+      "Y -> n",
+      "Y -> t",
+    ],
+  ],
+];
+
 /*
 This is the second page of the webtutor.
 It reads the grammars productions from the user and displays them.
@@ -94,6 +131,7 @@ function ReadGrammarPage() {
     setTerminals: state.setTerminals,
     // GrammarSetupSlice
     start: state.start,
+    sorted: state.sorted,
     setStart: state.setStart,
     setSorted: state.setSorted,
     setReduced: state.setReduced,
@@ -111,6 +149,7 @@ function ReadGrammarPage() {
     setTerminals,
     // GrammarSetupSlice
     start,
+    sorted,
     setStart,
     setSorted,
     setReduced,
@@ -131,6 +170,17 @@ function ReadGrammarPage() {
       preventDuplicate,
     });
   };
+
+  // loading a lecture example takes some time, so we need to show the user
+  // a loading indicator.
+  // If the grammar is changed or we navigate to the next page, we need to
+  // reset the loading indicator
+  const [loadingLectureExample, setLoadingLectureExample] = useState<
+    number | undefined
+  >(undefined);
+  const [lectureExampleSuccess, setLectureExampleSuccess] = useState<
+    number | undefined
+  >(undefined);
 
   // check if the production is valid, else tell the user
   const validProduction = (production: string): boolean => {
@@ -165,7 +215,7 @@ function ReadGrammarPage() {
       if (!allowedSymbols.includes(c)) {
         showSnackbar(
           "The right side of the production must only contain allowed symbols!" +
-            ` ("${c}")`,
+            ` ("${c}" is not allowed)`,
           "error",
           true,
         );
@@ -209,6 +259,231 @@ function ReadGrammarPage() {
 
     return true;
   };
+
+  const clearGrammar = () => {
+    // reset special symbols
+    // epsilon
+    epsilon.references = 0;
+    epsilon.productive = true;
+    epsilon.reachable = false;
+    epsilon.empty = true;
+    epsilon.first = [];
+    epsilon.follow = [];
+    // end of input
+    endOfInput.references = 0;
+    endOfInput.productive = true;
+    endOfInput.reachable = false;
+    endOfInput.empty = false;
+    endOfInput.first = [];
+    endOfInput.follow = [];
+    // start symbol
+    startSymbol.references = 0;
+    startSymbol.productive = false;
+    startSymbol.reachable = true;
+    startSymbol.empty = false;
+    startSymbol.first = [];
+    startSymbol.follow = [];
+    // remove start
+    for (const n of nonTerminals) {
+      n.start = false;
+    }
+    // and clear all arrays
+    setStart([]);
+    // this way we can check if we can proceed by
+    // letting the reduce function error out
+    // since S' is unproductive
+    setReduced(false);
+    setProductions([]);
+    setNonTerminals([]);
+    setTerminals([]);
+    // grammar changed, so we don't have a lecture example anymore
+    setLectureExampleSuccess(undefined);
+  };
+
+  const lectureExamplePopupContent = (
+    <>
+      <DialogContentText id={"scroll-dialog-Lecture-Examples-description"}>
+        Choose one of the following grammars to load it into the webtutor:
+      </DialogContentText>
+      <List>
+        {lectureExamples.map(
+          ([grammarName, startNonterminal, productions], index) => (
+            <Fragment key={grammarName + index}>
+              {index !== 0 && <Divider sx={{ my: 1 }} />}
+              <ListItem>
+                <ListItemText
+                  primary={grammarName}
+                  secondary={productions.join("\n")}
+                />
+              </ListItem>
+              <ListItem>
+                <Button
+                  aria-label={"load " + grammarName}
+                  variant="contained"
+                  color={
+                    // Here we use !sorted to check if the user navigated to the
+                    // next page after loading a lecture example.
+                    // It seems to work without it, but I'm not sure why, so I
+                    // keep it in for now.
+                    !sorted && lectureExampleSuccess === index
+                      ? "success"
+                      : "info"
+                  }
+                  className="mt-2"
+                  endIcon={
+                    // Here we use !sorted to check if the user navigated to the
+                    // next page after loading a lecture example.
+                    // It seems to work without it, but I'm not sure why, so I
+                    // keep it in for now.
+                    !sorted && lectureExampleSuccess === index ? (
+                      <CheckOutlinedIcon />
+                    ) : (
+                      <DescriptionOutlinedIcon />
+                    )
+                  }
+                  disabled={loadingLectureExample !== undefined}
+                  onClick={() => {
+                    // only try and load one grammar at a time
+                    if (loadingLectureExample === undefined) {
+                      setLectureExampleSuccess(undefined);
+                      setLoadingLectureExample(index);
+
+                      // 1. step: clear the grammar:
+                      // reset special symbols
+                      // epsilon
+                      epsilon.references = 0;
+                      epsilon.productive = true;
+                      epsilon.reachable = false;
+                      epsilon.empty = true;
+                      epsilon.first = [];
+                      epsilon.follow = [];
+                      // end of input
+                      endOfInput.references = 0;
+                      endOfInput.productive = true;
+                      endOfInput.reachable = false;
+                      endOfInput.empty = false;
+                      endOfInput.first = [];
+                      endOfInput.follow = [];
+                      // start symbol
+                      startSymbol.references = 0;
+                      startSymbol.productive = false;
+                      startSymbol.reachable = true;
+                      startSymbol.empty = false;
+                      startSymbol.first = [];
+                      startSymbol.follow = [];
+                      // remove start
+                      for (const n of nonTerminals) {
+                        n.start = false;
+                      }
+
+                      // 2. step: load the grammar
+                      const newProductions: Production[] = [];
+                      const newNonTerminals: Nonterminal[] = [];
+                      const newTerminals: Terminal[] = [];
+
+                      // Add the entrypoint production S' -> startNonterminal.
+                      // This means that the user does not have to select the
+                      // start symbol in the next step.
+                      const nonterminal = new Nonterminal(startNonterminal);
+                      nonterminal.start = true;
+                      nonterminal.references++;
+                      startSymbol.references++;
+                      const newProduction = new Production(startSymbol, [
+                        nonterminal,
+                      ]);
+                      newProduction.references++;
+                      newProductions.push(newProduction);
+                      newNonTerminals.push(startSymbol);
+                      newNonTerminals.push(nonterminal);
+
+                      // Add the rest of the productions (all but S'->...)
+                      for (const production of productions) {
+                        if (import.meta.env.DEV) {
+                          console.log("Loading production:", production);
+                        }
+
+                        const [left, right] = production
+                          .split(/->(.*)/s)
+                          .map((x) => x.trim());
+
+                        let leftSide = new Nonterminal(left);
+                        const rightSide: Array<Terminal | Nonterminal> = [];
+
+                        leftSide = addIfNewAndReturn(newNonTerminals, leftSide);
+                        for (const c of right) {
+                          if (c >= "A" && c <= "Z") {
+                            let n = new Nonterminal(c);
+                            n = addIfNewAndReturn(newNonTerminals, n);
+                            rightSide.push(n);
+                          } else {
+                            let t = new Terminal(c);
+                            t = addIfNewAndReturn(newTerminals, t);
+                            rightSide.push(t);
+                          }
+                        }
+                        if (right === "") {
+                          epsilon.references++;
+                          rightSide.push(epsilon);
+                        }
+
+                        addIfNewAndReturn(
+                          newProductions,
+                          new Production(leftSide, rightSide),
+                          false,
+                        );
+                      }
+
+                      const newStart: [name: Nonterminal, start: boolean][] =
+                        newNonTerminals.map(
+                          (n: Nonterminal): [Nonterminal, boolean] => [
+                            n,
+                            n.start,
+                          ],
+                        );
+
+                      setSorted(false);
+                      setReduced(false);
+                      setStart(newStart);
+
+                      setProductions(newProductions);
+                      setNonTerminals(newNonTerminals);
+                      setTerminals(newTerminals);
+
+                      setLectureExampleSuccess(index);
+                      setLoadingLectureExample(undefined);
+                    }
+                  }}
+                >
+                  {loadingLectureExample === index && (
+                    <CircularProgress
+                      size={24}
+                      sx={{
+                        color: "success.main",
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        marginTop: "-12px",
+                        marginLeft: "-12px",
+                      }}
+                    />
+                  )}
+                  {
+                    // Here we use !sorted to check if the user navigated to the
+                    // next page after loading a lecture example.
+                    // It seems to work without it, but I'm not sure why, so I
+                    // keep it in for now.
+                    !sorted && lectureExampleSuccess === index
+                      ? "Loaded"
+                      : "Load"
+                  }
+                </Button>
+              </ListItem>
+            </Fragment>
+          ),
+        )}
+      </List>
+    </>
+  );
 
   // TODO: add up-/download grammar button
   // TODO: add example grammars
@@ -275,6 +550,8 @@ function ReadGrammarPage() {
                   production.leftSide.references--;
                   production.references--;
 
+                  // grammar changed, so we don't have a lecture example anymore
+                  setLectureExampleSuccess(undefined);
                   // this way we can check if we can proceed by
                   // letting the reduce function error out
                   // since S' is unproductive
@@ -299,7 +576,7 @@ function ReadGrammarPage() {
         <ValidationTextField
           label="Enter a production of form A -> 𝛼"
           variant="outlined"
-          className="my-3"
+          className="mb-1 mt-3"
           id="productionInput"
           value={newProduction}
           onChange={(event) => {
@@ -313,6 +590,8 @@ function ReadGrammarPage() {
                 setNewProduction("");
                 setSorted(false);
                 setReduced(false);
+                // grammar changed, so we don't have a lecture example anymore
+                setLectureExampleSuccess(undefined);
               }
             }
           }}
@@ -322,45 +601,9 @@ function ReadGrammarPage() {
           aria-label="remove all productions"
           variant="contained"
           color="error"
-          className="mr-2"
+          className="mx-1 mt-2"
           endIcon={<HighlightOffIcon />}
-          onClick={() => {
-            // reset special symbold
-            // epsilon
-            epsilon.references = 0;
-            epsilon.productive = true;
-            epsilon.reachable = false;
-            epsilon.empty = true;
-            epsilon.first = [];
-            epsilon.follow = [];
-            // end of input
-            endOfInput.references = 0;
-            endOfInput.productive = true;
-            endOfInput.reachable = false;
-            endOfInput.empty = false;
-            endOfInput.first = [];
-            endOfInput.follow = [];
-            // start symbol
-            startSymbol.references = 0;
-            startSymbol.productive = false;
-            startSymbol.reachable = true;
-            startSymbol.empty = false;
-            startSymbol.first = [];
-            startSymbol.follow = [];
-            // remove start
-            for (const n of nonTerminals) {
-              n.start = false;
-            }
-            // and clear all arrays
-            setStart([]);
-            // this way we can check if we can proceed by
-            // letting the reduce function error out
-            // since S' is unproductive
-            setReduced(false);
-            setProductions([]);
-            setNonTerminals([]);
-            setTerminals([]);
-          }}
+          onClick={clearGrammar}
           disabled={productions.length === 0}
         >
           Clear All
@@ -368,6 +611,7 @@ function ReadGrammarPage() {
         <Button
           aria-label="add new production"
           variant="contained"
+          className="mx-1 mt-2"
           endIcon={<AddCircleOutlineIcon />}
           onClick={() => {
             if (validProduction(newProduction)) {
@@ -376,11 +620,30 @@ function ReadGrammarPage() {
               setNewProduction("");
               setSorted(false);
               setReduced(false);
+              // grammar changed, so we don't have a lecture example anymore
+              setLectureExampleSuccess(undefined);
             }
           }}
         >
           Add
         </Button>
+        <br />
+        <ScrollableDialogComponent
+          DisplayButton={(props) => (
+            <Button
+              aria-label="load a grammar from the lecture examples"
+              variant="contained"
+              color="info"
+              className="mt-2"
+              endIcon={<DescriptionOutlinedIcon />}
+              {...props}
+            >
+              Lecture Examples
+            </Button>
+          )}
+          title={"Lecture Examples"}
+          content={lectureExamplePopupContent}
+        />
       </Box>
     </Box>
   );

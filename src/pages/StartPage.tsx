@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import InfoIcon from "@mui/icons-material/Info";
+import DialogContentText from "@mui/material/DialogContentText";
 
 import TUMLogo from "../assets/TUMLogo.svg";
 
@@ -47,25 +48,29 @@ function StartPage() {
                 src={TUMLogo}
                 alt="LL Tutor Logo"
                 style={{
-                  height: "4em",
+                  height: "4rem",
                   display: "block",
                   marginLeft: "auto",
                   marginRight: "auto",
                 }}
               />
-              <br />
-              The LL Tutor is a webtutor developed for the course Compiler
-              Construction at the chair I2 of the TUM School of Computation,
-              Information and Technology at the Technical University of Munich.
-              In this app, you will be guided through the steps of constructing
-              a look-ahead table for an LL(1) grammar.
-              <br />
-              <br />
-              In case you found any bug, please report it to{" "}
-              <a href={`mailto:${import.meta.env.VITE_CONTACT_EMAIL}`}>
-                {import.meta.env.VITE_CONTACT_NAME}
-              </a>
-              .
+              <DialogContentText
+                id={"scroll-dialog-What-is-LL-Tutor-description"}
+              >
+                <br />
+                The LL Tutor is a webtutor developed for the course Compiler
+                Construction at the chair I2 of the TUM School of Computation,
+                Information and Technology at the Technical University of
+                Munich. In this app, you will be guided through the steps of
+                constructing a look-ahead table for an LL(1) grammar.
+                <br />
+                <br />
+                In case you found any bug, please report it to{" "}
+                <a href={`mailto:${import.meta.env.VITE_CONTACT_EMAIL}`}>
+                  {import.meta.env.VITE_CONTACT_NAME}
+                </a>
+                .
+              </DialogContentText>
             </>
           }
         />

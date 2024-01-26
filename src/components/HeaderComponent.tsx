@@ -1,7 +1,6 @@
 import { styled } from "@mui/material/styles";
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from "@mui/material/AppBar";
 import NavigateBefore from "@mui/icons-material/NavigateBefore";
-import CircularProgress from "@mui/material/CircularProgress";
 import NavigateNext from "@mui/icons-material/NavigateNext";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -15,7 +14,7 @@ import { VariantType, useSnackbar } from "notistack";
 
 import { Node, Edge, MarkerType } from "reactflow";
 
-import { Dispatch, SetStateAction, useState } from "react";
+import { Dispatch, SetStateAction } from "react";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
@@ -264,12 +263,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       preventDuplicate,
     });
   };
-
-  // navigating between pages takes some time, so we need to show the user
-  // a loading indicator.
-  const [loading, setLoading] = useState<"prev" | "next" | undefined>(
-    undefined,
-  );
 
   // Function to convert a number to a superscript
   const convertToSuperscript = (n: number) => {
@@ -1646,17 +1639,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   };
 
   const handlePreviousNavigation = () => {
-    setLoading("prev");
-
     if (leaveToPrevious(page)(arriveToPrevious(page - 1))) {
       previousPage();
     }
-
-    setLoading(undefined);
   };
   const handleNextNavigation = () => {
-    setLoading("next");
-
     if (leaveToNext(page)(arriveToNext(page + 1))) {
       nextPage();
       // open tutorial dialog if necessary
@@ -1673,8 +1660,6 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         }
       }
     }
-
-    setLoading(undefined);
   };
 
   return (
@@ -1727,21 +1712,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             // display the icon. For this we need to fix margins
             className="my-1 box-content min-w-5 xs:my-0 xs:ml-1 sm:ml-0 sm:box-border sm:min-w-16 [&>.MuiButton-startIcon]:mx-0 sm:[&>.MuiButton-startIcon]:ml-[-4px] sm:[&>.MuiButton-startIcon]:mr-2"
             onClick={handlePreviousNavigation}
-            disabled={page === minPage || loading !== undefined}
+            disabled={page === minPage}
           >
-            {loading === "prev" && (
-              <CircularProgress
-                size={24}
-                sx={{
-                  color: "inherit",
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  marginTop: "-12px",
-                  marginLeft: "-12px",
-                }}
-              />
-            )}
             {/* Hide text on small screens */}
             <span className="hidden sm:block">Prev</span>
           </Button>
@@ -1754,21 +1726,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
             // display the icon. For this we need to fix margins
             className="ml-1 mr-1 box-content min-w-5 xs:mr-0 sm:ml-2 sm:box-border sm:min-w-16 [&>.MuiButton-endIcon]:mx-0 sm:[&>.MuiButton-endIcon]:ml-2 sm:[&>.MuiButton-endIcon]:mr-[-4px]"
             onClick={handleNextNavigation}
-            disabled={page === maxPage || loading !== undefined}
+            disabled={page === maxPage}
           >
-            {loading === "next" && (
-              <CircularProgress
-                size={24}
-                sx={{
-                  color: "inherit",
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  marginTop: "-12px",
-                  marginLeft: "-12px",
-                }}
-              />
-            )}
             {/* Hide text on small screens */}
             <span className="hidden sm:block">Next</span>
           </Button>

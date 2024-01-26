@@ -1,5 +1,4 @@
 import { styled } from "@mui/material";
-import CircularProgress from "@mui/material/CircularProgress";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import Button from "@mui/material/Button";
@@ -9,8 +8,6 @@ import useBoundStore from "../store/store";
 import { shallow } from "zustand/shallow";
 
 import { VariantType, useSnackbar } from "notistack";
-
-import { useState } from "react";
 
 import {
   Nonterminal,
@@ -96,12 +93,6 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
       preventDuplicate,
     });
   };
-
-  // resetting, solving and checking the graph takes some time,
-  // so we need to show the user a loading indicator
-  const [loading, setLoading] = useState<
-    "reset" | "solve" | "check" | undefined
-  >(undefined);
 
   const resetStep = () => {
     // Reset all nodes and edges
@@ -384,82 +375,31 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
                 variant="contained"
                 color="error"
                 onClick={() => {
-                  setLoading("reset");
-
                   resetStep();
-
-                  setLoading(undefined);
                 }}
-                disabled={finishedEmpty || loading !== undefined}
+                disabled={finishedEmpty}
               >
-                {loading === "reset" && (
-                  <CircularProgress
-                    size={24}
-                    sx={{
-                      color: "inherit",
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      marginTop: "-12px",
-                      marginLeft: "-12px",
-                    }}
-                  />
-                )}
                 Reset Step
               </Button>
               <Button
                 variant="contained"
                 color="success"
                 onClick={() => {
-                  setLoading("solve");
-
                   solveStep();
-
-                  setLoading(undefined);
                 }}
-                disabled={finishedEmpty || loading !== undefined}
+                disabled={finishedEmpty}
               >
-                {loading === "solve" && (
-                  <CircularProgress
-                    size={24}
-                    sx={{
-                      color: "inherit",
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      marginTop: "-12px",
-                      marginLeft: "-12px",
-                    }}
-                  />
-                )}
                 Show Solution
               </Button>
               <Button
                 variant="contained"
                 onClick={() => {
-                  setLoading("check");
-
                   if (checkStep()) {
                     prepareNextStep();
                   }
-
-                  setLoading(undefined);
                 }}
-                disabled={finishedEmpty || loading !== undefined}
+                disabled={finishedEmpty}
               >
-                {loading === "check" && (
-                  <CircularProgress
-                    size={24}
-                    sx={{
-                      color: "inherit",
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      marginTop: "-12px",
-                      marginLeft: "-12px",
-                    }}
-                  />
-                )}
                 Check Step
               </Button>
             </Stack>

@@ -31,6 +31,9 @@ type Props = {
   graphCanvas: JSX.Element;
 };
 
+// The minimum time a loading indicator should be shown in ms
+const minTimeout = 500;
+
 const StyledSpan = styled("span")({});
 
 /*
@@ -141,6 +144,11 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   // resetting, solving and checking the graph takes some time,
   // so we need to show the user a loading indicator
   const [loading, setLoading] = useState<
+    "reset" | "solve" | "check" | undefined
+  >(undefined);
+  // Since we don't want flashing loading indicators, we show them for at least
+  // minTimeout ms. This variable stores whether the timeout has passed
+  const [loadingTimeout, setLoadingTimeout] = useState<
     "reset" | "solve" | "check" | undefined
   >(undefined);
 
@@ -576,14 +584,22 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               color="error"
               onClick={() => {
                 setLoading("reset");
+                setLoadingTimeout("reset");
+                setTimeout(() => {
+                  setLoadingTimeout(undefined);
+                }, minTimeout);
 
                 reset();
 
                 setLoading(undefined);
               }}
-              disabled={firstSetupComplete || loading !== undefined}
+              disabled={
+                firstSetupComplete ||
+                loading !== undefined ||
+                loadingTimeout !== undefined
+              }
             >
-              {loading === "reset" && (
+              {(loading === "reset" || loadingTimeout === "reset") && (
                 <CircularProgress
                   size={24}
                   sx={{
@@ -603,6 +619,10 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               color="success"
               onClick={() => {
                 setLoading("solve");
+                setLoadingTimeout("solve");
+                setTimeout(() => {
+                  setLoadingTimeout(undefined);
+                }, minTimeout);
 
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
                 const { nodes, edges } = groupNodesBySCC(
@@ -623,9 +643,13 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
                   () => setLoading(undefined),
                 );
               }}
-              disabled={firstSetupComplete || loading !== undefined}
+              disabled={
+                firstSetupComplete ||
+                loading !== undefined ||
+                loadingTimeout !== undefined
+              }
             >
-              {loading === "solve" && (
+              {(loading === "solve" || loadingTimeout === "solve") && (
                 <CircularProgress
                   size={24}
                   sx={{
@@ -644,6 +668,10 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               onClick={() => {
                 setLoading("check");
+                setLoadingTimeout("check");
+                setTimeout(() => {
+                  setLoadingTimeout(undefined);
+                }, minTimeout);
 
                 if (check()) {
                   toggleFirstDeletableAndConnectable(false, false);
@@ -652,9 +680,13 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
 
                 setLoading(undefined);
               }}
-              disabled={firstSetupComplete || loading !== undefined}
+              disabled={
+                firstSetupComplete ||
+                loading !== undefined ||
+                loadingTimeout !== undefined
+              }
             >
-              {loading === "check" && (
+              {(loading === "check" || loadingTimeout === "check") && (
                 <CircularProgress
                   size={24}
                   sx={{

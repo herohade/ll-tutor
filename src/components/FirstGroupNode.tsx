@@ -30,6 +30,8 @@ import {
 
 type Props = NodeProps<NodeData>;
 
+const StyledSpan = styled("span")({});
+
 function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const selector = (
     state: GrammarSlice &
@@ -45,7 +47,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     firstEdges: state.firstEdges,
     setFirstNodes: state.setFirstNodes,
     setFirstEdges: state.setFirstEdges,
-    setLabelSize: state.setLabelSize,
+    setFirstLabelSize: state.setFirstLabelSize,
     // FirstAlgorithmSlice
     finishedFirst: state.finishedFirst,
     firstNodeMap: state.firstNodeMap,
@@ -62,7 +64,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     firstEdges,
     setFirstNodes,
     setFirstEdges,
-    setLabelSize,
+    setFirstLabelSize,
     // FirstAlgorithmSlice
     finishedFirst,
     firstNodeMap,
@@ -83,20 +85,22 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const [minWidth, setMinWidth] = useState(0);
 
   useEffect(() => {
-    setMinHeight((ref.current?.clientHeight || 0) + 26);
-    setMinWidth((ref.current?.clientWidth || 0) + 26);
-    setLabelSize(id, {
-      width: ref.current?.clientWidth || 0,
-      height: ref.current?.clientHeight || 0,
+    const width = ref.current?.clientWidth || 0;
+    const height = ref.current?.clientHeight || 0;
+    setMinHeight(height + 26);
+    setMinWidth(width + 26);
+    setFirstLabelSize(id, {
+      width: width,
+      height: height,
     });
     if (import.meta.env.DEV) {
       console.log(
         "GroupNode label size:",
-        ref.current?.clientWidth,
-        ref.current?.clientHeight,
+        width,
+        height,
       );
     }
-  }, [id, ref, setLabelSize]);
+  }, [id, ref, setFirstLabelSize]);
 
   const { enqueueSnackbar } = useSnackbar();
 
@@ -345,16 +349,18 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     }
   };
 
-  const StyledSpan = styled("span")({});
+  const sqrtTerminals = useMemo(() => {
+    return Math.ceil(Math.sqrt(terminals.length) * 1.5);
+  }, [terminals.length]);
 
   const content =
     page === 5 ? (
-      <p className="m-0 whitespace-nowrap">
+      <p className="m-0 whitespace-pre px-3">
         <b>
           F<sub>ε</sub>:
         </b>
         <br />
-        {terminals.map((terminal) => {
+        {terminals.map((terminal, index) => {
           const isInFirstSet = thisFirstNodeMap
             ? thisFirstNodeMap.first.has(terminal.name)
             : childNodes.some(
@@ -372,6 +378,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
               }}
             >
               {terminal.name + " "}
+              {index % sqrtTerminals === sqrtTerminals - 1 && <br />}
             </StyledSpan>
           );
         })}
@@ -421,12 +428,12 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           disabledBecauseOfIncoming
         }
       >
-        <p className="m-0 whitespace-nowrap">
+        <p className="m-0 whitespace-pre">
           <b>
             F<sub>ε</sub>:
           </b>
           <br />
-          {terminals.map((terminal) => {
+          {terminals.map((terminal, index) => {
             const isInFirstSet = thisFirstNodeMap
               ? thisFirstNodeMap.first.has(terminal.name)
               : childNodes.some(
@@ -440,6 +447,7 @@ function FirstGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
                 }
               >
                 {terminal.name + " "}
+                {index % sqrtTerminals === sqrtTerminals - 1 && <br />}
               </span>
             );
           })}

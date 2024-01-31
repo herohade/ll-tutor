@@ -74,7 +74,7 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
       setTimeout(() => fitView(), 0);
     }
   },
-  setLabelSize(nodeId, size) {
+  setFirstLabelSize(nodeId, size) {
     set({
       firstNodes: get().firstNodes.map((node) => {
         if (node.id === nodeId) {

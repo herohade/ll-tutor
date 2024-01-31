@@ -109,9 +109,10 @@ class Production implements printable {
 }
 
 export type localStoreSettings = {
-  tutorial: boolean;
-  language: "en" | "de"; // currently unused since only english is supported
   colorScheme: "dark" | "light" | "system";
+  language: "en" | "de"; // currently unused since only english is supported
+  snackbarDuration: number | null;
+  tutorial: boolean;
 };
 
 // Type for the layout algorithm (ELK)
@@ -255,7 +256,7 @@ export type FirstNodeSlice = {
   setFirstSetupComplete: (complete: boolean) => void;
   setFirstNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void;
   setFirstEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void;
-  setLabelSize: (
+  setFirstLabelSize: (
     nodeId: string,
     size: { width: number; height: number } | undefined,
   ) => void;
@@ -310,7 +311,7 @@ export type FollowNodeSlice = {
   setFollowSetupComplete: (complete: boolean) => void;
   setFollowNodes: (nodes: Node<NodeData>[], fitView?: () => void) => void;
   setFollowEdges: (edges: Edge<EdgeData>[], fitView?: () => void) => void;
-  setLabelSize: (
+  setFollowLabelSize: (
     nodeId: string,
     size: { width: number; height: number } | undefined,
   ) => void;
@@ -328,7 +329,7 @@ export type FollowNodeSlice = {
     connectable: boolean,
   ) => void;
   setFollowNodeEdgesHidden: (hidden: boolean) => void;
-  setExpandParent: (expand: boolean) => void;
+  setExpandFollowParent: (expand: boolean) => void;
 };
 
 // Every FollowNode has a FollowAlgorithmNodeMap

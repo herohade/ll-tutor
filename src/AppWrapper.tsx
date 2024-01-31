@@ -97,6 +97,7 @@ export default function AppWrapper() {
       <ThemeProvider theme={theme}>
         {cssBaseline}
         <SnackbarProvider
+          autoHideDuration={settings.snackbarDuration}
           action={(snackbarId) => (
             <IconButton
               size="small"

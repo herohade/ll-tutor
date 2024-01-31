@@ -220,7 +220,7 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "- To add new nodes to the graph, click the bottommost plus icon on the canvas.\n- You can add an edge by clicking on and holding the outer area of the source node. Then, drag the arrow to the center of your target node.\n- You can remove a node or an edge by clicking on it and pressing the backspace key.\n- To delete the whole graph, press the 'reset graph' button.\n- Once you believe your solution to be correct, click the 'check graph' button."
+              "- To add new nodes to the graph, click the bottommost plus icon on the canvas.\n- You can add an edge by clicking on and holding the outer area of the source node. Then, drag the arrow to the center of your target node.\n- You can remove a node or an edge by clicking on it and pressing the backspace key.\n- Click the apply layout button near the bottom of the canvas to automatically arrange the positions of nodes.\n- To delete the whole graph, press the 'reset graph' button on the left.\n- Once you believe your solution to be correct, click the 'check graph' button."
             }
           </>
         ),
@@ -346,7 +346,7 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "- To add group nodes to the graph, click the bottommost plus icon on the canvas.\n- Nodes can be added to a group node by dragging and dropping them onto it.\n- Select a node and press the 'detach' button to separate a node from its parent group node.\n- To detach all nodes from a group at once, click the group node and press 'ungroup'.\n- You can delete a group node by pressing 'delete' - This will also automatically ungroup any nodes remaining in the selected group node.\n- To add an edge, click on and hold the outer area of the source node. Then, drag the arrow to the center of your target node."
+              "- To add group nodes to the graph, click the bottommost plus icon on the canvas.\n- Nodes can be added to a group node by dragging and dropping them onto it.\n- Select a node and press the 'detach' button to separate a node from its parent group node.\n- To detach all nodes from a group at once, click the group node and press 'ungroup'.\n- You can delete a group node by pressing 'delete' - This will also automatically ungroup any nodes remaining in the selected group node.\n- To add an edge, click on and hold the outer area of the source node. Then, drag the arrow to the center of your target node.\n- Click the apply layout button near the bottom of the canvas to automatically arrange the positions of nodes."
             }
           </>
         ),
@@ -545,7 +545,7 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "- To add Follow group nodes to the graph, click the bottommost plus icon on the canvas.\n- Nodes can be added to a group node by dragging and dropping them onto it.\n- Select a node and press the 'detach' button to separate a node from its parent group node.\n- To detach all nodes from a group at once, click the group node and press 'ungroup'.\n- You can delete a group node by pressing 'delete' - This will also automatically ungroup any nodes remaining in the selected group node.\n- To add an edge, click on and hold the outer area of the source node. Then, drag the arrow to the center of your target node."
+              "- To add Follow group nodes to the graph, click the bottommost plus icon on the canvas.\n- Nodes can be added to a group node by dragging and dropping them onto it.\n- Select a node and press the 'detach' button to separate a node from its parent group node.\n- To detach all nodes from a group at once, click the group node and press 'ungroup'.\n- You can delete a group node by pressing 'delete' - This will also automatically ungroup any nodes remaining in the selected group node.\n- To add an edge, click on and hold the outer area of the source node. Then, drag the arrow to the center of your target node.\n- Click the apply layout button near the bottom of the canvas to automatically arrange the positions of nodes."
             }
           </>
         ),

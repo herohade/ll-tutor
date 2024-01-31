@@ -31,6 +31,8 @@ import {
 
 type Props = NodeProps<NodeData>;
 
+const StyledSpan = styled("span")({});
+
 function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const selector = (
     state: GrammarSlice &
@@ -47,7 +49,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     followEdges: state.followEdges,
     setFollowNodes: state.setFollowNodes,
     setFollowEdges: state.setFollowEdges,
-    setLabelSize: state.setLabelSize,
+    setFollowLabelSize: state.setFollowLabelSize,
     // FollowAlgorithmSlice
     finishedFollow: state.finishedFollow,
     followNodeMap: state.followNodeMap,
@@ -65,7 +67,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     followEdges,
     setFollowNodes,
     setFollowEdges,
-    setLabelSize,
+    setFollowLabelSize,
     // FollowAlgorithmSlice
     finishedFollow,
     followNodeMap,
@@ -88,7 +90,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   useEffect(() => {
     setMinHeight((ref.current?.clientHeight || 0) + 26);
     setMinWidth((ref.current?.clientWidth || 0) + 26);
-    setLabelSize(id, {
+    setFollowLabelSize(id, {
       width: ref.current?.clientWidth || 0,
       height: ref.current?.clientHeight || 0,
     });
@@ -99,7 +101,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
         ref.current?.clientHeight,
       );
     }
-  }, [id, ref, setLabelSize]);
+  }, [id, ref, setFollowLabelSize]);
 
   const isFollow = data.name.startsWith("Follow");
 
@@ -376,11 +378,13 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     }
   };
 
-  const StyledSpan = styled("span")({});
+  const sqrtTerminals = useMemo(() => {
+    return Math.ceil(Math.sqrt(terminals.length) * 1.5);
+  }, [terminals.length]);
 
   const content =
     page === 7 ? (
-      <p className="m-0 whitespace-nowrap">
+      <p className="m-0 whitespace-pre px-3">
         {isFollow ? (
           <b>
             Follow<sub>1</sub>:
@@ -391,7 +395,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           </b>
         )}
         <br />
-        {followSymbols.map((terminal) => {
+        {followSymbols.map((terminal, index) => {
           const isInFollowSet = thisFollowNodeMap?.follow.has(terminal.name);
           return (
             <StyledSpan
@@ -405,6 +409,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
               }}
             >
               {terminal.name + " "}
+              {index % sqrtTerminals === sqrtTerminals - 1 && <br />}
             </StyledSpan>
           );
         })}
@@ -456,7 +461,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           disabledBecauseOfIncoming
         }
       >
-        <p className="m-0 whitespace-nowrap">
+        <p className="m-0 whitespace-pre">
           {isFollow ? (
             <b>
               Follow<sub>1</sub>:
@@ -467,7 +472,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             </b>
           )}
           <br />
-          {followSymbols.map((terminal) => {
+          {followSymbols.map((terminal, index) => {
             const isInFollowSet = thisFollowNodeMap?.follow.has(terminal.name);
             return (
               <span
@@ -477,6 +482,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
                 }
               >
                 {terminal.name + " "}
+                {index % sqrtTerminals === sqrtTerminals - 1 && <br />}
               </span>
             );
           })}

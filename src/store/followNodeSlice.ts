@@ -74,7 +74,7 @@ export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
       setTimeout(() => fitView(), 0);
     }
   },
-  setLabelSize(nodeId, size) {
+  setFollowLabelSize(nodeId, size) {
     set({
       followNodes: get().followNodes.map((node) => {
         if (node.id === nodeId) {
@@ -209,7 +209,7 @@ export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
       }),
     });
   },
-  setExpandParent: (expand: boolean) => {
+  setExpandFollowParent: (expand: boolean) => {
     set({
       followNodes: get().followNodes.map((node) => {
         if (node.type !== "group") {

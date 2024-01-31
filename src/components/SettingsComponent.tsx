@@ -1,20 +1,23 @@
-import ToggleButton from "@mui/material/ToggleButton";
-import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import Box from "@mui/material/Box";
+import Zoom from "@mui/material/Zoom";
+import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-import Dialog, { DialogProps } from "@mui/material/Dialog";
+import Switch from "@mui/material/Switch";
+import Slider from "@mui/material/Slider";
+import Divider from "@mui/material/Divider";
+import Typography from "@mui/material/Typography";
+import DialogTitle from "@mui/material/DialogTitle";
+import ToggleButton from "@mui/material/ToggleButton";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Divider from "@mui/material/Divider";
-import Zoom from "@mui/material/Zoom";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
-import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
-import Switch from "@mui/material/Switch";
+import Dialog, { DialogProps } from "@mui/material/Dialog";
 import { TransitionProps } from "@mui/material/transitions";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import DialogContentText from "@mui/material/DialogContentText";
+
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import SettingsBrightnessIcon from "@mui/icons-material/SettingsBrightness";
 
 import {
   JSXElementConstructor,
@@ -45,6 +48,13 @@ const Transition = forwardRef(function Transition(
   // return <Slide direction="up" ref={ref} {...props} />;
   return <Zoom ref={ref} {...props} />;
 });
+
+const snackbarDurationMarks = [
+  { value: 5000, label: "5s" },
+  { value: 8000, label: "8s" },
+  { value: 11000, label: "11s" },
+  { value: 14000, label: "perm" },
+];
 
 export default function SettingsComponent({ DisplayButton }: Props) {
   const [open, setOpen] = useState(false);
@@ -124,6 +134,52 @@ export default function SettingsComponent({ DisplayButton }: Props) {
             />
             <Typography>On</Typography>
           </Stack>
+          <Divider
+            sx={{
+              my: 1,
+            }}
+          />
+          <DialogContentText id="Settings Dialog Notification Duration">
+            Notification Duration:
+          </DialogContentText>
+          <Box
+            sx={{
+              // The Slider component is stupid and doesn't work with
+              // width: "100%" because of the absolute positioning of the
+              // labels. So we account for them sticking out by ~10px on
+              // both sides with calc.
+              width: "calc(100% - 20px)",
+              pl: "10px",
+            }}
+          >
+            <Slider
+              value={settings.snackbarDuration || 14000}
+              min={5000}
+              max={14000}
+              marks={snackbarDurationMarks}
+              step={null}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(value) => {
+                return (
+                  snackbarDurationMarks.find((mark) => mark.value === value)
+                    ?.label || ""
+                );
+              }}
+              getAriaValueText={(value) => {
+                return (
+                  snackbarDurationMarks.find((mark) => mark.value === value)
+                    ?.label || ""
+                );
+              }}
+              onChange={(_event, newValue) => {
+                setSettings({
+                  ...settings,
+                  snackbarDuration:
+                    newValue === 14000 ? null : (newValue as number),
+                });
+              }}
+            />
+          </Box>
           <Divider
             sx={{
               my: 1,

@@ -88,7 +88,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowEdges: state.setFollowEdges,
     toggleFollowDeletableAndConnectable:
       state.toggleFollowDeletableAndConnectable,
-    setExpandParent: state.setExpandParent,
+    setExpandFollowParent: state.setExpandFollowParent,
     // FollowAlgorithmSlice
     setFollowNodeMap: state.setFollowNodeMap,
   });
@@ -123,7 +123,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowNodes,
     setFollowEdges,
     toggleFollowDeletableAndConnectable,
-    setExpandParent,
+    setExpandFollowParent,
     // FollowAlgorithmSlice
     setFollowNodeMap,
   } = useBoundStore(selector, shallow);
@@ -412,9 +412,9 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // expant to fit their children
     // This is not something we usually want, so we set it back to false after
     // the page (hopefully) has loaded
-    // setExpandParent(false);
+    // setExpandFollowParent(false);
     setTimeout(() => {
-      setExpandParent(false);
+      setExpandFollowParent(false);
     }, 1000);
   };
 

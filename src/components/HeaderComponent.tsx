@@ -157,7 +157,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFollowNodes: state.setFollowNodes,
     setFollowEdges: state.setFollowEdges,
     setFollowNodeEdgesHidden: state.setFollowNodeEdgesHidden,
-    setExpandParent: state.setExpandParent,
+    setExpandFollowParent: state.setExpandFollowParent,
     // FollowAlgorithmSlice
     finishedFollow: state.finishedFollow,
     followNodeMap: state.followNodeMap,
@@ -242,7 +242,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     setFollowNodes,
     setFollowEdges,
     setFollowNodeEdgesHidden,
-    setExpandParent,
+    setExpandFollowParent,
     // FollowAlgorithmSlice
     finishedFollow,
     followNodeMap,
@@ -1183,9 +1183,9 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     // expant to fit their children
     // This is not something we usually want, so we set it back to false after
     // the page (hopefully) has loaded
-    // setExpandParent(false);
+    // setExpandFollowParent(false);
     setTimeout(() => {
-      setExpandParent(false);
+      setExpandFollowParent(false);
     }, 1000);
 
     return true;

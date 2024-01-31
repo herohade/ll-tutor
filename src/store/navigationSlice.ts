@@ -16,7 +16,7 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (
   // language: en (default) (not implemented)
   settings: JSON.parse(
     localStorage.getItem("settings") ||
-      '{"tutorial": true, "colorScheme": "system", "language": "en"}',
+      '{"colorScheme": "system", "language": "en", "snackbarDuration": 5000, "tutorial": true}',
   ),
   tutorialPage: 0,
   previousPage: () => {

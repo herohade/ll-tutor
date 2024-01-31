@@ -135,7 +135,7 @@ function CustomControls() {
 
   const addEmptyNode = () => {
     // Add the node in the center of the viewport.
-    // computation of center copied from: https://stackoverflow.com/a/76394786
+    // computation of center copied and modified from: https://stackoverflow.com/a/76394786
 
     // Get the basic info about the viewport
     const {
@@ -185,7 +185,7 @@ function CustomControls() {
 
   const addFirstGroupNode = () => {
     // Add the node in the center of the viewport.
-    // computation of center copied from: https://stackoverflow.com/a/76394786
+    // computation of center copied and modified from: https://stackoverflow.com/a/76394786
 
     // Get the basic info about the viewport
     const {
@@ -236,7 +236,7 @@ function CustomControls() {
 
   const addFollowGroupNode = () => {
     // Add the node in the center of the viewport.
-    // computation of center copied from: https://stackoverflow.com/a/76394786
+    // computation of center copied and modified from: https://stackoverflow.com/a/76394786
 
     // Get the basic info about the viewport
     const {

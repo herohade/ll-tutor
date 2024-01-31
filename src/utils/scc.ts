@@ -1,6 +1,7 @@
 import { Edge, MarkerType, Node } from "reactflow";
 import { EdgeData, EdgePathType, NodeColor, NodeData } from "../types";
 
+// pseudocode from https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
 // algorithm tarjan is
 //     input: graph G = (V, E)
 //     output: set of strongly connected components (sets of vertices)
@@ -305,7 +306,6 @@ function groupNodesBySCC(
   };
 }
 
-// pseudocode from https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
 function trajan(
   tarjanNodes: TarjanNode[],
   tarjanEdges: TarjanEdge[],

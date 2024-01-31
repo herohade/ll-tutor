@@ -110,7 +110,13 @@ const tutorialPages: tutorialPage[] = [
       {
         type: "collapsible",
         title: "Your task",
-        content: <>{"Type in production rules in the text field below."}</>,
+        content: (
+          <>
+            {
+              "Type in production rules in the text field below, or use one of the example grammars."
+            }
+          </>
+        ),
       },
       {
         type: "collapsible",
@@ -158,7 +164,11 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "Decide which nonterminal will be the grammar's entry point. The production S' -> <entry point>, where S' is the start symbol, will be added automatically. Please select the entry point by clicking on the nonterminal of your choice."
+              "Decide which nonterminal will be the grammar's entry point. The production S' -> <entry point>, where S' is the start symbol, will be added automatically. Please select the entry point by clicking on the nonterminal of your choice.\n"
+            }
+            <b>Note:</b>
+            {
+              " This step can be skipped if you chose one of the example grammars."
             }
           </>
         ),
@@ -312,7 +322,7 @@ const tutorialPages: tutorialPage[] = [
             }
             <b>Note:</b>
             {
-              " While edges from nonterminals to themselves (A->A) are necessary, edges from group nodes to themselves (SCC(A)->SCC(A)) are not required."
+              " While edges from nonterminals to themselves (A->A) may be necessary, edges from group nodes to themselves (SCC(A)->SCC(A)) are never required."
             }
           </>
         ),
@@ -412,7 +422,7 @@ const tutorialPages: tutorialPage[] = [
             {"-set. To get the First-sets, you would have to add ε to the "}F
             <sub>ε</sub>
             {
-              " set of all empty Nonterminals. For non-empty Nonterminals, you would take over the "
+              "-set of all empty Nonterminals. For non-empty Nonterminals, you would take over the "
             }
             F<sub>ε</sub>
             {"-set. However, this step is not necessary for this app."}
@@ -506,7 +516,7 @@ const tutorialPages: tutorialPage[] = [
             }
             <b>Note:</b>
             {
-              " While edges from nonterminals to themselves (A->A) are necessary, edges from group nodes to themselves (SCC(A)->SCC(A)) are not required.\n"
+              " While edges from nonterminals to themselves (A->A) may be necessary, edges from group nodes to themselves (SCC(A)->SCC(A)) are never required.\n"
             }
             <b>Note:</b>
             {" The edges between "}F<sub>ε</sub>
@@ -546,10 +556,10 @@ const tutorialPages: tutorialPage[] = [
         content: (
           <>
             {
-              "- Empty nonterminals will be colored blue to help you visualize the inequality system.\n- Follow-group-nodes will be colored grey to help distinguish them from the "
+              "- Empty nonterminals will be colored blue to help you visualize the inequality system.\n- Follow group nodes will be colored grey to help distinguish them from the "
             }
             F<sub>ε</sub>
-            {"-group-nodes."}
+            {" group nodes."}
           </>
         ),
       },

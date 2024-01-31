@@ -380,40 +380,7 @@ function DisplayResultPage() {
                       ? "1px solid #393939"
                       : "1px solid #ebebeb",
                 }}
-                // TODO: Do I want to display the below or not?
-                // If so I probably need to change xs: ... sm: ...
-                // to xs: ... md: ... above and below
-                // className="sm:p-0"
-              >
-                {/* TODO: Do I want to display the below or not? If so I probably need to change xs: ... sm: ... to xs: ... md: ... above and below */}
-                {/* Copied and modified from https://www.peterkrautzberger.org/0213/ */}
-                {/* <div
-                  style={{
-                    display: "grid",
-                    width: "100%",
-                    justifyContent: "space-between",
-                    gridTemplateColumns: "repeat(2, 1fr)",
-                    gridAutoRows: "1fr",
-                    background: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' version='1.1' preserveAspectRatio='none' viewBox='0 0 100 100'><line x1='0' y1='0' x2='100' y2='100' stroke='grey' vector-effect='non-scaling-stroke'/></svg>")`,
-                    backgroundSize: "100% 100%",
-                  }}
-                >
-                  <div
-                    style={{
-                      gridColumnStart: 2,
-                    }}
-                  >
-                    Lookahead
-                  </div>
-                  <div
-                    style={{
-                      gridColumnStart: 1,
-                    }}
-                  >
-                    Nonterminal
-                  </div>
-                </div> */}
-              </TableCell>
+              />
               {followSymbols.map((followSymbol) => (
                 <TableCell key={followSymbol.name} align={"center"}>
                   {followSymbol.name}

@@ -45,12 +45,11 @@ function FloatingEdge(props: Props) {
     return null;
   }
 
-  // special edges copied and modified from: https://reactflow.dev/docs/examples/edges/custom-edge/
   // TODO: maybe add bidirectional edges, e.g. by giving nodes a
   // bidirectional array and checking here if the edge is in the array
+  // Inspiration: https://reactflow.dev/docs/examples/edges/custom-edge/
 
   // This returns a special self-loop edge if source and target are the same
-  // TODO: make self-loop for group-Nodes start and end at the outer div instead of content-div (label)
   if (sourceNode.id === targetNode.id) {
     if (
       (sourcePosition === Position.Top && targetPosition === Position.Bottom) ||

@@ -208,57 +208,6 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
     }
   }, [disabledBecauseOfIncoming, thisFollowNodeMap]);
 
-  // We don't want group nodes to be smaller than the content. But (constantly)
-  // computing the minimum size is expensive. So we set the minimum size to
-  // the label size. This means that child nodes might be outside the group node
-  /*
-  // copied and modified from https://reactflow.dev/examples/nodes/dynamic-grouping
-  type IsEqualCompareObj = {
-    minWidth: number;
-    minHeight: number;
-    hasChildNodes: boolean;
-  };
-
-  function isEqual(prev: IsEqualCompareObj, next: IsEqualCompareObj): boolean {
-    return (
-      prev.minWidth === next.minWidth &&
-      prev.minHeight === next.minHeight &&
-      prev.hasChildNodes === next.hasChildNodes
-    );
-  }
-
-  const { minWidth, minHeight, hasChildNodes } = useStore((store) => {
-    const childNodes = Array.from(store.nodeInternals.values()).filter((n) => n.parentNode === id);
-
-    const labelNode: Node = {
-      id: id + "-label",
-      data: {},
-      position: {
-        x: 0,
-        y: 0,
-      },
-      positionAbsolute: {
-        x: xPos,
-        y: yPos,
-      },
-      width: data.labelSize?.width || 0,
-      height: data.labelSize?.height || 0,
-    }
-
-    console.log([labelNode, ...childNodes]);
-
-    const rect = getRectOfNodes([labelNode, ...childNodes]);
-
-    console.log(rect)
-
-    return {
-      minWidth: rect.width + 6 * 2,
-      minHeight: rect.height + 6 * 2,
-      hasChildNodes: childNodes.length > 0,
-    };
-  }, isEqual);
-  */
-
   const onDelete = () => {
     setFollowNodes(
       followNodes
@@ -451,6 +400,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
                 isInFollowSet ? "isColoredChild font-semibold" : "opacity-50"
               }
               sx={{
+                // TODO: currently green on blue, might be hard to read?
                 color: isInFollowSet ? "success.dark" : "inherit",
               }}
             >
@@ -473,9 +423,8 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             ? "primary.contrastText"
             : "secondary.contrastText",
           "& .isInFollowSet": {
+            // TODO: currently green on blue if active, might be hard to read?
             color: thisFollowNodeMap?.active ? "success.dark" : "success.light",
-            // color: "success.light",
-            // WebkitTextStroke: "0.05em black",
           },
           ":disabled": {
             bgcolor: thisFollowNodeMap?.active
@@ -489,15 +438,10 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
                 ? "follow.disabledText"
                 : "",
             "& .isInFollowSet": {
-              opacity: 0.5,
+              // TODO: currently green on blue if active, might be hard to read?
               color: thisFollowNodeMap?.active
-                ? (theme) =>
-                    theme.palette.mode === "light"
-                      ? "success.light"
-                      : "success.dark"
+                ? "success.dark"
                 : "success.dark",
-              // color: "success.light",
-              // WebkitTextStroke: "0.05em black",
             },
           },
           ":hover": {

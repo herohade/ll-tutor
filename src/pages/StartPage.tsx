@@ -54,6 +54,12 @@ function StartPage() {
                   marginRight: "auto",
                 }}
               />
+              <DialogContentText sx={{
+                textAlign: "center",
+              }}>
+                <br />
+                Bachelor's Thesis by David Eroğlu
+              </DialogContentText>
               <DialogContentText
                 id={"scroll-dialog-What-is-LL-Tutor-description"}
               >

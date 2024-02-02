@@ -6,7 +6,7 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 
-import { useMemo } from "react";
+import { Fragment as ReactFragment, useMemo } from "react";
 
 import { shallow } from "zustand/shallow";
 import useBoundStore from "../store/store";
@@ -400,9 +400,6 @@ function DisplayResultPage() {
                     lookaheadTable,
                   );
                 }
-                return (
-                  <TableCell align={"center"}>{nonTerminal.name}</TableCell>
-                );
               }
 
               return (
@@ -429,7 +426,7 @@ function DisplayResultPage() {
                     {nonTerminal.name}
                   </TableCell>
                   {followSymbols.map((followSymbol) => {
-                    const productions = productionList.get(followSymbol.name);
+                    const productions = productionList?.get(followSymbol.name);
                     if (!productions) {
                       if (import.meta.env.DEV) {
                         console.log(
@@ -457,11 +454,13 @@ function DisplayResultPage() {
                         align={"center"}
                       >
                         {productions.map((production, index) => (
-                          <>
+                          <ReactFragment
+                            key={`${nonTerminal.name}-${followSymbol.name}-${production.number}`}
+                          >
                             ({production.leftSide.name},&nbsp;
                             {production.number})
                             {index < productions.length - 1 ? ", " : ""}
-                          </>
+                          </ReactFragment>
                         ))}
                       </TableCell>
                     );

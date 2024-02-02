@@ -8,6 +8,8 @@ import {
   EdgeTypes,
 } from "reactflow";
 
+import { LayoutOptions } from "elkjs/lib/elk-api";
+
 import { VariantType } from "notistack";
 
 export { Terminal, Nonterminal, Production };
@@ -117,6 +119,101 @@ export type localStoreSettings = {
 
 // Type for the layout algorithm (ELK)
 export type ElkDirectionType = "RIGHT" | "LEFT" | "UP" | "DOWN";
+
+/**
+ * This function is used to layout the nodes and edges of a graph.
+ *
+ * @remarks
+ *
+ * This hook is used to layout the nodes and edges of the empty-graph,
+ * first-graph or follow-graph. Additionally, it can be used to layout
+ * the nodes and edges of a provided graph.
+ * Since the layouting can take a while, the returned function
+ * accepts a callback function that is called once the layouting is done.
+ *
+ * The layouting is done using
+ * {@link https://eclipse.dev/elk/ | Eclipse Layout Kernel (ELK)}.
+ * The default layouting options are:
+ * ```json
+ * {
+ *   "elk.algorithm": "layered",
+ *   "elk.direction": "RIGHT",
+ *   "elk.edgeRouting": "SPLINES",
+ *   "elk.interactive": "true",
+ *   "elk.spacing.nodeNode": "100",
+ *   "elk.spacing.edgeNode": "100",
+ *   "elk.layered.spacing.nodeNodeBetweenLayers": "100",
+ *   "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+ *   "elk.nodeLabels.placement": "[INSIDE, H_LEFT, V_TOP]",
+ * };
+ * ```
+ *
+ * @example
+ *
+ * ### Getting the layoutElements function
+ * ```tsx
+ * const { layoutElements } = useLayoutedElements(
+ *   emptyNodes,
+ *   emptyEdges,
+ *   setEmptyNodes,
+ *   setEmptyEdges,
+ *   firstNodes,
+ *   firstEdges,
+ *   setFirstNodes,
+ *   setFirstEdges,
+ *   followNodes,
+ *   followEdges,
+ *   setFollowNodes,
+ *   setFollowEdges,
+ * );
+ * ```
+ *
+ * ## Using the layoutElements function
+ * ### Apply layout to the first-, empty- or follow-graph
+ * ```tsx
+ * // Apply a layout to the first-graph
+ * layoutElements("first");
+ * ```
+ *
+ * ### Apply layout to the empty-graph with custom options
+ * ```tsx
+ * layoutElements("empty", { "elk.direction": "UP", });
+ * ```
+ *
+ * ### Apply layout a provided graph
+ * ```tsx
+ * layoutElements(
+ *   "provided",
+ *   undefined,
+ *   nodes,
+ *   edges,
+ *   setFollowNodes,
+ *   setFollowEdges,
+ *   () => setLoading(undefined), // Stop the loading indicator
+ * );
+ * ```
+ *
+ * @param whichNodes - A string that specifies which nodes to layout
+ * @param options - The options for the ELK layout algorithm
+ * @param nodes - The nodes to layout (only for "provided")
+ * @param edges - The edges to layout (only for "provided")
+ * @param setNodes - The function to set the nodes (only for "provided")
+ * @param setEdges - The function to set the edges (only for "provided")
+ * @param cb - The callback function that is called once the layouting is done
+ * 
+ * @returns void
+ */
+export interface layoutElementsInterface {
+  (
+    whichNodes: "empty" | "first" | "follow" | "provided",
+    options?: LayoutOptions,
+    nodes?: Node<NodeData>[],
+    edges?: Edge<EdgeData>[],
+    setNodes?: (nodes: Node<NodeData>[], fitView?: () => void) => void,
+    setEdges?: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
+    cb?: () => void,
+  ): void;
+}
 
 // Types for the zustand store
 export type NavigationSlice = {

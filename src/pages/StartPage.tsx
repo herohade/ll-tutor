@@ -5,7 +5,7 @@ import Button from "@mui/material/Button";
 import InfoIcon from "@mui/icons-material/Info";
 import DialogContentText from "@mui/material/DialogContentText";
 
-import TUMLogo from "../assets/TUMLogo.svg";
+import TUMLogo from "../assets/TUMLogo.svg?react";
 
 import { ScrollableDialogComponent } from "../components";
 
@@ -44,19 +44,20 @@ function StartPage() {
           title={"What is LL Tutor?"}
           content={
             <>
-              <img
-                src={TUMLogo}
-                alt="LL Tutor Logo"
+              <TUMLogo
                 style={{
+                  fill: "#3070b3",
                   height: "4rem",
                   display: "block",
                   marginLeft: "auto",
                   marginRight: "auto",
                 }}
               />
-              <DialogContentText sx={{
-                textAlign: "center",
-              }}>
+              <DialogContentText
+                sx={{
+                  textAlign: "center",
+                }}
+              >
                 <br />
                 Bachelor's Thesis by David Eroğlu
               </DialogContentText>

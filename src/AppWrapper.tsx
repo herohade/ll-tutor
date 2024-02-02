@@ -20,6 +20,13 @@ import { NavigationSlice, NodeColor } from "./types";
 // basic css required for react-flow to work
 import "reactflow/dist/base.css";
 
+/**
+ * Top level component that wraps the {@link App}.
+ * It provides basic styling, theme settings, and
+ * the snackbar.
+ *
+ * @returns The top level component that wraps the App.
+ */
 export default function AppWrapper() {
   const selector = (state: NavigationSlice) => ({
     // NavigationSlice
@@ -40,6 +47,7 @@ export default function AppWrapper() {
           ? "light"
           : "dark"
         : colorScheme;
+
     return createTheme({
       palette: {
         mode: userMode,
@@ -77,6 +85,8 @@ export default function AppWrapper() {
           hover: indigo.A700,
         },
       },
+      // // The default background for GroupNodes is transparent.
+      // // This makes the background non-transparent.
       // components: {
       //   MuiCssBaseline: {
       //     styleOverrides: (theme) => `
@@ -89,7 +99,10 @@ export default function AppWrapper() {
     });
   }, [colorScheme, prefersLightMode]);
 
+  // The CssBaseline component ensures that the MUI default styles
+  // are applied to the entire page.
   const cssBaseline = <CssBaseline />;
+
   const app = <App />;
 
   return (

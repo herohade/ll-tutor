@@ -2,7 +2,12 @@ import { Edge, Node, useReactFlow } from "reactflow";
 
 import { useCallback } from "react";
 
-import { EdgeData, ElkDirectionType, NodeData } from "../types";
+import {
+  EdgeData,
+  ElkDirectionType,
+  NodeData,
+  layoutElementsInterface,
+} from "../types";
 
 import ELK, { ElkLabel, ElkNode, LayoutOptions } from "elkjs/lib/elk-api";
 const elk = new ELK({
@@ -12,6 +17,96 @@ const elk = new ELK({
   ).href,
 });
 
+/**
+ * This hook provides a {@link layoutElements | function} to layout the nodes and edges of a graph.
+ *
+ * @remarks
+ *
+ * This hook is used to layout the nodes and edges of the empty-graph,
+ * first-graph or follow-graph. Additionally, it can be used to layout
+ * the nodes and edges of a provided graph.
+ * Since the layouting can take a while, the returned function
+ * accepts a callback function that is called once the layouting is done.
+ *
+ * The layouting is done using
+ * {@link https://eclipse.dev/elk/ | Eclipse Layout Kernel (ELK)}.
+ * The default layouting options are:
+ * ```json
+ * {
+ *   "elk.algorithm": "layered",
+ *   "elk.direction": "RIGHT",
+ *   "elk.edgeRouting": "SPLINES",
+ *   "elk.interactive": "true",
+ *   "elk.spacing.nodeNode": "100",
+ *   "elk.spacing.edgeNode": "100",
+ *   "elk.layered.spacing.nodeNodeBetweenLayers": "100",
+ *   "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+ *   "elk.nodeLabels.placement": "[INSIDE, H_LEFT, V_TOP]",
+ * };
+ * ```
+ *
+ * @example
+ *
+ * ### Getting the layoutElements function
+ * ```tsx
+ * const { layoutElements } = useLayoutedElements(
+ *   emptyNodes,
+ *   emptyEdges,
+ *   setEmptyNodes,
+ *   setEmptyEdges,
+ *   firstNodes,
+ *   firstEdges,
+ *   setFirstNodes,
+ *   setFirstEdges,
+ *   followNodes,
+ *   followEdges,
+ *   setFollowNodes,
+ *   setFollowEdges,
+ * );
+ * ```
+ *
+ * ## Using the layoutElements function
+ * ### Apply layout to the first-, empty- or follow-graph
+ * ```tsx
+ * // Apply a layout to the first-graph
+ * layoutElements("first");
+ * ```
+ *
+ * ### Apply layout to the empty-graph with custom options
+ * ```tsx
+ * layoutElements("empty", { "elk.direction": "UP", });
+ * ```
+ *
+ * ### Apply layout a provided graph
+ * ```tsx
+ * layoutElements(
+ *   "provided",
+ *   undefined,
+ *   nodes,
+ *   edges,
+ *   setFollowNodes,
+ *   setFollowEdges,
+ *   () => setLoading(undefined), // Stop the loading indicator
+ * );
+ * ```
+ *
+ * @param emptyNodes - The nodes of the empty-graph.
+ * @param emptyEdges - The edges of the empty-graph.
+ * @param setEmptyNodes - The function to set the nodes of the empty-graph.
+ * @param setEmpyEdges - The function to set the edges of the empty-graph.
+ *
+ * @param firstNodes - The nodes of the first-graph.
+ * @param firstEdges - The edges of the first-graph.
+ * @param setFirstNodes - The function to set the nodes of the first-graph.
+ * @param setFirstEdges - The function to set the edges of the first-graph.
+ *
+ * @param followNodes - The nodes of the follow-graph.
+ * @param followEdges - The edges of the follow-graph.
+ * @param setFollowNodes - The function to set the nodes of the follow-graph.
+ * @param setFollowEdges - The function to set the edges of the follow-graph.
+ *
+ * @returns The {@link layoutElements} function.
+ */
 const useLayoutedElements = (
   emptyNodes: Node<NodeData>[],
   emptyEdges: Edge<EdgeData>[],
@@ -28,7 +123,10 @@ const useLayoutedElements = (
 ) => {
   const { fitView } = useReactFlow();
 
-  const layoutElements = useCallback(
+  /**
+   * {@link layoutElementsInterface}
+   */
+  const layoutElements: layoutElementsInterface = useCallback(
     (
       whichNodes: "empty" | "first" | "follow" | "provided",
       options?: LayoutOptions,
@@ -36,11 +134,11 @@ const useLayoutedElements = (
       edges?: Edge<EdgeData>[],
       setNodes?: (nodes: Node<NodeData>[], fitView?: () => void) => void,
       setEdges?: (edges: Edge<EdgeData>[], fitView?: () => void) => void,
-      // Some algorithms use a loading indicator. Since this step can take a
-      // while, we want to set the loading indicator to false only once the
-      // layouting is done.
-      setLoading?: () => void,
+      // Since this step can take a while, we may want to do something
+      // once the layouting is done. (e.g. set a 'loading' state to false)
+      cb?: () => void,
     ) => {
+      // Which nodes and edges to layout, depending on the whichNodes parameter
       const relevantNodes =
         nodes ||
         (whichNodes === "empty"
@@ -108,10 +206,12 @@ const useLayoutedElements = (
         "elk.algorithm": "",
       };
 
-      // this only works if there are no grandchildren
+      // Here we convert the nodes and edges to ELK's format
+      // This only works if there are no grandchildren
       // i.e. if there are no nodes with children that have children
       const children: ElkNode[] = [];
       for (const node of relevantNodes) {
+        // First we add the nodes that have no parent
         if (node.parentNode === undefined) {
           const label: ElkLabel[] | undefined =
             node.type === "group"
@@ -139,6 +239,7 @@ const useLayoutedElements = (
         }
       }
       for (const node of relevantNodes) {
+        // Second we add the nodes that have a parent
         if (node.parentNode !== undefined) {
           const parentIndex = children.findIndex(
             (child) => child.id === node.parentNode,
@@ -160,6 +261,8 @@ const useLayoutedElements = (
         console.log("children", children);
       }
 
+      // ELK needs a root node to layout the graph
+      // so we create a root node with the relevant children and edges
       const graph: ElkNode = {
         id: "root",
         layoutOptions: layoutOptions,
@@ -188,6 +291,8 @@ const useLayoutedElements = (
             console.log("elkNodes", elkNodes);
             console.log("elkEdges", elkEdges);
           }
+          // Here we convert the layouted nodes and edges back to
+          // react-flow's format
           const newNodes: Node<NodeData>[] = elkNodes.flatMap((node) => {
             const initialNode = relevantNodes.find((n) => n.id === node.id);
             if (!initialNode) {
@@ -254,8 +359,8 @@ const useLayoutedElements = (
           relevantSetNodes(newNodes);
           relevantSetEdges(newEdges, fitView);
 
-          if (setLoading) {
-            setLoading();
+          if (cb) {
+            cb();
           }
         });
     },
@@ -276,7 +381,13 @@ const useLayoutedElements = (
     ],
   );
 
-  return { layoutElements };
+  return {
+    /**
+     * {@link layoutElementsInterface}
+     * {@inheritDoc layoutElementsInterface}
+     */
+    layoutElements,
+  };
 };
 
 export { useLayoutedElements };

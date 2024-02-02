@@ -15,8 +15,22 @@ type TarjanEdge = {
   target: TarjanNode;
 };
 
-// sorts group nodes before child nodes
-// this is required by reactflow
+/**
+ * Function to sort nodes by type
+ * Group nodes are sorted before child nodes
+ *
+ * @remarks
+ *
+ * Reactflow requires that group nodes are sorted before child nodes
+ * to display the graph correctly
+ *
+ * @param a - Node a
+ * @param b - Node b
+ *
+ * @returns 0 if both nodes are of the same type,
+ * -1 if a is a group node and b is not,
+ * 1 if b is a group node and a is not
+ */
 function sortChildAndGroupNodes(a: Node<NodeData>, b: Node<NodeData>): number {
   if (a.type === b.type) {
     return 0;
@@ -24,7 +38,53 @@ function sortChildAndGroupNodes(a: Node<NodeData>, b: Node<NodeData>): number {
   return a.type === "group" && b.type !== "group" ? -1 : 1;
 }
 
-// Returns a List of strongly connected components (sets of nodes and edges)
+/**
+ * Function to group first or follow nodes into strongly connected components
+ *
+ * @remarks
+ *
+ * This function uses Tarjan's algorithm to group nodes into
+ * strongly connected components. It then creates a new node
+ * for each component and adds the original nodes as children.
+ * It also adds edges between the new nodes if there are edges
+ * between their children (original nodes) from different
+ * strongly connected components.
+ *
+ * @example
+ *
+ * ### Graph before grouping
+ * ```ts
+ * const nodes = [
+ *  { id: "A", type: "first", ...rest },
+ *  { id: "B", type: "first", ...rest },
+ * ];
+ * const edges = [
+ *  { id: "A->B", source: "A", target: "B", ...rest },
+ * ];
+ * ```
+ *
+ * ### Graph after grouping
+ * ```ts
+ * const nodes = [
+ *  { id: "SCC(A)", type: "group", ...rest },
+ *  { id: "SCC(B)", type: "group", ...rest },
+ *  { id: "A", type: "first", parentNode: "SCC(A)", ...rest },
+ *  { id: "B", type: "first", parentNode: "SCC(B)", ...rest },
+ * ];
+ * const edges = [
+ *  { id: "A->B", source: "A", target: "B", ...rest },
+ *  { id: "SCC(A)->SCC(B)", source: "SCC(A)", target: "SCC(B)", ...rest },
+ * ];
+ * ```
+ *
+ * @param nodeType - The type of the nodes to group
+ * @param nodes - The nodes to group
+ * @param edges - The edges to group
+ * @param getNodeId - Function to get a new node id
+ * @param getEdgeId - Function to get a new edge id
+ *
+ * @returns An object containing the new nodes and edges
+ */
 function groupNodesBySCC(
   nodeType: "first" | "follow",
   nodes: Node<NodeData>[],
@@ -35,12 +95,12 @@ function groupNodesBySCC(
   nodes: Node<NodeData>[];
   edges: Edge<EdgeData>[];
 } {
+  // Ideally we would only get first or follow nodes but we
+  // might get group nodes as well. These will be ignored.
+  // Here we warn the user if we get any of those.
   if (import.meta.env.DEV) {
-    // Currently we do not actually filter those from the followNodes
-    // so we will get an error here when checking the graph or
-    // generating the solution in the follow setup page.
     if (nodes.some((node) => node.type != nodeType)) {
-      console.error(
+      console.warn(
         "groupNodesBySCC: nodes must be " + nodeType + " set nodes",
         nodes,
       );
@@ -57,7 +117,7 @@ function groupNodesBySCC(
         );
       })
     ) {
-      console.error(
+      console.warn(
         "groupNodesBySCC: edges must be between " + nodeType + " set nodes",
         edges,
       );
@@ -98,8 +158,12 @@ function groupNodesBySCC(
     console.log("sccs", sccs);
   }
 
+  // Here we group the nodes (and edges) into arrays
+  // representing the strongly connected components.
+  // Edges that are not between nodes in the same
+  // strongly connected component are stored separately.
   const groupedNodes: Node<NodeData>[][] = [];
-  const groupedEdges: Edge<EdgeData>[][] = [];
+  const groupedEdges: Edge<EdgeData>[][] = []; // only for debugging
   const ungroupedEdges: Edge<EdgeData>[] = [];
   for (const scc of sccs) {
     const nodeGroup: Node<NodeData>[] = [];
@@ -130,10 +194,12 @@ function groupNodesBySCC(
 
   const newNodes: Node<NodeData>[] = [];
   const newEdges: Edge<EdgeData>[] = [...firstOrFollowAttributeEdges];
-
+  // Now we create new nodes for the strongly connected components
+  // and add the original nodes as children.
   for (const nodeGroup of groupedNodes) {
     // For Follow nodes, the names would be Follow(A), instead of A
-    // so we have to extract the name from the node data
+    // so we have to extract the name from the node data.
+    // The result is a string like "A, B, C" for the nodes A, B, C.
     const arrToName = nodeGroup
       .map((node) => node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name)
       .sort()
@@ -187,16 +253,22 @@ function groupNodesBySCC(
           y: node.position.y - superNode.position.y,
         },
         parentNode: superNode.id,
+        // The parent should expand to fit the children
+        // so we set the children to expand their parent.
+        // This will be changed after the layouting is done.
         extent: "parent",
       });
     }
   }
 
   const missingEdgeSet: Set<string> = new Set();
-  // Here we only add edges between two different
-  // strongly connected components
+  // We only add edges between two different
+  // strongly connected components.
   // If we also wanted self-edges, we would have to
-  // change ungroupedEdges to first/follow-AttributeEdges
+  // change ungroupedEdges to first/follow-AttributeEdges.
+  // To filter duplicate edges, we use a set. This could
+  // happen if multiple children of a strongly connected
+  // component have an edge to children of another one.
   for (const edge of ungroupedEdges) {
     const sourceSccId = newNodes.find(
       (node) => node.id === edge.source,
@@ -206,11 +278,18 @@ function groupNodesBySCC(
     )!.parentNode;
     missingEdgeSet.add(sourceSccId + "->" + targetSccId);
   }
+
   for (const missingEdge of missingEdgeSet) {
     const [sourceSccId, targetSccId] = missingEdge.split("->");
     const sourceScc = newNodes.find((node) => node.id === sourceSccId)!;
     const targetScc = newNodes.find((node) => node.id === targetSccId)!;
 
+    // When this function is called from the Follow setup page,
+    // the nodes passed in actually already contain the Fε(SCC()) nodes.
+    // We simply ignored them above and created new ones which was fine.
+    // The edges between them however are a little different to the ones
+    // added by the user. Instead of adding new edges, we simply update
+    // the existing ones.
     if (
       sourceScc.data.name.startsWith("Fε(SCC(") &&
       targetScc.data.name.startsWith("Fε(SCC(")
@@ -264,7 +343,20 @@ function groupNodesBySCC(
   };
 }
 
-// Inspired by pseudocode from https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+/**
+ * Function to group nodes into strongly connected components
+ * using Tarjan's algorithm
+ * 
+ * @privateRemarks
+ * 
+ * Inspired by pseudocode from
+ * https://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm
+ * 
+ * @param tarjanNodes - The nodes to group
+ * @param tarjanEdges - The edges between the nodes
+ * 
+ * @returns An array of strongly connected components (arrays of nodes)
+ */
 function trajan(
   tarjanNodes: TarjanNode[],
   tarjanEdges: TarjanEdge[],
@@ -300,9 +392,11 @@ function trajan(
         v.lowlink = Math.min(v.lowlink, w.lowlink!);
       } else if (w.onStack) {
         // Successor w is in stack S and hence in the current SCC
-        // If w is not on stack, then (v, w) is an edge pointing to an SCC already found and must be ignored
+        // If w is not on stack, then (v, w) is an edge pointing to an SCC
+        // already found and must be ignored
         // The next line may look odd - but is correct.
-        // It says w.index not w.lowlink; that is deliberate and from the original paper
+        // It says w.index not w.lowlink; that is deliberate and from the
+        // original paper
         v.lowlink = Math.min(v.lowlink, w.index);
       }
     }

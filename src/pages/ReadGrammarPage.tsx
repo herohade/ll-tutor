@@ -15,7 +15,7 @@ import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline";
 import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import DialogContentText from "@mui/material/DialogContentText";
 
-import { Fragment, useState } from "react";
+import { Fragment as ReactFragment, useState } from "react";
 
 import { VariantType, useSnackbar } from "notistack";
 
@@ -308,7 +308,7 @@ function ReadGrammarPage() {
       <List>
         {lectureExamples.map(
           ([grammarName, startNonterminal, productions], index) => (
-            <Fragment key={grammarName + index}>
+            <ReactFragment key={grammarName + index}>
               {index !== 0 && <Divider sx={{ my: 1 }} />}
               <ListItem>
                 <ListItemText
@@ -478,7 +478,7 @@ function ReadGrammarPage() {
                   }
                 </Button>
               </ListItem>
-            </Fragment>
+            </ReactFragment>
           ),
         )}
       </List>

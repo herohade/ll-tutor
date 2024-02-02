@@ -2,18 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  /*
-    Currently unused since tailwind 3.4 now supports h-dvh out-of-the-box.
-    This does mean that there is no fallback anymore but...
-    It works on my machine ¯\_(ツ)_/¯
-  */
-  .hs-screen {
-    height: 100vh; /* Fallback for browsers that do not support dvh */
-    height: 100dvh;
-  }
-}
-
 #root {
   text-align: center;
 }

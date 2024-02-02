@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
+import Box from "@mui/material/Box";
 
 import { VariantType, useSnackbar } from "notistack";
 
@@ -47,9 +47,12 @@ import {
   NodeData,
 } from "./types";
 
-// basic css required for react-flow to work
-import "reactflow/dist/base.css";
-
+/**
+ * The main component of the application.
+ * It contains the header, the progress drawer, and the page content.
+ *
+ * @returns The main component of the application containing the page layout.
+ */
 export default function App() {
   const selector = (
     state: NavigationSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice,
@@ -131,11 +134,26 @@ export default function App() {
     [enqueueSnackbar],
   );
 
+  /**
+   * Function to get the group nodes that intersect with a given node.
+   *
+   * @remarks
+   *
+   * This function is used to get the group nodes that intersect with a
+   * given node. If the given node is a group node, it will not be included
+   * in the returned array.
+   *
+   * @param node - The node to check for intersections.
+   * @param nodes - The nodes to check for intersections with the given node.
+   *
+   * @returns An array of nodes that intersect with the given node.
+   */
   const getIntersectingGroupNodes = (
     node: Node<NodeData>,
     nodes: Node<NodeData>[],
   ): Node<NodeData>[] => {
     const intersections: Node<NodeData>[] = [];
+
     for (const n of nodes) {
       if (n.type === "group" && n.id !== node.id) {
         const nodeBoundingBox = {
@@ -163,9 +181,20 @@ export default function App() {
     return intersections;
   };
 
-  // Function to add a group node as a first nodes parent
-  // if the dragged first node does not already have one
-  // and is dragged on top of a group node
+  /**
+   * Function to add an intersecting group node as a first nodes parent
+   *
+   * @remarks
+   *
+   * This function is used to add a group node as a first nodes parent
+   * if the dragged first node does not already have one and is dragged
+   * on top of a group node.
+   *
+   * @param _event - (unused) The mouse event that triggered the drag stop.
+   * @param node - The node that was dragged.
+   *
+   * @returns void
+   */
   const onFirstNodeDragStop = useCallback(
     (_event: ReactMouseEvent, node: Node<NodeData>) => {
       if (node.type !== "first" || node.parentNode) {
@@ -179,15 +208,18 @@ export default function App() {
         node,
         firstNodes,
       );
-      // it seems that later elements are rendered on top of earlier ones and
+      // It seems that later elements are rendered on top of earlier ones and
       // it is more natural to have the node bind to the group node that is
-      // the most visible one / the one on top (if there are multiple)
+      // the most visible one / the one on top (if there are multiple).
+      // This is why we use the last element of the intersections array
+      // as this is the one that is rendered on top
       const groupNode = intersections[intersections.length - 1];
       if (import.meta.env.DEV) {
         console.log(intersections);
       }
 
-      // when there is an intersection on drag stop, we want to attach the node to its new parent
+      // Only if there is an intersection on drag stop, we want to attach the
+      // node to its new parent
       if (groupNode !== undefined) {
         const newNodes: Node<NodeData>[] = firstNodes.map((n) => {
           if (n.id === node.id) {
@@ -201,30 +233,31 @@ export default function App() {
               position,
               parentNode: groupNode.id,
               extent: "parent",
-              // we need to set dragging = false, because the internal change of the dragging state
-              // is not applied yet, so the node would be rendered as dragging
+              // we need to set dragging = false, because the internal change
+              // of the dragging state is not applied yet, so the node would
+              // be rendered as dragging
               dragging: false,
             } as Node<NodeData>;
           } else {
             if (n.id === groupNode.id) {
-              // We get something like F...(SCC(A, B, C)) or SCC(A, B, C)
-              // with F... either Follow or Fepsilon
+              // We get a GroupNode name like SCC(A, B, C). Since we want to add
+              // a child node to the group node, we need to add its name:
               //
-              // This matches name from F...(SCC(name)) in result[2]
-              // and name from SCC(name) in result[3]. F... if it exists
-              // is matched in result[1], else it's undefined:
-              // .match(/(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/)
+              // 1. The following matches string in SCC(string) in result[1]:
+              // .match(/^SCC\((.*)\)$/)
               //
-              // With name.split(", ") we get an array of names.
+              // 2. With name.split(", ") we get an array of child names.
               // This also works if a name is ",".
               // ("A, ,,B" ===> "A" and "," and "B")
               //
-              // With array.join(", ") we get the original string.
+              // 3. We add the new child name
               //
-              // With result[1] + (SCC(string)) or SCC(string), we get the
-              // original group node name.
+              // 4. With array.join(", ") we add the names together again.
+              //
+              // 5. With SCC(result[1]), we get the new group node name.
 
               const oldGroupNodeName = groupNode.data.name;
+              // 1. We get the child names: "A, B, C,..."
               const [, matchedName] = oldGroupNodeName.match(
                 /^SCC\((.*)\)$/,
               ) || [undefined, undefined];
@@ -254,6 +287,9 @@ export default function App() {
                 );
               }
 
+              // 2. + 3. + 4. We split the name into the child names,
+              // add the new child name, sort the array,
+              // and join the names again.
               const newName =
                 matchedName.length > 0
                   ? matchedName
@@ -262,7 +298,7 @@ export default function App() {
                       .sort()
                       .join(", ")
                   : node.data.name;
-
+              // 5. We create the new group node name with the new child name.
               const newGroupNodeName = "SCC(" + newName + ")";
 
               if (import.meta.env.DEV) {
@@ -282,9 +318,11 @@ export default function App() {
           return n;
         });
         // We also need to update the edge names (sourcename->targetname)
+        // for the edges that are connected to the group node we just changed.
         const newEdges: Edge<EdgeData>[] = firstEdges.map((edge) => {
-          // get the new names/nodes if they exist, else use the old ones
           if (edge.source === groupNode.id || edge.target === groupNode.id) {
+            // Get the new names and nodes if they are new,
+            // else use the old ones
             const newSource =
               edge.source === groupNode.id ? groupNode.id : edge.source;
             const newSourceNode: Node<NodeData> | undefined =
@@ -326,6 +364,20 @@ export default function App() {
   // Function to add a group node as a follow nodes parent
   // if the dragged follow node does not already have one
   // and is dragged on top of a group node
+  /**
+   * Function to add an intersecting group node as a follow nodes parent
+   *
+   * @remarks
+   *
+   * This function is used to add a group node as a follow nodes parent
+   * if the dragged follow node does not already have one and is dragged
+   * on top of a group node.
+   *
+   * @param _event - (unused) The mouse event that triggered the drag stop.
+   * @param node - The node that was dragged.
+   *
+   * @returns void
+   */
   const onFollowNodeDragStop = useCallback(
     (_event: ReactMouseEvent, node: Node<NodeData>) => {
       if (node.type !== "follow" || node.parentNode) {
@@ -339,18 +391,23 @@ export default function App() {
         node,
         followNodes,
       );
-      // it seems that later elements are rendered on top of earlier ones and
+      // It seems that later elements are rendered on top of earlier ones and
       // it is more natural to have the node bind to the group node that is
-      // the most visible one / the one on top (if there are multiple)
+      // the most visible one / the one on top (if there are multiple).
+      // This is why we use the last element of the intersections array
+      // as this is the one that is rendered on top
       const groupNode = intersections[intersections.length - 1];
       if (import.meta.env.DEV) {
         console.log(intersections);
       }
 
-      // when there is an intersection on drag stop, we want to attach the node to its new parent
+      // Only if there is an intersection on drag stop, we want to attach the
+      // node to its new parent
       if (groupNode !== undefined) {
-        // We don't want to add a Follow child node to a F-epsilon group node
-        // or vice versa (though the latter should not happen anyway)
+        // We don't want to add a Follow child node to an F-epsilon group node
+        // or vice versa (though the latter should not happen anyway).
+        // So we check if the parent and child node have the same prefix.
+        // Prefixes can be "Follow" or "Fε".
         const gName = groupNode.data.name;
         const cName = node.data.name;
         const gPrefix = gName.match(/(^[^(]+)\(.*\)$/)?.[1];
@@ -383,30 +440,34 @@ export default function App() {
               position,
               parentNode: groupNode.id,
               extent: "parent",
-              // we need to set dragging = false, because the internal change of the dragging state
-              // is not applied yet, so the node would be rendered as dragging
+              // we need to set dragging = false, because the internal change
+              // of the dragging state is not applied yet, so the node would
+              // be rendered as dragging
               dragging: false,
             } as Node<NodeData>;
           } else {
             if (n.id === groupNode.id) {
-              // We get something like F...(SCC(A, B, C)) or SCC(A, B, C)
-              // with F... either Follow or Fepsilon
+              // We get a GroupNode name like F...(SCC(A, B, C)) or SCC(A, B, C)
+              // with F... either Follow or Fε
               //
-              // This matches name from F...(SCC(name)) in result[2]
-              // and name from SCC(name) in result[3]. F... if it exists
-              // is matched in result[1], else it's undefined:
+              // 1. The following matches string from F...(SCC(string)) in
+              // result[2] and string from SCC(string) in result[3].
+              // F... if it exists is matched in result[1], else it's undefined:
               // .match(/(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/)
               //
-              // With name.split(", ") we get an array of names.
+              // 2. With name.split(", ") we get an array of names.
               // This also works if a name is ",".
               // ("A, ,,B" ===> "A" and "," and "B")
               //
-              // With array.join(", ") we get the original string.
+              // 3. We add the new child name
               //
-              // With result[1] + (SCC(string)) or SCC(string), we get the
-              // original group node name.
+              // 4. With array.join(", ") we add the names together again.
+              //
+              // 5. With result[1] + (SCC(result[2])) or SCC(result[3]),
+              // we get the new group node name.
 
               const oldGroupNodeName = groupNode.data.name;
+              // 1. We get the child names: "A, B, C,..." and prefix
               const [, prefix, nameIfPrefix, nameIfNoPrefix] =
                 oldGroupNodeName.match(
                   /(^F[^(]+)\(SCC\((.*)\)\)$|^SCC\((.*)\)$/,
@@ -441,19 +502,22 @@ export default function App() {
                 );
               }
 
+              // 2. + 3. + 4. We split the name into the child names,
+              // add the new child name, sort the array,
+              // and join the names again.
               const newName =
                 matchedName.length > 0
                   ? matchedName
                       .split(", ")
                       .concat([
-                        // returns name even if the data.name is Follow(name)
+                        // Returns name even if the data.name is Follow(name)
                         // and not name. Also works on Follow(() -> name = ")"
                         node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name,
                       ])
                       .sort()
                       .join(", ")
                   : node.data.name.match(/\((.+)\)/)?.[1] ?? node.data.name;
-
+              // 5. We create the new group node name with the new child name.
               const newGroupNodeName =
                 nameIfPrefix !== undefined
                   ? prefix + "(SCC(" + newName + "))"
@@ -476,8 +540,10 @@ export default function App() {
           return n;
         });
         // We also need to update the edge names (sourcename->targetname)
+        // for the edges that are connected to the group node we just changed.
         const newEdges: Edge<EdgeData>[] = followEdges.map((edge) => {
-          // get the new names/nodes if they exist, else use the old ones
+          // Get the new names and nodes if they are new,
+          // else use the old ones
           if (edge.source === groupNode.id || edge.target === groupNode.id) {
             const newSource =
               edge.source === groupNode.id ? groupNode.id : edge.source;
@@ -517,8 +583,12 @@ export default function App() {
     [followNodes, followEdges, setFollowNodes, setFollowEdges, showSnackbar],
   );
 
-  // ReactFlow canvas, stays the same between pages
   const customControls = <CustomControls />;
+  // We create the ReactFlow Canvases here, since they are used in multiple
+  // pages (within the same step) and we want to avoid re-creating them.
+  // We use separate graphs for empty, first, and follow, as it's probably
+  // cheaper then saving/restoring the graph state (nodes, edges, etc.)
+  // when navigating between steps (but would be possible)
   const emptyGraphCanvas = (
     <ReactFlow
       nodes={emptyNodes}
@@ -538,8 +608,6 @@ export default function App() {
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
     </ReactFlow>
   );
-  // use two separate graphs, as it's probably cheaper then saving/restoring
-  // when navigating between pages (but it's possible according to the docs)
   const firstGraphCanvas = (
     <ReactFlow
       nodes={firstNodes}
@@ -559,7 +627,6 @@ export default function App() {
       <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
     </ReactFlow>
   );
-
   const followGraphCanvas = (
     <ReactFlow
       nodes={followNodes}
@@ -585,7 +652,7 @@ export default function App() {
   // Here we pass an initializer function ()=>value instead of just value
   // to avoid executing the localStorage.getItem("settings") call on every
   // render, when react only uses the initial value on the first render anyways.
-  // refer to https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state
+  // Refer to https://react.dev/reference/react/useState#avoiding-recreating-the-initial-state
   const [open, setOpen] = useState(
     () => localStorage.getItem("settings") === null,
   );
@@ -658,18 +725,17 @@ export default function App() {
       break;
     default:
       content = (
-        <>
-          <div className="mr-1 h-full w-1/3 overflow-auto rounded-lg border-2 border-solid bg-red-600 bg-gradient-to-b from-green-600 p-2 text-left hover:from-green-400 hover:to-green-600">
-            <Typography variant="h4" component="h1" gutterBottom>
-              Error:
-            </Typography>
-          </div>
-          <div className="h-full w-2/3 rounded-lg border-2 border-solid bg-green-600 bg-gradient-to-b from-red-600 p-2 hover:from-red-400 hover:to-red-600">
-            <Typography variant="h4" component="h1" gutterBottom>
-              Page {page} not found
-            </Typography>
-          </div>
-        </>
+        <Box
+          color="error.main"
+          className="flex size-full flex-col items-center justify-center overflow-auto"
+        >
+          <Typography variant="h4" component="h1" gutterBottom>
+            Oops! It looks like this page ({page}) does not exist.
+            <br />
+            <br />
+            Error Code b352b8: Please contact the developer!
+          </Typography>
+        </Box>
       );
       break;
   }

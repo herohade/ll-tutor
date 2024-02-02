@@ -6,8 +6,14 @@ import {
 
 import { NodeData } from "../types";
 
-// this helper function returns the intersection point
-// of the line between the center of the intersectionNode and the target node
+/**
+ * Function to get the intersection point of the line between the center of the intersectionNode and the target node
+ * 
+ * @param intersectionNode - the node to get the intersection point from
+ * @param targetNode - the node where the line is coming from
+ * 
+ * @returns the intersection point on the intersectionNode
+ */
 function getNodeIntersection(
   intersectionNode: Node<NodeData>,
   targetNode: Node<NodeData>
@@ -45,7 +51,17 @@ function getNodeIntersection(
 
   return { x, y };
 }
-// returns the position (top,right,bottom or right) passed node compared to the intersection point
+
+/**
+ * Function to get the position (top, bottom, left, right) of the
+ * intersection point on the node
+ * 
+ * @param node - the node to get the position from
+ * @param intersectionPoint - the intersection point on the node
+ * 
+ * @returns the position of the intersection point on the node
+ * (top, bottom, left, right)
+ */
 function getEdgePosition(
   node: Node<NodeData>,
   intersectionPoint: { x: number; y: number; }
@@ -75,7 +91,24 @@ function getEdgePosition(
 
   return Position.Top;
 }
+
 // returns the parameters (sx, sy, tx, ty, sourcePos, targetPos) you need to create an edge
+/**
+ * Function to get the parameters you need to create an edge between the
+ * given source and target node
+ * 
+ * @remarks
+ * 
+ * This function is used to get the parameters you need to create an edge
+ * between two nodes. These are the sources intersection point
+ * (sx, sy), the targets intersection point (tx, ty) and the position
+ * of the intersection points (top, bottom, left, right).
+ * 
+ * @param source - the source node
+ * @param target - the target node
+ * 
+ * @returns the parameters you need to create an edge
+ */
 function getEdgeParams(source: Node<NodeData>, target: Node<NodeData>) {
   const sourceIntersectionPoint = getNodeIntersection(source, target);
   const targetIntersectionPoint = getNodeIntersection(target, source);

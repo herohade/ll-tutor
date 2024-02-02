@@ -773,6 +773,11 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // This is pretty much a copy/paste of the check function in the
     // PrepareFirstAlgorithmPage, with some minor changes
     const { setUpNodes, setUpEdges, missingEdges } = addMissing();
+    // The nodes given to groupNodesBySCC contain GroupNodes
+    // which the function will simply ignore (filter out).
+    // This is not a problem, since new ones will be added
+    // by the function. But the function will print a warning
+    // to the console. We can ignore that.
     const { nodes, edges } = groupNodesBySCC(
       "follow",
       setUpNodes,
@@ -1057,6 +1062,11 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
 
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
 
+                // The nodes given to groupNodesBySCC contain GroupNodes
+                // which the function will simply ignore (filter out).
+                // This is not a problem, since new ones will be added
+                // by the function. But the function will print a warning
+                // to the console. We can ignore that.
                 const { nodes, edges } = groupNodesBySCC(
                   "follow",
                   setUpNodes,

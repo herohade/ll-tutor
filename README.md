@@ -23,6 +23,12 @@ For development, run the following command. This will start a development server
 npm run dev
 ```
 
+To generate a webview of the documentation, run the following command.
+
+```bash
+npm run doc
+```
+
 ### Production
 
 For production, run the following command. This will build the project.

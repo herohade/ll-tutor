@@ -7,6 +7,7 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
     "!./node_modules/**/*",
     "!./dist/**/*",
+    "!./docs/**/*",
   ],
   important: '#root',
   theme: {

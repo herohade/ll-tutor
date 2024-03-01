@@ -20,6 +20,13 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
+  "typedocOptions": {
+    "entryPoints": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["src/main.tsx", "src/vite-env.d.ts"],
+    "entryPointStrategy": "expand",
+    "plugin": ["typedoc-plugin-rename-defaults"],
+    "out": "docs",
+  },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

@@ -7,7 +7,8 @@ import {
 import { NodeData } from "../types";
 
 /**
- * Function to get the intersection point of the line between the center of the intersectionNode and the target node
+ * Function to get the intersection point of the line between the
+ * center of the intersectionNode and the target node
  * 
  * @param intersectionNode - the node to get the intersection point from
  * @param targetNode - the node where the line is coming from

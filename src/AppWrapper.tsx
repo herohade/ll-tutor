@@ -85,6 +85,14 @@ export default function AppWrapper() {
           hover: indigo.A700,
         },
       },
+      // The following is currently not used because it would require a
+      // different approach to the z-indices of the react-flow elements.
+      // Currently child nodes are always on top of the group nodes.
+      // Because group nodes are transparent, this is not a problem.
+      // If the group nodes have a background color, the child nodes of two
+      // overlapping group nodes would be drawn on top of both group nodes.
+      // This might be misleading, as it looks like all children
+      // belong to the visible group node.
       // // The default background for GroupNodes is transparent.
       // // This makes the background non-transparent.
       // components: {
@@ -106,6 +114,8 @@ export default function AppWrapper() {
   const app = <App />;
 
   return (
+    // MUI's injectFirst is required for tailwindcss to work properly
+    // as it must override the default MUI styles
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         {cssBaseline}

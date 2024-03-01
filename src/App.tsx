@@ -48,8 +48,8 @@ import {
 } from "./types";
 
 /**
- * The main component of the application.
- * It contains the header, the progress drawer, and the page content.
+ * The main component of the application (the actual "page" shown to the user).
+ * It renders the header, the progress drawer, and the page content.
  *
  * @returns The main component of the application containing the page layout.
  */
@@ -361,9 +361,6 @@ export default function App() {
     [firstNodes, firstEdges, setFirstNodes, setFirstEdges, showSnackbar],
   );
 
-  // Function to add a group node as a follow nodes parent
-  // if the dragged follow node does not already have one
-  // and is dragged on top of a group node
   /**
    * Function to add an intersecting group node as a follow nodes parent
    *
@@ -584,11 +581,11 @@ export default function App() {
   );
 
   const customControls = <CustomControls />;
-  // We create the ReactFlow Canvases here, since they are used in multiple
+  // We create the ReactFlow Canvases here, since they are used across multiple
   // pages (within the same step) and we want to avoid re-creating them.
   // We use separate graphs for empty, first, and follow, as it's probably
   // cheaper then saving/restoring the graph state (nodes, edges, etc.)
-  // when navigating between steps (but would be possible)
+  // when navigating between steps (but it would be possible)
   const emptyGraphCanvas = (
     <ReactFlow
       nodes={emptyNodes}

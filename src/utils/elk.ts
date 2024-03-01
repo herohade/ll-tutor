@@ -18,7 +18,8 @@ const elk = new ELK({
 });
 
 /**
- * This hook provides a {@link layoutElements | function} to layout the nodes and edges of a graph.
+ * This hook provides a {@link layoutElements | function} to layout the nodes
+ * and edges of a graph.
  *
  * @remarks
  *

@@ -568,7 +568,7 @@ export type NavigationSlice = {
  */
 export type GrammarSlice = {
   /**
-   * The start symbol (S') of the grammar.
+   * The {@link Nonterminal} representing the start symbol (S') of the grammar.
    */
   startSymbol: Nonterminal;
   /**
@@ -625,19 +625,21 @@ export type GrammarSlice = {
  */
 export type GrammarSetupSlice = {
   /**
-   * A map of nonterminals and whether they are the start symbol or not.
+   * A map of nonterminals and whether they are the (user selected)
+   * start symbol or not.
    * 
    * @remarks
    * 
-   * This is used when selecting the start symbol of the grammar.
+   * This is used to color the selection when selecting the start symbol
+   * of the grammar.
    */
   start: [name: Nonterminal, start: boolean][];
   /**
-   * Whether the grammar rules have been sorted or not.
+   * Whether the grammar rules have been sorted or not. (page 2-\>3)
    */
   sorted: boolean;
   /**
-   * Whether the grammar has been reduced or not.
+   * Whether the grammar has been reduced or not. (page 3-\>4)
    */
   reduced: boolean;
   /**
@@ -927,7 +929,12 @@ export type EmptyNodeSlice = {
    */
   updateEmptyNodeAndEdgeEmpty: (nodeId: string, empty: boolean) => void;
   /**
-   * The function to update a node's {@link NodeData | properties}
+   * The function to update a node's name and empty
+   * {@link NodeData | properties}
+   * 
+   * @remarks
+   * 
+   * It also updates the nodes edges.
    * 
    * @param nodeId - The id of the node to update
    * @param name - The new name property
@@ -1155,6 +1162,11 @@ export type FirstNodeSlice = {
   /**
    * The function to toggle the deletable and connectable properties of
    * the first graph.
+   * 
+   * @remarks
+   * 
+   * Group nodes need to stay deletable, so for them only the connectable
+   * property is toggled.
    * 
    * @param deletable - Whether the nodes and edges are deletable or not
    * @param connectable - Whether the nodes are connectable or not

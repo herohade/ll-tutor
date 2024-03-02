@@ -23,7 +23,19 @@ import {
   EdgePathType,
 } from "../types";
 
-// Function to sort group nodes before first nodes
+/**
+ * Function that returns the order of two nodes.
+ * Sorts group nodes before first nodes (as required by ReactFlow)
+ * 
+ * @remarks
+ * 
+ * Returns 0 if both nodes are of the same type, otherwise returns -1
+ * if the first node is a group node and 1 if not.
+ * 
+ * @param a - First node
+ * @param b - Second node
+ * @returns - a number indicating the sort order
+ */
 const sortFirstAndGroupNodes = (
   a: Node<NodeData>,
   b: Node<NodeData>,
@@ -34,6 +46,9 @@ const sortFirstAndGroupNodes = (
   return a.type === "group" && b.type !== "group" ? -1 : 1;
 };
 
+/**
+ * Creates a new {@link FirstNodeSlice} with the given initial state.
+ */
 export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
   set,
   get,
@@ -109,6 +124,7 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
       ) => void,
     ) =>
     (connection: Connection) => {
+      // We get a connection. If it is valid we want to create an edge.
       if (connection.source === null || connection.target === null) {
         if (import.meta.env.DEV) {
           console.error(
@@ -185,6 +201,8 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
           ...node,
           connectable: connectable,
           data:
+            // group nodes should always be deletable, so
+            // we only change the deletable property of first nodes
             node.type === "group"
               ? node.data
               : { ...node.data, deletable: deletable },
@@ -199,7 +217,7 @@ export const createFirstNodeSlice: StateCreator<FirstNodeSlice> = (
   setFirstNodeEdgesHidden: (hidden: boolean) => {
     set({
       firstEdges: get().firstEdges.map((edge) => {
-        if (!edge.data?.isGroupEdge) {
+        if (!edge.data?.isGroupEdge) { // only edges between child nodes
           return {
             ...edge,
             hidden: hidden,

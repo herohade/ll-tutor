@@ -812,7 +812,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       const newNode: Node<NodeData> = {
         id: nodeId,
         type: "first",
-        position: {
+        position: { // this is eyeballed, we just hope this is a good position
           x: terminalNode.position.x,
           y: terminalNode.position.y - (terminalNode.height ?? 50) - 50,
         },
@@ -902,16 +902,18 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         for (const nodeName of incomingNodeNames) {
           newIncomingFirst.set(nodeName, undefined);
         }
-        // This will be the first set of the SCC
+        // Here we initialize the first set of the SCC
         // It will be dynamically updated while processing the SCC
-        // unless this is one of the leaves of the graph ("{terminalname}")
-        // If so, we need to add terminalname to the array.
+        // unless this is one of the leaves of the graph ("{terminalname}").
+        // If so, we need to add terminalname to the array and it will be 
+        // complete.
         // In theory {terminalnale} should only ever appear in the name for the
         // leaves. Also it should only ever be one terminal in those SCCs.
         // Considering this, firstArray should contain at most one element.
         // That being either terminalname if this is the SCC of {terminalname}
         // or nothing if this is not the SCC of {terminalname}.
-        // Also this should be able to handle terminalname="}" -> "{}}"
+        // So this regex should do the trick.
+        // ( Including edge cases like terminalname="}" -> "{}}" )
         const firstArray = node.data.name.match(/{(.+)}/)?.[1] ?? [];
         const nodeMap: FirstAlgorithmNodeMap = {
           active: false,

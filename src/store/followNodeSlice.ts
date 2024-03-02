@@ -23,7 +23,19 @@ import {
   EdgePathType,
 } from "../types";
 
-// Function to sort group nodes before follow nodes
+/**
+ * Function that returns the order of two nodes.
+ * Sorts group nodes before follow nodes (as required by ReactFlow)
+ * 
+ * @remarks
+ * 
+ * Returns 0 if both nodes are of the same type, otherwise returns -1
+ * if the first node is a group node and 1 if not.
+ * 
+ * @param a - First node
+ * @param b - Second node
+ * @returns - a number indicating the sort order
+ */
 const sortFollowAndGroupNodes = (
   a: Node<NodeData>,
   b: Node<NodeData>,
@@ -34,6 +46,9 @@ const sortFollowAndGroupNodes = (
   return a.type === "group" && b.type !== "group" ? -1 : 1;
 };
 
+/**
+ * Creates a new {@link FollowNodeSlice} with the given initial state.
+ */
 export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
   set,
   get,
@@ -109,6 +124,7 @@ export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
       ) => void,
     ) =>
     (connection: Connection) => {
+      // We get a connection. If it is valid we want to create an edge.
       if (connection.source === null || connection.target === null) {
         if (import.meta.env.DEV) {
           console.error(
@@ -185,6 +201,8 @@ export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
           ...node,
           connectable: connectable,
           data:
+            // group nodes should always be deletable, so
+            // we only change the deletable property of follow nodes
             node.type === "group"
               ? node.data
               : { ...node.data, deletable: deletable },
@@ -212,7 +230,7 @@ export const createFollowNodeSlice: StateCreator<FollowNodeSlice> = (
   setExpandFollowParent: (expand: boolean) => {
     set({
       followNodes: get().followNodes.map((node) => {
-        if (node.type !== "group") {
+        if (node.type !== "group") { // only edges between child nodes
           return {
             ...node,
             expandParent: expand,

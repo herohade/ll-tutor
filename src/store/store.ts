@@ -22,7 +22,10 @@ import {
   FollowAlgorithmSlice,
 } from "../types";
 
-// this is our useStore hook that we can use in our components to get parts of the store and call actions
+/**
+ * A hook that returns a store with the stateful variables. This is how
+ * the store is accessed in the components.
+ */
 const useBoundStore = createWithEqualityFn<
   NavigationSlice &
     GrammarSlice &

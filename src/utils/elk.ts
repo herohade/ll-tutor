@@ -384,8 +384,8 @@ const useLayoutedElements = (
 
   return {
     /**
-     * {@link layoutElementsInterface}
      * {@inheritDoc layoutElementsInterface}
+     * {@link layoutElementsInterface}
      */
     layoutElements,
   };

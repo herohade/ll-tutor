@@ -17,17 +17,23 @@ import {
   Terminal,
 } from "../types";
 
+// this import is only required for a tsdoc @link tag:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { HeaderComponent } from "../components";
+
 type Props = {
   graphCanvas: JSX.Element;
 };
 
+// this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});
 
-/*
-This is the seventh page of the webtutor.
-It lets the user apply the first algorithm to the grammar,
-to propagate the first sets through the graph.
-*/
+/**
+ * This is the seventh page of the webtutor.
+ * It lets the user propagate the first sets through the graph.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
 function FirstAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
     state: GrammarSlice &
@@ -74,20 +80,36 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
     });
   };
 
-  // copied from prepareFirstMap() in HeaderComponent.tsx
+  /**
+   * Function to reset the graph to its initial state.
+   * 
+   * @remarks
+   * 
+   * This function maps each SCC (groupnode) to a new
+   * {@link FirstAlgorithmNodeMap}. This effectively resets the graph.
+   * 
+   * @privateRemarks
+   * 
+   * This is copied from prepareFirstMap() in {@link HeaderComponent}.
+   */
   const resetGraph = () => {
     // This maps each SCC (groupnode) to a FirstAlgorithmNodeMap
     // The FirstAlgorithmNodeMap contains the following information:
@@ -128,16 +150,18 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
         for (const nodeName of incomingNodeNames) {
           newIncomingFirst.set(nodeName, undefined);
         }
-        // This will be the first set of the SCC
+        // Here we initialize the first set of the SCC
         // It will be dynamically updated while processing the SCC
-        // unless this is one of the leaves of the graph ("{terminalname}")
-        // If so, we need to add terminalname to the array.
+        // unless this is one of the leaves of the graph ("{terminalname}").
+        // If so, we need to add terminalname to the array and it will be 
+        // complete.
         // In theory {terminalnale} should only ever appear in the name for the
         // leaves. Also it should only ever be one terminal in those SCCs.
         // Considering this, firstArray should contain at most one element.
         // That being either terminalname if this is the SCC of {terminalname}
         // or nothing if this is not the SCC of {terminalname}.
-        // Also this should be able to handle terminalname="}" -> "{}}"
+        // So this regex should do the trick.
+        // ( Including edge cases like terminalname="}" -> "{}}" )
         const firstArray = node.data.name.match(/{(.+)}/)?.[1] ?? [];
         const nodeMap: FirstAlgorithmNodeMap = {
           active: false,
@@ -153,9 +177,17 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     setFirstNodeMap(newFirstNodeMap);
   };
 
+  /**
+   * Function to solve the graph.
+   * 
+   * @remarks
+   * 
+   * This function starts with the leafs of the graph and
+   * propagates the first sets through the graph.
+   */
   const solveGraph = () => {
     // We start with the leafs, from there we propagate the first sets
-    // through the graph.
+    // through the graph. Leafs are group nodes with no incoming edges.
     const leafIds = firstNodes
       .filter((n) => n.type === "group")
       .filter(
@@ -184,7 +216,10 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
         return;
       }
 
+      // We add the leafs to the worklist
       const workList: string[] = [leafId];
+      // For each SCC in the worklist, we check if all incoming SCCs
+      // have been processed. If so, we process the current SCC.
       while (workList.length > 0) {
         const currentNodeId = workList.pop();
         if (currentNodeId === undefined) {
@@ -232,8 +267,6 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
         // we can process the current SCC.
         // If not, we skip it. It will be added to the worklist again
         // once all incoming SCCs have been processed.
-        // (Technically whenever an incoming SCC is processed, but
-        // we would just skip it again if it was not the last one.)
         let newActive = true;
         for (const firstSet of currentNodeMap.incomingFirst.values()) {
           if (firstSet === undefined) {
@@ -248,8 +281,8 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
             ...currentNodeMap,
             first:
               // If this is one of the leaves of the graph, keep the first set
-              // since those already have their first sets
-              // (and no incoming SCCs which would erase the first set)
+              // since those already have their first sets.
+              // (and no incoming SCCs which would have erased the first set)
               currentNodeId !== leafId
                 ? new Set(
                     [
@@ -261,7 +294,7 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
           };
           newFirstNodeMap.set(currentNodeId, newCurrentNodeMap);
 
-          // and update this one's first set in the outgoing SCCs
+          // update this one's first set in the outgoing SCCs
           const outgoingNodeIds = firstEdges
             .filter((e) => e.data?.isGroupEdge)
             .filter(
@@ -312,9 +345,19 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
     setFirstNodeMap(newFirstNodeMap);
   };
 
+  /**
+   * Function to check the graph.
+   * 
+   * @remarks
+   * 
+   * This function checks if all buttons have been clicked.
+   * If so, it copies the first sets into the grammar.
+   * 
+   * @returns True if the graph is correct, false otherwise.
+   */
   const checkGraph = () => {
-    // TODO: maybe give more feedback like
-    // which button can be clicked next?
+    // TODO: maybe give more feedback if the graph is not finished?
+    // For now the colors in the graph should be enough.
     for (const firstAlgorithmNodeMap of firstNodeMap.values()) {
       // TODO: remove one of these options:
       // OPTION-1: either require all buttons to be clicked:
@@ -491,6 +534,8 @@ function FirstAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               onClick={() => {
                 if (checkGraph()) {
+                  // we need to set this to true so the user can
+                  // continue to the next page
                   setFinishedFirst(true);
                   showSnackbar(
                     "Congratulations! You have computed the first sets!",

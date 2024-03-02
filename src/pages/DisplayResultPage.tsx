@@ -20,10 +20,10 @@ import {
   Terminal,
 } from "../types";
 
-/*
-This is the tenth page of the webtutor.
-It displays the resulting lookahead table for the grammar.
-*/
+/**
+ * This is the tenth page of the webtutor.
+ * It displays the resulting lookahead table for the grammar.
+ */
 function DisplayResultPage() {
   const selector = (
     state: NavigationSlice & GrammarSlice & FirstNodeSlice & FollowNodeSlice,
@@ -56,6 +56,8 @@ function DisplayResultPage() {
     setFollowNodeEdgesHidden,
   } = useBoundStore(selector, shallow);
 
+  // The symbols in the follow sets are either terminals
+  // or the end of input symbol.
   const followSymbols: Terminal[] = useMemo(() => {
     return [...terminals, endOfInput];
   }, [endOfInput, terminals]);
@@ -63,13 +65,14 @@ function DisplayResultPage() {
   // LookaheadTable is a mapping from nonterminal name to
   // a mapping from followSymbol name to productions
   // (can be multiple productions because of conflicts)
-  // Nonterminal + FollowSymbol = Productions.
+  // LookaheadTable[Nonterminal][FollowSymbol] = Production[].
   //
   // ComputationMap is a mapping from numbered production name
-  // to its first, follow and first ⊙_1 follow set.
+  // to its first, follow and (first ⊙_1 follow) set.
+  //
   // Both store the same information, but in different formats.
   // The first is used to display the table, the second is used
-  // to display the computations.
+  // to display the computations behind the table.
   const [lookaheadTable, computationMap]: [
     Map<string, Map<string, Production[]>>,
     Map<string, [Terminal[], Terminal[], Terminal[]]>,
@@ -93,7 +96,7 @@ function DisplayResultPage() {
     for (const production of productions) {
       let emptyFirst = true;
       const first: Terminal[] = [];
-      // First add first(right side)
+      // Firstly add first(right side)
       for (const symbol of production.rightSide) {
         const firstSet = symbol.first;
         for (const firstSymbol of firstSet) {
@@ -113,7 +116,7 @@ function DisplayResultPage() {
 
       const firstAndFollow = [...first];
 
-      // If first(right side) contains epsilon, we add follow(left side)
+      // Now, if first(right side) contains epsilon, we add follow(left side)
       if (emptyFirst) {
         for (const followSymbol of production.leftSide.follow) {
           if (!firstAndFollow.some((t) => t.name === followSymbol.name)) {
@@ -212,12 +215,14 @@ function DisplayResultPage() {
               variant="contained"
               color="success"
               onClick={() => {
+                // We want to navigate to the first step.
+                // Instead of navigating one by one, we just jump to page 1.
                 // These are the functions invoked when navigation to the
                 // previous pages one by one from this page to the first page.
-                // (from HeaderComponent)
+                // (usually invoked from HeaderComponent)
+                // Since we simply set page to 1 we need to invoke them manually
                 setFollowNodeEdgesHidden(false);
                 setFirstNodeEdgesHidden(false);
-                // Instead of navigating one by one, we just jump to page 1.
                 setPage(1);
               }}
             >
@@ -233,7 +238,7 @@ function DisplayResultPage() {
           variant="h6"
           component="div"
           sx={{
-            // This should not move when scrolling left or right
+            //  The first column should not move when scrolling left or right
             position: "sticky",
             left: 0,
             py: 1,
@@ -355,7 +360,7 @@ function DisplayResultPage() {
           variant="h6"
           component="div"
           sx={{
-            // This should not move when scrolling left or right
+            // The first column should not move when scrolling left or right
             position: "sticky",
             left: 0,
             pb: 1,

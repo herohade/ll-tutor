@@ -2,6 +2,9 @@ import { StateCreator } from "zustand";
 
 import { NavigationSlice } from "../types";
 
+/**
+ * Creates a new {@link NavigationSlice} with the given initial state.
+ */
 export const createNavigationSlice: StateCreator<NavigationSlice> = (
   set,
   get,
@@ -10,10 +13,8 @@ export const createNavigationSlice: StateCreator<NavigationSlice> = (
   maxPage: 9,
   page: 0,
   open: window.innerWidth > window.innerHeight || window.innerWidth > 800,
-  // settings to store in local storage
-  // tutorial: whether to show tutorial (default: true)
-  // colorScheme: dark (default), light, or system
-  // language: en (default) (not implemented)
+  // This tries to parse the settings from the local storage. If it fails
+  // the default settings are used.
   settings: JSON.parse(
     localStorage.getItem("settings") ||
       '{"colorScheme": "system", "language": "en", "snackbarDuration": 5000, "tutorial": true}',

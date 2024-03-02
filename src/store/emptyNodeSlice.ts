@@ -22,6 +22,9 @@ import {
 } from "../types";
 import { EmptyNode, FloatingEdge } from "../components";
 
+/**
+ * Creates a new {@link EmptyNodeSlice} with the given initial state.
+ */
 export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
   set,
   get,
@@ -80,6 +83,7 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
       ) => void,
     ) =>
     (connection: Connection) => {
+      // We get a connection. If it is valid we want to create an edge.
       if (connection.source === null || connection.target === null) {
         if (import.meta.env.DEV) {
           console.error(
@@ -101,7 +105,6 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
       }
       const edgeName = sourceNode.data.name + "->" + targetNode.data.name;
       const edges = get().emptyEdges;
-      const id = get().getEmptyEdgeId();
 
       if (
         edges.some(
@@ -115,6 +118,8 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
         showSnackbar("Edge " + edgeName + " already exists.", "warning", true);
         return;
       }
+
+      const id = get().getEmptyEdgeId();
 
       const params: Edge<EdgeData> = {
         ...connection,
@@ -205,6 +210,8 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
         }
         return node;
       }),
+      // since node name and color may have changed, we need to update them
+      // in the edges as well
       emptyEdges: get().emptyEdges.map((edge) => {
         if (edge.source === nodeId || edge.target === nodeId) {
           const sourceName: string | undefined =
@@ -229,10 +236,12 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
             }
             return edge;
           }
+          // update name
           edge.data = {
             ...edge.data,
             name: sourceName + "->" + targetName,
           };
+          // update color
           if (edge.source === nodeId) {
             if (edge.markerEnd) {
               edge.markerEnd = {
@@ -263,6 +272,9 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
   },
   updateAllEmptyNodeAndEdgeColors: () => {
     set({
+      // when the next step of the empty algorithm starts,
+      // all node colors shift (new becomes lastTurn,
+      // lastTurn becomes older).
       emptyNodes: get().emptyNodes.map((node) => {
         switch (node.data.color) {
           case NodeColor.thisTurn:
@@ -284,6 +296,8 @@ export const createEmptyNodeSlice: StateCreator<EmptyNodeSlice> = (
         }
         return node;
       }),
+      // sinces edge colors reflect the source nodes colors
+      // we update them as well
       emptyEdges: get().emptyEdges.map((edge) => {
         switch (edge.style?.stroke) {
           case NodeColor.thisTurn:

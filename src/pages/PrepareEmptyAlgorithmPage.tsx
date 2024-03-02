@@ -25,11 +25,13 @@ type Props = {
   graphCanvas: JSX.Element;
 };
 
-/*
-This is the fourth page of the webtutor.
-The user adds the nodes and edges to the graph to model
-the dependency graph for the empty set computation.
-*/
+/**
+ * This is the fourth page of the webtutor.
+ * The user adds the nodes and edges to the graph to model
+ * the dependency graph for the empty set computation.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
 function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
     state: GrammarSlice & EmptyNodeSlice & FirstNodeSlice & FollowNodeSlice,
@@ -90,13 +92,18 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
@@ -118,55 +125,21 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     setFollowEdges,
   );
 
+  /**
+   * Function to check if the graph is correct.
+   * 
+   * @remarks
+   * 
+   * The function checks if the graph is correct by checking if all nodes and
+   * edges are there and if there are no unnecessary nodes and edges.
+   * If the graph is correct, a success notification is displayed.
+   * If the graph is not correct, the user is notified about the first error
+   * that was found.
+   * 
+   * @returns True if the graph is correct, false otherwise.
+   */
   const check = () => {
-    // for (const nonTerminal of newNonTerminals) {
-    //   newNodes.push({
-    //     id: getEmptyNodeId(),
-    //     type: "empty",
-    //     data: {
-    //       name: nonTerminal.name,
-    //       empty: nonTerminal.empty,
-    //       color: nonTerminal.empty ? NodeColor.lastTurn : NodeColor.none,
-    //     },
-    //     position: { x: 0, y: 0 },
-    //   });
-    // }
-    // for (const terminal of newTerminals) {
-    //   newNodes.push({
-    //     id: getEmptyNodeId(),
-    //     type: "empty",
-    //     data: {
-    //       name: terminal.name,
-    //       empty: terminal.empty,
-    //       color: terminal.empty ? NodeColor.lastTurn : NodeColor.none,
-    //     },
-    //     position: { x: 0, y: 0 },
-    //   });
-    // }
-    // newNodes.push({
-    //   id: getEmptyNodeId(),
-    //   type: "empty",
-    //   data: {
-    //     name: epsilon.name,
-    //     empty: epsilon.empty,
-    //     color: epsilon.empty ? NodeColor.lastTurn : NodeColor.none,
-    //   },
-    //   position: { x: 0, y: 0 },
-    // });
-
-    // for (const production of newProductions) {
-    //   for (const symbol of production.rightSide) {
-    //     const edgeId = symbol.name + "->" + production.leftSide.name;
-    //     if (!newEdges.some((e) => e.id === edgeId)) {
-    //       newEdges.push({
-    //         id: getEmptyEdgeId(),
-    //         source: sourceId,
-    //         target: targetId,
-    //         ...and much more
-    //       });
-    //     }
-    //   }
-    // }
+    // check if there are duplicate nodes
     const nodeMap = new Map<string, boolean>();
     for (const node of emptyNodes) {
       if (nodeMap.has(node.data.name)) {
@@ -188,6 +161,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       epsilon.references > 0
         ? [epsilon, ...terminals, ...nonTerminals]
         : [...terminals, ...nonTerminals];
+    // check if all symbols have a node
     for (const printable of symbols) {
       const entry = nodeMap.get(printable.name);
       if (entry === undefined) {
@@ -218,6 +192,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         }
       }
     }
+    // check if there are nodes that should not be there
     const unnecessaryNode = [...nodeMap].find(([, value]) => !value);
     if (unnecessaryNode !== undefined) {
       // there are nodes that should not be there
@@ -228,6 +203,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       return false;
     }
 
+    // check if there are duplicate edges
     const edgeMap = new Map<string, boolean>();
     for (const edge of emptyEdges) {
       if (!edge.data) {
@@ -256,6 +232,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         edgeMap.set(edge.data.name, false);
       }
     }
+    // check if all productions have their edges
     for (const production of productions) {
       for (const symbol of production.rightSide) {
         const edgeName = symbol.name + "->" + production.leftSide.name;
@@ -279,6 +256,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         }
       }
     }
+    // check if there are edges that should not be there
     const unnecessaryEdge = [...edgeMap].find(([, value]) => !value);
     if (unnecessaryEdge !== undefined) {
       // there are edges that should not be there
@@ -294,6 +272,15 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
     return true;
   };
 
+  /**
+   * Function to solve the graph.
+   * 
+   * @remarks
+   * 
+   * The function adds the nodes and edges to the graph to model
+   * the dependency graph for the empty set computation.
+   * The function then calls the layout function.
+   */
   const solve = () => {
     const newNodes: Node<NodeData>[] = [];
     const newEdges: Edge<EdgeData>[] = [];
@@ -311,6 +298,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         position: { x: 0, y: 0 },
       });
     }
+    // add all nonterminals
     for (const nonTerminal of nonTerminals) {
       newNodes.push({
         id: getEmptyNodeId(),
@@ -323,6 +311,7 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
         position: { x: 0, y: 0 },
       });
     }
+    // add all terminals
     for (const terminal of terminals) {
       newNodes.push({
         id: getEmptyNodeId(),
@@ -336,9 +325,16 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
       });
     }
 
+    // add all edges
+    // We want an edge from A to B if there is a production
+    // of form B -> ... A ...
+    // This is because if A (and the rest of the right side) is empty,
+    // then this makes B empty as well.
     for (const production of productions) {
       for (const symbol of production.rightSide) {
         const edgeName = symbol.name + "->" + production.leftSide.name;
+        // We only want to add one edge between two nodes, so we check if it
+        // already exists
         if (!newEdges.some((e) => e.data?.name === edgeName)) {
           const source = newNodes.find((n) => n.data.name === symbol.name);
           const target = newNodes.find(
@@ -432,6 +428,8 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="error"
               onClick={() => {
+                // resetting the graph means that we simply
+                // remove all nodes and edges
                 setEmptyNodes([]);
                 setEmptyEdges([]);
               }}
@@ -453,7 +451,11 @@ function PrepareEmptyAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               onClick={() => {
                 if (check()) {
+                  // now that the graph is correct, we don't want the user
+                  // to modify it anymore
                   toggleEmptyDeletableAndConnectable(false, false);
+                  // we need to set this to true so the user can
+                  // navigate to the next page
                   setEmptySetupComplete(true);
                 }
               }}

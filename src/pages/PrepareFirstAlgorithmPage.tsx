@@ -27,22 +27,31 @@ import {
   Nonterminal,
 } from "../types";
 
+// this import is only required for a tsdoc @link tag:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { HeaderComponent } from "../components";
+
 type Props = {
   graphCanvas: JSX.Element;
 };
 
 // The minimum time a loading indicator should be shown in ms
+// We need this since it would look weird if it just flashes for a few ms,
+// if the operation is very fast.
 const minTimeout = 500;
 
+// this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});
 
-/*
-This is the sixth page of the webtutor.
-It shows the user the grammer, color coded regarding the empty
-attributes. The user has to group the FirstNodes into Strongly Connected
-Components (group nodes). These are used to compute the first sets
-in the next step.
-*/
+/**
+ * This is the sixth page of the webtutor.
+ * It shows the user the grammer, color coded regarding the empty
+ * attributes. The user has to group the FirstNodes into Strongly Connected
+ * Components (group nodes). These are used to compute the Fε-sets
+ * in the next step.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
 function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
     state: GrammarSlice &
@@ -111,7 +120,13 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
@@ -139,6 +154,11 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     setFollowEdges,
   );
 
+  /**
+   * Function to center the graph in the viewport.
+   * We can pass this to setEdges/Nodes functions to center the graph
+   * after adding new elements.
+   */
   const { fitView } = useReactFlow();
 
   // resetting, solving and checking the graph takes some time,
@@ -152,6 +172,21 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     "reset" | "solve" | "check" | undefined
   >(undefined);
 
+  /**
+   * Function to reset the graph to its initial state.
+   * 
+   * @remarks
+   * 
+   * In the beginning the graph should contain a FirstNode for each
+   * (Non)terminal and a FirstNode for each leaf ("\{terminal\}").
+   * 
+   * Since the user can't add nodes themselves, these should not be
+   * deletable.
+   * 
+   * @privateRemarks
+   * 
+   * This is copied from prepareFirstAlgorithm() in {@link HeaderComponent}.
+   */
   const reset = () => {
     const newFirstNodes: Node<NodeData>[] = [];
     const newFirstEdges: Edge<EdgeData>[] = [];
@@ -189,7 +224,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       const newNode: Node<NodeData> = {
         id: nodeId,
         type: "first",
-        position: {
+        position: { // this is eyeballed, we just hope this is a good position
           x: terminalNode.position.x,
           y: terminalNode.position.y - (terminalNode.height ?? 50) - 50,
         },
@@ -233,10 +268,26 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     setFirstEdges(newFirstEdges, fitView);
   };
 
+  /**
+   * Function to find the missing edges of the graph.
+   * It also filters wrong ones and removes all group nodes.
+   * This is the first step of solving the graph. The second step being
+   * the grouping into Strongly Connected Components.
+   * 
+   * @remarks
+   * 
+   * This function filters out any user generated edges and nodes
+   * (the user can only add group nodes) and computes which edges are missing.
+   * 
+   * @returns An object containing the auto generated nodes and edges, and the missing edges.
+   */
   const addMissing = () => {
+    // filter out any user generated nodes (the user can only add group nodes)
     const setUpNodes = firstNodes
       .filter((node) => node.type === "first")
       .map((node) => {
+        // If the node was group inside a groupNode, we need to undo
+        // the sides-effects of grouping.
         if (node.parentNode !== undefined) {
           const parentNode = firstNodes.find(
             (parentNode) => parentNode.id === node.parentNode,
@@ -263,16 +314,24 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
         }
         return node;
       });
+    // Filter out any user generated edges.
+    // In theory it should be enough to filter for deleteable,
+    // but the rest is a sanity check.
     const setUpEdges = firstEdges.filter(
       (edge) =>
         edge.deletable === false &&
         setUpNodes.some((node) => node.id === edge.source) &&
         setUpNodes.some((node) => node.id === edge.target),
     );
+    // Compute the missing edges.
     const missingEdgesSet = new Set<string>();
+    // We need an edge if the source symbol contributes
+    // to the targets Fε-set.
     for (const production of productions) {
       let empty = true;
       let i = 0;
+      // This adds all symbols from the right side of the production,
+      // where all symbols left of it are empty. (without duplicates)
       while (empty && i < production.rightSide.length) {
         const symbol = production.rightSide[i];
         if (symbol.name === "ε") {
@@ -309,6 +368,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
           );
           throw new Error("Error Code 83e442: Please contact the developer!");
         }
+        // This should always be false but it is a sanity check.
         const isGroupEdge =
           sourceNode.type === "group" || targetNode.type === "group";
         return {
@@ -340,7 +400,20 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     return { setUpNodes, setUpEdges, missingEdges };
   };
 
+  /**
+   * Function to check if the graph is correct.
+   * 
+   * @remarks
+   * 
+   * This function first generates a correct graph and then compares it
+   * to the user's graph.
+   * It then shows a notification to the user if the graph is correct,
+   * or, if not, displays the first mistake found.
+   * 
+   * @returns True if the graph is correct, false otherwise.
+   */
   const check = () => {
+    // First we generate the solution
     const { setUpNodes, setUpEdges, missingEdges } = addMissing();
     const { nodes, edges } = groupNodesBySCC(
       "first",
@@ -352,6 +425,8 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     if (import.meta.env.DEV) {
       console.log("new nodes and edges after scc:", nodes, edges);
     }
+    // Now we compare the solution to the users graph.
+    // Which solution nodes does the user not have?
     const missingSolutionNodes = nodes.filter(
       (node) =>
         !firstNodes.some((firstNode) => {
@@ -378,6 +453,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
           return false;
         }),
     );
+    // Which solution edges does the user not have?
     const missingSolutionEdges = edges.filter(
       (edge) =>
         !firstEdges.some((firstEdge) => {
@@ -388,6 +464,8 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
           );
         }),
     );
+    // If the user is not missing anything and has the same
+    // number of edges and nodes, the graph should be correct.
     if (
       missingSolutionNodes.length === 0 &&
       missingSolutionEdges.length === 0 &&
@@ -397,6 +475,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       showSnackbar("Correct, well done!", "success", true);
       return true;
     }
+    // notify the user of a missing node
     if (missingSolutionNodes.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -415,6 +494,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // notify the user of a missing edge
     if (missingSolutionEdges.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -433,6 +513,9 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // If there is a mistake but all nodes and edges are accounted for
+    // there must be too many.
+    // Find the unnecessary nodes.
     const unnecessaryUserNodes = firstNodes.filter(
       (firstNode) =>
         !nodes.find((node) => {
@@ -459,6 +542,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
           return false;
         }),
     );
+    // Find the unnecessary edges.
     const unnecessaryUserEdges = firstEdges.filter(
       (firstEdge) =>
         !edges.find((edge) => {
@@ -469,6 +553,8 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
           );
         }),
     );
+    // If we still did not find a mistake, we panic because this should
+    // not be possible
     if (
       unnecessaryUserNodes.length === 0 &&
       unnecessaryUserEdges.length === 0
@@ -482,6 +568,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       }
       return false;
     }
+    // notify the user of an unnecessary node
     if (unnecessaryUserNodes.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -500,6 +587,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // notify the user of an unnecessary edge
     if (unnecessaryUserEdges.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -518,6 +606,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // this should be unreachable
     return false;
   };
 
@@ -583,14 +672,21 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="error"
               onClick={() => {
+                // Since resetting the graph can take some time
+                // we show the user a loading indicator
                 setLoading("reset");
                 setLoadingTimeout("reset");
+                // this makes sure we show the loading indicator for
+                // at least minTimeout ms
                 setTimeout(() => {
                   setLoadingTimeout(undefined);
                 }, minTimeout);
 
+                // now we reset
                 reset();
 
+                // once we are finished we remove the loading indicator
+                // (or wait if the minimum time is not over)
                 setLoading(undefined);
               }}
               disabled={
@@ -618,13 +714,20 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="success"
               onClick={() => {
+                // Since solving the graph can take some time
+                // we show the user a loading indicator
                 setLoading("solve");
                 setLoadingTimeout("solve");
+                // this makes sure we show the loading indicator for
+                // at least minTimeout ms
                 setTimeout(() => {
                   setLoadingTimeout(undefined);
                 }, minTimeout);
 
+                // Now we remove the user generated nodes and edges
+                // and add the required edges
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
+                // Then we group the graph into SCCs
                 const { nodes, edges } = groupNodesBySCC(
                   "first",
                   setUpNodes,
@@ -632,7 +735,8 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
                   getFirstNodeId,
                   getFirstEdgeId,
                 );
-
+                // And finally we apply a layout to the result and,
+                // once the layout is finished, remove the loading indicator
                 layoutElements(
                   "provided",
                   undefined,
@@ -640,7 +744,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
                   edges,
                   setFirstNodes,
                   setFirstEdges,
-                  () => setLoading(undefined),
+                  () => setLoading(undefined), // callback to remove indicator
                 );
               }}
               disabled={
@@ -667,17 +771,28 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
             <Button
               variant="contained"
               onClick={() => {
+                // Since checking the graph can take some time
+                // we show the user a loading indicator
                 setLoading("check");
                 setLoadingTimeout("check");
+                // this makes sure we show the loading indicator for
+                // at least minTimeout ms
                 setTimeout(() => {
                   setLoadingTimeout(undefined);
                 }, minTimeout);
 
+                // Now we check if the graph is correct
                 if (check()) {
+                  // If it is correct we don't want the user modifying
+                  // it again
                   toggleFirstDeletableAndConnectable(false, false);
+                  // we need to set this to true so the user can
+                  // navigate to the next page
                   setFirstSetupComplete(true);
                 }
 
+                // once we are finished we remove the loading indicator
+                // (or wait if the minimum time is not over)
                 setLoading(undefined);
               }}
               disabled={

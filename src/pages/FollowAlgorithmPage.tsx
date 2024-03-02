@@ -17,17 +17,23 @@ import {
   Terminal,
 } from "../types";
 
+// this import is only required for a tsdoc @link tag:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { HeaderComponent } from "../components";
+
 type Props = {
   graphCanvas: JSX.Element;
 };
 
+// this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});
 
-/*
-This is the ninth page of the webtutor.
-It lets the user apply the follow algorithm to the grammar,
-to propagate the follow sets through the graph.
-*/
+/**
+ * This is the ninth page of the webtutor.
+ * It lets the user propagate the follow sets through the graph.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
 function FollowAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
     state: GrammarSlice &
@@ -74,20 +80,36 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
     });
   };
 
-  // copied from prepareFollowMap() in HeaderComponent.tsx
+  /**
+   * Function to reset the graph to its initial state.
+   * 
+   * @remarks
+   * 
+   * This function maps each new SCC (follow-, not Fε-GroupNode) to a new
+   * {@link FollowAlgorithmNodeMap}. This effectively resets the graph.
+   * 
+   * @privateRemarks
+   * 
+   * This is copied from prepareFollowMap() in {@link HeaderComponent}.
+   */
   const resetGraph = () => {
     // This maps each SCC (groupnode) to a FollowAlgorithmNodeMap
     // The FollowAlgorithmNodeMap contains the following information:
@@ -161,13 +183,23 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowNodeMap(newFollowNodeMap);
   };
 
+  /**
+   * Function to solve the graph
+   * 
+   * @remarks
+   * 
+   * This function starts with the leafs,
+   * from there it propagates the Fε-/Follow-sets.
+   * 
+   * Leafs are all nodes Fε(SCC(𝛼)) that have an edge
+   * Fε(SCC(𝛼)) -\> Follow(SCC(𝛽))
+   */
   const solveGraph = () => {
     // We start with the leafs, from there we propagate the follow sets
-    // through the graph.
+    // through the graph. Leafs are all nodes Fε(SCC(𝛼)) that have an edge
+    // Fε(SCC(𝛼)) -> Follow(SCC(𝛽))
     const leafIds = followEdges
       .filter(
-        // Leafs are all nodes SCC(A) that have an edge
-        // Fε(SCC(A)) -> Follow(SCC(...))
         (e) => e.data?.name.match(/^Fε\(SCC\(.+\)\)->Follow\(.+\)$/) !== null,
       )
       .map((e) => e.source);
@@ -190,7 +222,10 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
         return;
       }
 
+      // We add the leafs to the worklist
       const workList: string[] = [leafId];
+      // For each SCC in the worklist, we check if all incoming SCCs
+      // have been processed. If so, we process the current SCC.
       while (workList.length > 0) {
         const currentNodeId = workList.pop();
         if (currentNodeId === undefined) {
@@ -238,8 +273,6 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
         // we can process the current SCC.
         // If not, we skip it. It will be added to the worklist again
         // once all incoming SCCs have been processed.
-        // (Technically whenever an incoming SCC is processed, but
-        // we would just skip it again if it was not the last one.)
         let newActive = true;
         for (const followSet of currentNodeMap.incomingFollow.values()) {
           if (followSet === undefined) {
@@ -255,7 +288,7 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
             follow:
               // If this is one of the leaves of the graph, keep the follow set
               // since those already have their follow sets
-              // (and no incoming SCCs which would erase the follow set)
+              // (and no incoming SCCs which would have erased the follow set)
               currentNodeId !== leafId
                 ? new Set(
                     [
@@ -267,7 +300,7 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
           };
           newFollowNodeMap.set(currentNodeId, newCurrentNodeMap);
 
-          // and update this one's follow set in the outgoing SCCs
+          // update this one's follow set in the outgoing SCCs
           const outgoingNodeIds = followEdges
             .filter((e) => e.data?.isGroupEdge)
             .filter(
@@ -318,9 +351,19 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowNodeMap(newFollowNodeMap);
   };
 
+  /**
+   * Function to check the graph
+   * 
+   * @remarks
+   * 
+   * This function checks if all buttons have been clicked.
+   * If so, it updates the follow sets in the grammar.
+   * 
+   * @returns True if the graph is correct, false otherwise.
+   */
   const checkGraph = () => {
-    // TODO: maybe give more feedback like
-    // which button can be clicked next?
+    // TODO: maybe give more feedback if the graph is not finished?
+    // For now the colors in the graph should be enough.
     for (const followAlgorithmNodeMap of followNodeMap.values()) {
       // TODO: remove one of these options:
       // OPTION-1: either require all buttons to be clicked:
@@ -496,6 +539,8 @@ function FollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               onClick={() => {
                 if (checkGraph()) {
+                  // we need to set this to true so
+                  // the user can proceed to the next page
                   setFinishedFollow(true);
                   showSnackbar(
                     "Congratulations! You have computed the follow sets!",

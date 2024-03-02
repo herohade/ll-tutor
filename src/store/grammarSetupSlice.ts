@@ -2,20 +2,14 @@ import { StateCreator } from "zustand";
 
 import { GrammarSetupSlice, Nonterminal } from "../types";
 
+/**
+ * Creates a new {@link GrammarSetupSlice} with the given initial state.
+ */
 export const createGrammarSetupSlice: StateCreator<GrammarSetupSlice> = (
   set,
 ) => ({
-  // Variables needed for the selection of the start symbol
-  // A mapping from nonterminals to booleans, indicating whether they are
-  // the user selected start symbol (this is not the code generated S'!)
-  // Used to update colors when start symbol changes
   start: [],
-  // Variables needed when changing between pages
-  // Indicates whether the grammar is needs to be sorted when switching
-  // from page 2 to 3 (before selecting the start symbol)
   sorted: false,
-  // Indicates whether the grammar is needs to be reduced when switching
-  // from page 3 to 4 (before applying the empty attribute algorithm)
   reduced: false,
   preparedEmpty: false,
   preparedFirst: false,

@@ -17,17 +17,23 @@ import {
   NodeColor,
 } from "../types";
 
+// this import is only required for a tsdoc @link tag:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { HeaderComponent } from "../components";
+
 type Props = {
   graphCanvas: JSX.Element;
 };
 
+// this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});
 
-/*
-This is the fifth page of the webtutor.
-It lets the user apply the algorithm to propagate the empty
-attribute of the (non)terminals.
-*/
+/**
+ * This is the fifth page of the webtutor.
+ * It lets the user propagate the empty attribute of the nonterminals.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
 function EmptyAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
     state: GrammarSlice & EmptyAlgorithmSlice & EmptyNodeSlice,
@@ -81,19 +87,33 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
     });
   };
 
+  /**
+   * Function to reset the current step.
+   * 
+   * @remarks
+   * 
+   * This function resets all nodes and edges to their color
+   * at the beginning of the current step. It also resets the
+   * fixpoint switch.
+   */
   const resetStep = () => {
     // Reset all nodes and edges
     for (const node of emptyNodes) {
@@ -105,6 +125,15 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     setEmptyUserFixpoint(false);
   };
 
+  /**
+   * Function to solve the current step.
+   * 
+   * @remarks
+   * 
+   * This function sets all nodes and edges to their correct
+   * color. It also sets the fixpoint switch to the correct
+   * value.
+   */
   const solveStep = () => {
     // Set all nodes correctly
     for (const node of emptyNodes) {
@@ -139,6 +168,18 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     }
   };
 
+  /**
+   * Function to check the current step.
+   * 
+   * @remarks
+   * 
+   * This function checks if all nodes have their empty attribute
+   * set correctly and if the fixpoint switch is set correctly.
+   * If the step is incorrect, an error notification is displayed.
+   * If the algorithm is finished, a success notification is displayed.
+   * 
+   * @returns - True if the step is correct, false otherwise.
+   */
   const checkStep = () => {
     // Check if all nodes have their empty attribute set correctly
     for (const node of emptyNodes) {
@@ -197,10 +238,22 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     return true;
   };
 
-  // WARNING: When changing the algorithm, make sure to change the first step
-  // in the Apps prepareEmptyAlgorithm function as well
+  /**
+   * Function to prepare the next step.
+   * 
+   * @remarks
+   * 
+   * This function updates the nodes to reflect the beginning
+   * of the next step. It also computes the next steps solution.
+   * 
+   * @privateRemarks
+   * 
+   * WARNING: When changing this function, make sure to adjust the
+   * {@link HeaderComponent}'s prepareEmptyAlgorithm function as well.
+   * It is responsible for preparing the first step.
+   */
   const prepareNextStep = () => {
-    // update nodes to reflece beginning of next step
+    // update nodes to reflect beginning of next step
     updateAllEmptyNodeAndEdgeColors();
     // color nonterminals, terminals and productions next to the canvas
     setEmptyNonterminalMap(nonTerminals.map((n) => [n.name, n.empty]));

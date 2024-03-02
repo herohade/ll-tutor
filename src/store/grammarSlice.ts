@@ -1,14 +1,13 @@
 import { StateCreator } from "zustand";
 import { GrammarSlice, Nonterminal, Production, Terminal } from "../types";
 
-// Variables generally needed for the webtutor
+/**
+ * Creates a new {@link GrammarSlice} with the given initial state.
+ */
 export const createGrammarSlice: StateCreator<GrammarSlice> = (set) => ({
-  // Special (non)terminals we need regardless of the input grammar
   startSymbol: new Nonterminal("S'"),
   epsilon: new Terminal("ε"),
   endOfInput: new Terminal("$"),
-  // Productions, Nonterminals and Terminals of the input grammar
-  // Generated from User input
   productions: [],
   nonTerminals: [],
   terminals: [],

@@ -132,7 +132,6 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
@@ -186,6 +185,9 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
    * @privateRemarks
    * 
    * This is copied from prepareFirstAlgorithm() in {@link HeaderComponent}.
+   * A possible slight modification is that we could apply
+   * a layout to the result here. Currently we do not because
+   * this way it looks exactly like it does initially.
    */
   const reset = () => {
     const newFirstNodes: Node<NodeData>[] = [];
@@ -264,13 +266,29 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
       newFirstEdges.push(newEdge);
     }
 
+    // This is a slight modification from the copied code.
+    // Here we can actually apply a layout to the result
+    // instead of just saving the nodes:
+    // Here we could modify the copied code and apply a layout
+    // But we currently do not.
+
+    // remove this if we apply a layout (it already saves the nodes)
     setFirstNodes(newFirstNodes);
     setFirstEdges(newFirstEdges, fitView);
+    
+    // // remove this if we do not want a layout applied
+    // layoutElements(
+    //   "provided",
+    //   undefined,
+    //   newFirstNodes,
+    //   newFirstEdges,
+    //   setFirstNodes,
+    //   setFirstEdges,
+    // );
   };
 
   /**
-   * Function to find the missing edges of the graph.
-   * It also filters wrong ones and removes all group nodes.
+   * Function to find the missing edges of the initial graph.
    * This is the first step of solving the graph. The second step being
    * the grouping into Strongly Connected Components.
    * 
@@ -279,7 +297,7 @@ function PrepareFirstAlgorithmPage({ graphCanvas }: Props) {
    * This function filters out any user generated edges and nodes
    * (the user can only add group nodes) and computes which edges are missing.
    * 
-   * @returns An object containing the auto generated nodes and edges, and the missing edges.
+   * @returns An object containing the initial state (auto generated nodes and edges) and the missing edges.
    */
   const addMissing = () => {
     // filter out any user generated nodes (the user can only add group nodes)

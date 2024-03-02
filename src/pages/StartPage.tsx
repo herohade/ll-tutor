@@ -9,10 +9,10 @@ import TUMLogo from "../assets/TUMLogo.svg?react";
 
 import { ScrollableDialogComponent } from "../components";
 
-/*
-This is the first page of the webtutor.
-It is displayed when the user opens the webtutor.
-It contains a short introduction of the webtutor.
+/**
+ * This is the first page of the webtutor.
+ * It is displayed when the user opens the webtutor.
+ * It contains a short introduction of the webtutor.
 */
 function StartPage() {
   return (

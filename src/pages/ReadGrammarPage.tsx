@@ -39,10 +39,25 @@ import {
 const allowedSymbols: string =
   "!\"#%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{}~";
 
-// This function adds Printables (Terminals, Nonterminals and Productions) to
-// a given array.
-// It does this only if it is not already contained, so we don't have duplicates
-// It also increments the reference counter of the element
+/**
+ * Function to add a printable to an array if it is not already contained,
+ * unless allowDuplicates is true.
+ * It also increments the reference counter of the element if it is added.
+ * 
+ * @remarks
+ * 
+ * allowDuplicates is usually true when adding terminals and nonterminals,
+ * as they can be used in multiple productions or even multiple times
+ * in the same production.
+ * 
+ * allowDuplicates is usually false when adding productions, as we don't
+ * need a production twice, even if the user enters it twice.
+ * 
+ * @param array - The array to add the element to
+ * @param element - The element to add
+ * @param allowDuplicates - If true, the reference counter is increased if the element is already contained in the array. Otherwise the element is ignored.
+ * @returns The element that was added to the array, or the element that was already contained in the array
+ */
 const addIfNewAndReturn = function <T extends printable>(
   array: T[],
   element: T,
@@ -51,8 +66,19 @@ const addIfNewAndReturn = function <T extends printable>(
   const e = array.find((e) => e.name === element.name);
   if (e) {
     if (allowDuplicates) {
+      // If this is a duplicate and we allow it,
+      // we need to increse its reference counter.
+      // (We don't actually want two of the same production
+      // even if it is called "allow duplicates", instead
+      // we only increase the reference counter on the unique element)
       e.references++;
     } else {
+      // If this is a duplicate and we disallow duplicates,
+      // we don't increase its reference counter.
+      // Additionally, if it is a production,
+      // we need to decrease the reference counter of all
+      // terminals and nonterminals in it, as they have been increased
+      // when creating the production that we now don't need.
       if (e instanceof Production) {
         e.leftSide.references--;
         for (const symbol of e.rightSide) {
@@ -68,6 +94,8 @@ const addIfNewAndReturn = function <T extends printable>(
   }
 };
 
+// this creates a TextField component that changes color based on the
+// validity of the input
 const ValidationTextField = styled(TextField)({
   "& input:valid + fieldset": {
     borderColor: "#E0E3E7",
@@ -83,6 +111,12 @@ const ValidationTextField = styled(TextField)({
   },
 });
 
+// The lecture examples are hardcoded here:
+// - grammarName is the name displayed when selecting the grammar.
+// - startNonterminal is the nonterminal that is used as the user
+// start symbol. (S' -> startNonterminal will be added automatically)
+// - productions is an array of strings, where each string is a production,
+// in the same format as if entered by the user.
 const lectureExamples: [
   grammarName: string,
   startNonterminal: string,
@@ -113,9 +147,9 @@ const lectureExamples: [
   ],
 ];
 
-/*
-This is the second page of the webtutor.
-It reads the grammars productions from the user and displays them.
+/**
+ * This is the second page of the webtutor.
+ * It reads the grammars productions from the user and displays them.
 */
 function ReadGrammarPage() {
   const selector = (state: GrammarSlice & GrammarSetupSlice) => ({
@@ -155,26 +189,35 @@ function ReadGrammarPage() {
     setReduced,
   } = useBoundStore(selector, shallow);
 
+  // The production that the user is currently entering
   const [newProduction, setNewProduction] = useState("");
+  // the error state for and text displayed by the ValidationTextField
+  const [error, setError] = useState(false);
+  const [errorText, setErrorText] = useState("");
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
     });
   };
 
-  // loading a lecture example takes some time, so we need to show the user
+  // loading a lecture example may take some time, so we need to show the user
   // a loading indicator.
   // If the grammar is changed or we navigate to the next page, we need to
-  // reset the loading indicator
+  // reset the loading and success indicators.
   const [loadingLectureExample, setLoadingLectureExample] = useState<
     number | undefined
   >(undefined);
@@ -182,19 +225,32 @@ function ReadGrammarPage() {
     number | undefined
   >(undefined);
 
-  // check if the production is valid, else tell the user
+  /**
+   * Function to check if a production is valid.
+   * It displays a notification to the user if the production is invalid.
+   * 
+   * @param production - The production to be checked.
+   * @returns True if the production is valid, false otherwise.
+   */
   const validProduction = (production: string): boolean => {
+    // Firstly check if it is valid and display appropriate error messages
     if (production === "") {
+      setError(true);
+      setErrorText("Please enter a production!");
       showSnackbar("Please enter a production!", "error", true);
       return false;
     }
     if (!production.includes("->")) {
+      setError(true);
+      setErrorText("Please enter a production of form A->...");
       showSnackbar("Please enter a production of form A->...", "error", true);
       return false;
     }
 
     const [left, right] = production.split(/->(.*)/s).map((x) => x.trim());
     if (left.length !== 1) {
+      setError(true);
+      setErrorText("The left side of the production must be a single nonterminal!");
       showSnackbar(
         "The left side of the production must be a single nonterminal!",
         "error",
@@ -203,6 +259,8 @@ function ReadGrammarPage() {
       return false;
     }
     if (left < "A" || left > "Z") {
+      setError(true);
+      setErrorText("The left side of the production must be a nonterminal!");
       showSnackbar(
         "The left side of the production must be a nonterminal!",
         "error",
@@ -213,6 +271,11 @@ function ReadGrammarPage() {
 
     for (const c of right) {
       if (!allowedSymbols.includes(c)) {
+        setError(true);
+        setErrorText(
+          "The right side of the production must only contain allowed symbols!" +
+            ` ("${c}" is not allowed)`,
+        );
         showSnackbar(
           "The right side of the production must only contain allowed symbols!" +
             ` ("${c}" is not allowed)`,
@@ -222,6 +285,11 @@ function ReadGrammarPage() {
         return false;
       }
     }
+    
+    // If the production is valid, add it to the grammar
+
+    setError(false);
+    setErrorText("");
 
     let leftSide = new Nonterminal(left);
     const rightSide: Array<Terminal | Nonterminal> = [];
@@ -260,6 +328,19 @@ function ReadGrammarPage() {
     return true;
   };
 
+  /**
+   * Function to clear the grammar.
+   * 
+   * @remarks
+   * 
+   * This removes all productions, nonterminals, and terminals from the grammar.
+   * 
+   * It also resets the special symbols (epsilon, endOfInput, startSymbol) and
+   * clears the selection of the start symbol and the lecture example indicator.
+   * 
+   * Lastly it also sets reduced to false, even though this should be
+   * unnecessary (it will be set to false before it becomes relevant anyway).
+   */
   const clearGrammar = () => {
     // reset special symbols
     // epsilon
@@ -289,9 +370,10 @@ function ReadGrammarPage() {
     }
     // and clear all arrays
     setStart([]);
-    // this way we can check if we can proceed by
-    // letting the reduce function error out
-    // since S' is unproductive
+    // This should be unnecessary, as reduced will be set to
+    // false when entering a new production, which must be done
+    // before proceeding to the next page anyway.
+    // But it is here and I don't want to accidentally break something.
     setReduced(false);
     setProductions([]);
     setNonTerminals([]);
@@ -486,7 +568,6 @@ function ReadGrammarPage() {
   );
 
   // TODO: add up-/download grammar button
-  // TODO: add example grammars
   return (
     <Box
       className="flex h-full flex-col"
@@ -528,7 +609,10 @@ function ReadGrammarPage() {
                   },
                 }}
                 onClick={() => {
-                  // remove start if necessary
+                  // This is the function that is calles whenever
+                  // a production is removed:
+                  
+                  // remove start attribute if the "start" production is removed
                   if (production.leftSide.name === startSymbol.name) {
                     for (const symbol of production.rightSide) {
                       if (symbol instanceof Nonterminal) {
@@ -574,6 +658,8 @@ function ReadGrammarPage() {
       </div>
       <Box>
         <ValidationTextField
+          error={error}
+          helperText={errorText}
           label="Enter a production of form A -> 𝛼"
           variant="outlined"
           className="mb-1 mt-3"

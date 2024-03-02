@@ -31,21 +31,28 @@ import {
   Terminal,
 } from "../types";
 
+// this import is only required for a tsdoc @link tag:
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { HeaderComponent } from "../components";
+
 type Props = {
   graphCanvas: JSX.Element;
 };
 
 // The minimum time a loading indicator should be shown in ms
+// We need this since it would look weird if it just flashes for a few ms,
+// if the operation is very fast.
 const minTimeout = 500;
 
+// this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});
 
-/*
-This is the eighth page of the webtutor.
-It shows the user the grammar and the F-epsilon sets, color coded regarding the
-empty attributes. The user has to group the FollowNodes into Strongly Connected
-Components (group nodes). These are used to compute the follow sets
-in the next step.
+/**
+ * This is the eighth page of the webtutor.
+ * It shows the user the grammar and the Fε-sets,
+ * color coded regarding the empty attributes. The user has to group the
+ * FollowNodes into Strongly Connected Components (group nodes).
+ * These are used to compute the follow sets in the next step.
 */
 function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
   const selector = (
@@ -129,13 +136,18 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
@@ -157,6 +169,11 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowEdges,
   );
 
+  /**
+   * Function to center the graph in the viewport.
+   * We can pass this to setEdges/Nodes functions to center the graph
+   * after adding new elements.
+   */
   const { fitView } = useReactFlow();
 
   // resetting, solving and checking the graph takes some time,
@@ -170,8 +187,25 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     "reset" | "solve" | "check" | undefined
   >(undefined);
 
+  /**
+   * Function to reset the graph to its initial state.
+   * 
+   * @remarks
+   * 
+   * In the beginning the graph should contain a FollowNode for each
+   * (Non)terminal and the Nodes from the previous step (Fε-computation).
+   * 
+   * Since the user can't add nodes themselves, these should not be
+   * deletable.
+   * 
+   * @privateRemarks
+   * 
+   * This is copied from prepareFollowAlgorithm() in {@link HeaderComponent}.
+   * A possible slight modification is that we could apply
+   * a layout to the result here. Currently we do not because
+   * this way it looks exactly like it does initially.
+   */
   const reset = () => {
-    // This is pretty much a copy/paste of the setup in HeaderComponent:
     const newFollowNodes: Node<NodeData>[] = [];
     const newFollowEdges: Edge<EdgeData>[] = [];
 
@@ -182,7 +216,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // you actually first get to this step so we keep it)
     const maxXY: { x: number; y: number } = { x: 0, y: 0 };
 
-    // Add all FirstNodes as FollowNodes (we need F_epsilon again)
+    // Add all FirstNodes as FollowNodes (we need Fε again)
     for (const node of firstNodes) {
       // group nodes stay group nodes, first nodes become follow nodes
       const type = node.type === "group" ? "group" : "follow";
@@ -228,7 +262,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
 
     // Add FollowNode {$} (Part of Follow set for S')
     // Also add it's group node, since that one should display
-    // F_epsilon. If all nodes added by the user were Follow
+    // Fε. If all nodes added by the user were Follow
     // group nodes, that would be nicer.
     const dollarGroupNodeId = getFollowNodeId();
 
@@ -405,8 +439,25 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
 
     prepareFollowMap(newFollowNodes);
 
+    // This is a slight modification from the copied code.
+    // Here we can actually apply a layout to the result
+    // instead of just saving the nodes:
+    // Here we could modify the copied code and apply a layout
+    // But we currently do not.
+
+    // remove this if we apply a layout (it already saves the nodes)
     setFollowNodes(newFollowNodes);
     setFollowEdges(newFollowEdges, fitView);
+
+    // // remove this if we do not want a layout applied
+    // layoutElements(
+    //   "provided",
+    //   undefined,
+    //   newFollowNodes,
+    //   newFollowEdges,
+    //   setFollowNodes,
+    //   setFollowEdges,
+    // );
 
     // above we set expandParent to true, so that groupnodes automatically
     // expant to fit their children
@@ -418,8 +469,14 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     }, 1000);
   };
 
-  // Set up the follow set map.
-  // Required for the reactflow nodes to keep track of their follow set.
+  /**
+   * Function to prepare the {@link FollowAlgorithmNodeMap}.
+   * 
+   * @remarks
+   * 
+   * This function copies the map from the first set computation
+   * and updates the ids to the equivalent ids of the new follow nodes.
+   */
   const prepareFollowMap = (newFollowNodes: Node<NodeData>[]) => {
     if (import.meta.env.DEV) {
       console.log("Preparing follow set map...");
@@ -534,8 +591,21 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     setFollowNodeMap(newFollowNodeMap);
   };
 
+  /**
+   * Function to find the missing edges of the initial graph.
+   * This is the first step of solving the graph. The second step being
+   * the grouping into Strongly Connected Components.
+   * 
+   * @remarks
+   * 
+   * It computes the initial state by filtering out all nodes and edges
+   * that were added by the user. Then it computes the missing edges.
+   * 
+   * @returns An object containing the initial state (auto generated nodes and edges) and the missing edges.
+   * 
+   */
   const addMissing = () => {
-    // first we "restore" the original state by filtering out all nodes
+    // first we figure out the original state by filtering out all nodes
     // and edges that were added by the user
     const setUpNodes = followNodes
       .filter((node) => {
@@ -758,6 +828,18 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     return { setUpNodes, setUpEdges, missingEdges };
   };
 
+  /**
+   * Function to check if the graph is correct.
+   * 
+   * @remarks
+   * 
+   * This function first generates a correct graph and then compares it
+   * to the user's graph.
+   * It then shows a notification to the user if the graph is correct,
+   * or, if not, displays the first mistake found.
+   * 
+   * @returns True if the graph is correct, false otherwise.
+   */
   const check = () => {
     // There are two ways to check the graph:
     // 1. Check if these conditions are met:
@@ -765,13 +847,15 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     // no edges between Follow and Fe
     // only correct edges between Fe and Follow
     // only correct edges between Follow and Follow
-    // 2. Copy/paste the check algorithm from the first algorithm page
-    // That might be more expensive, because it generates the so
-    // and compares it to the graph, but it saves me time, so...
+    // 2. Copy/paste the check algorithm from the first algorithm page.
+    // That might be more expensive, because it generates the solution
+    // and compares it to the user graph, but it saves me time, so...
 
     // Option 2 it is:
     // This is pretty much a copy/paste of the check function in the
     // PrepareFirstAlgorithmPage, with some minor changes
+    
+    // First we generate the solution
     const { setUpNodes, setUpEdges, missingEdges } = addMissing();
     // The nodes given to groupNodesBySCC contain GroupNodes
     // which the function will simply ignore (filter out).
@@ -788,6 +872,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
     if (import.meta.env.DEV) {
       console.log("new nodes and edges after scc:", nodes, edges);
     }
+    // Now we compare the solution to the users graph.
+    // Which solution nodes does the user not have?
     const missingSolutionNodes = nodes.filter(
       (node) =>
         !followNodes.some((followNode) => {
@@ -814,6 +900,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           return false;
         }),
     );
+    // Which solution edges does the user not have?
     const missingSolutionEdges = edges.filter(
       (edge) =>
         !followEdges.some((followEdge) => {
@@ -824,6 +911,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           );
         }),
     );
+    // If the user is not missing anything and has the same
+    // number of edges and nodes, the graph should be correct.
     if (
       missingSolutionNodes.length === 0 &&
       missingSolutionEdges.length === 0 &&
@@ -833,6 +922,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       showSnackbar("Correct, well done!", "success", true);
       return true;
     }
+    // notify the user of a missing node
     if (missingSolutionNodes.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -851,6 +941,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // notify the user of a missing edge
     if (missingSolutionEdges.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -869,6 +960,9 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // If there is a mistake but all nodes and edges are accounted for
+    // there must be too many.
+    // Find the unnecessary nodes.
     const unnecessaryUserNodes = followNodes.filter(
       (followNode) =>
         !nodes.find((node) => {
@@ -895,6 +989,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           return false;
         }),
     );
+    // Find the unnecessary edges.
     const unnecessaryUserEdges = followEdges.filter(
       (followEdge) =>
         !edges.find((edge) => {
@@ -905,6 +1000,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
           );
         }),
     );
+    // If we still did not find a mistake, we panic because this should
+    // not be possible
     if (
       unnecessaryUserNodes.length === 0 &&
       unnecessaryUserEdges.length === 0
@@ -918,6 +1015,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       }
       return false;
     }
+    // notify the user of an unnecessary node
     if (unnecessaryUserNodes.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -936,6 +1034,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // notify the user of an unnecessary edge
     if (unnecessaryUserEdges.length > 0) {
       if (import.meta.env.DEV) {
         console.log(
@@ -954,6 +1053,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
       );
       return false;
     }
+    // this should be unreachable
     return false;
   };
 
@@ -1019,14 +1119,21 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="error"
               onClick={() => {
+                // Since resetting the graph can take some time
+                // we show the user a loading indicator
                 setLoading("reset");
                 setLoadingTimeout("reset");
+                // this makes sure we show the loading indicator for
+                // at least minTimeout ms
                 setTimeout(() => {
                   setLoadingTimeout(undefined);
                 }, minTimeout);
 
+                // now we reset
                 reset();
 
+                // once we are finished we remove the loading indicator
+                // (or wait if the minimum time is not over)
                 setLoading(undefined);
               }}
               disabled={
@@ -1054,14 +1161,20 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
               variant="contained"
               color="success"
               onClick={() => {
+                // Since solving the graph can take some time
+                // we show the user a loading indicator
                 setLoading("solve");
                 setLoadingTimeout("solve");
+                // this makes sure we show the loading indicator for
+                // at least minTimeout ms
                 setTimeout(() => {
                   setLoadingTimeout(undefined);
                 }, minTimeout);
 
+                // Now we remove the user generated nodes and edges
+                // and add the required edges
                 const { setUpNodes, setUpEdges, missingEdges } = addMissing();
-
+                // Then we group the graph into SCCs
                 // The nodes given to groupNodesBySCC contain GroupNodes
                 // which the function will simply ignore (filter out).
                 // This is not a problem, since new ones will be added
@@ -1075,6 +1188,8 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
                   getFollowEdgeId,
                 );
 
+                // And finally we apply a layout to the result and,
+                // once the layout is finished, remove the loading indicator
                 layoutElements(
                   "provided",
                   undefined,
@@ -1082,7 +1197,7 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
                   edges,
                   setFollowNodes,
                   setFollowEdges,
-                  () => setLoading(undefined),
+                  () => setLoading(undefined), // callback to remove indicator
                 );
               }}
               disabled={
@@ -1109,17 +1224,28 @@ function PrepareFollowAlgorithmPage({ graphCanvas }: Props) {
             <Button
               variant="contained"
               onClick={() => {
+                // Since checking the graph can take some time
+                // we show the user a loading indicator
                 setLoading("check");
                 setLoadingTimeout("check");
+                // this makes sure we show the loading indicator for
+                // at least minTimeout ms
                 setTimeout(() => {
                   setLoadingTimeout(undefined);
                 }, minTimeout);
 
+                // Now we check if the graph is correct
                 if (check()) {
+                  // If it is correct we don't want the user modifying
+                  // it again
                   toggleFollowDeletableAndConnectable(false, false);
+                  // we need to set this to true so the user can
+                  // navigate to the next page
                   setFollowSetupComplete(true);
                 }
 
+                // once we are finished we remove the loading indicator
+                // (or wait if the minimum time is not over)
                 setLoading(undefined);
               }}
               disabled={

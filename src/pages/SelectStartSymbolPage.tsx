@@ -15,9 +15,9 @@ import {
   GrammarSlice,
 } from "../types";
 
-/*
-This is the third page of the webtutor.
-It lets the user select the start symbol from the nonterminals.
+/**
+ * This is the third page of the webtutor.
+ * It lets the user select the start symbol from the nonterminals.
 */
 function SelectStartSymbolPage() {
   const selector = (state: GrammarSlice & GrammarSetupSlice) => ({
@@ -48,25 +48,54 @@ function SelectStartSymbolPage() {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
     preventDuplicate: boolean,
   ) => {
-    // variant could be success, error, warning, info, or default
     enqueueSnackbar(message, {
       variant,
       preventDuplicate,
     });
   };
 
+  /**
+   * A function that takes a nonterminal and returns a function
+   * to handle the selection of it as the start symbol.
+   * 
+   * @remarks
+   * 
+   * If a nonterminal is selected as the start symbol and is clicked again,
+   * it will be deselected. This means it will no longer be highlighted
+   * and the production S' -\> startSymbol will be removed.
+   * 
+   * If no nonterminal is selected as the start symbol and one is clicked,
+   * it will be highlighted and the production S' -\> startSymbol will be added.
+   * 
+   * If a different nonterminal is selected as the start symbol, then
+   * the one being clicked, it will be deselected and the new one will be
+   * selected.
+   * 
+   * @param nonterminal - The nonterminal that would be clicked.
+   * @returns A function to handle the click event of the nonterminal.
+   */
   const clickStartSymbol = (nonterminal: Nonterminal) => () => {
     let newProductions = [...productions];
     let newNonTerminals = [...nonTerminals];
-    // if we press the start symbol again, we want to remove it
+    // If we press the start symbol again, we want to remove it
+    // This means we do not add a new start symbol after removing
+    // the current one.
     const alreadyStart = nonterminal.start;
 
+    // If there there already is a start symbol, we want to
+    // remove it (as a start symbol).
     if (startSymbol.references > 0) {
       newNonTerminals = newNonTerminals.filter(
         (n) => n.name !== startSymbol.name,
@@ -97,7 +126,8 @@ function SelectStartSymbolPage() {
       startSymbol.references--;
     }
 
-    // we only meant to remove so we skip the adding back
+    // If we are not removing the start symbol, we are adding
+    // a new one.
     if (!alreadyStart) {
       nonterminal.start = true;
       nonterminal.references++;

@@ -30,6 +30,8 @@ interface Props {
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
+// This is a custom Transition component that uses lets something
+// appear by zooming in on it (= it gets larger)
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<
@@ -43,6 +45,14 @@ const Transition = forwardRef(function Transition(
   return <Zoom ref={ref} {...props} />;
 });
 
+/**
+ * A tutorial content element can be either a text or a collapsible.
+ * 
+ * @remarks
+ * 
+ * - A text element is simply text displayed.
+ * - A collapsible element is an {@link ExpanderComponent} with a title and expandable content.
+ */
 type tutorialContent =
   | {
       type: "text";
@@ -54,6 +64,9 @@ type tutorialContent =
       content: JSX.Element;
     };
 
+/**
+ * A tutorial page consists of a title and {@link tutorialContent} elements.
+ */
 type tutorialPage = {
   ariaTitle: string;
   ariaDescription: string;
@@ -61,6 +74,13 @@ type tutorialPage = {
   contents: tutorialContent[];
 };
 
+/**
+ * The tutorial pages for each step of the app, indexed by the page number.
+ * 
+ * @remarks
+ * 
+ * The tutorial consists of {@link tutorialPage} elements.
+ */
 const tutorialPages: tutorialPage[] = [
   // page 0
   {
@@ -704,10 +724,24 @@ const tutorialPages: tutorialPage[] = [
   },
 ];
 
+// The initial collapsibleOpen state
+// It sets all collapsibles to open
 const collapsibleOpenInit: boolean[][] = tutorialPages.map((page) =>
   new Array(page.contents.length).fill(true),
 );
 
+/**
+ * The TutorialComponent is a dialog that explains the algorithm step
+ * and the user's task for the page.
+ * 
+ * @remarks
+ * 
+ * There is a unique tutorial page for each step of the app.
+ * 
+ * @param page - The page for which the tutorial should be displayed.
+ * @param open - A boolean that indicates whether the dialog is open.
+ * @param setOpen - A function to set the open state of the dialog.
+ */
 export default function TutorialComponent({ page, open, setOpen }: Props) {
   const [collapsibleOpen, setCollapsibleOpen] = useState(collapsibleOpenInit);
 
@@ -741,6 +775,7 @@ export default function TutorialComponent({ page, open, setOpen }: Props) {
     setOpen(false);
   };
 
+  // This is used to move the browser's focus on the dialog when it opens.
   const descriptionElementRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (open) {

@@ -36,6 +36,8 @@ interface Props {
   DisplayButton: React.FC<{ onClick: () => void }>;
 }
 
+// This is a custom Transition component that uses lets something
+// appear by zooming in on it (= it gets larger)
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<
@@ -49,13 +51,30 @@ const Transition = forwardRef(function Transition(
   return <Zoom ref={ref} {...props} />;
 });
 
+// These are the possible values in ms for the snackbar notification duration
 const snackbarDurationMarks = [
   { value: 5000, label: "5s" },
   { value: 8000, label: "8s" },
   { value: 11000, label: "11s" },
+  // 14000 is the value used to keep a uniform distance between the marks,
+  // it is not actually 14s
   { value: 14000, label: "perm" },
 ];
 
+/**
+ * The dialog that contains the settings of the app.
+ * 
+ * @remarks
+ * 
+ * The user can change the following settings:
+ * - Tutorial: On/Off
+ * - Notification Duration: 5s, 8s, 11s, permanent
+ * - Color Scheme: Dark, Light, System
+ * 
+ * The user can also cancel the dialog to restore the old settings.
+ * 
+ * @param DisplayButton - The button that opens the dialog.
+ */
 export default function SettingsComponent({ DisplayButton }: Props) {
   const [open, setOpen] = useState(false);
   const [scroll, setScroll] = useState<DialogProps["scroll"]>("paper");
@@ -74,13 +93,36 @@ export default function SettingsComponent({ DisplayButton }: Props) {
     setTutorialPage,
   } = useBoundStore(selector, shallow);
 
+  // here we save the settings to restore them if the user cancels the dialog
   const [oldSettings, setOldSettings] = useState(settings);
 
+  /**
+   * This function opens the dialog.
+   * It also accepts a {@link DialogProps | scrollType}, which can be "paper", "body" or undefined.
+   * 
+   * @remarks
+   * 
+   * The scrollType determines how the dialog container looks.
+   * 
+   * @privateremarks
+   * 
+   * Currently only paper is ever used, so we could technically remove this.
+   */
   const handleClickOpen = (scrollType: DialogProps["scroll"]) => () => {
     setOpen(true);
     setScroll(scrollType);
   };
 
+  /**
+   * This function toggles the tutorial setting on and off
+   * 
+   * @remarks
+   * 
+   * If the tutorial is turned on, it is set to the next page,
+   * meaning it will open when the user navigates to the next step.
+   * 
+   * @param event - The event that triggered the change, includes the new value.
+   */
   const handleClickTutorial = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSettings({
       ...settings,
@@ -89,6 +131,16 @@ export default function SettingsComponent({ DisplayButton }: Props) {
     setTutorialPage(page + 1);
   };
 
+  /**
+   * This function closes the dialog.
+   * 
+   * @remarks
+   * 
+   * If keepChanges is true, the settings are kept.
+   * If keepChanges is false, the settings are restored to the old settings.
+   * 
+   * @param keepChanges - Whether to keep the changes or not.
+   */
   const handleClose = (keepChanges: boolean) => {
     if (keepChanges) {
       setOldSettings(settings);
@@ -98,6 +150,7 @@ export default function SettingsComponent({ DisplayButton }: Props) {
     setOpen(false);
   };
 
+  // This is used to move the browser's focus on the dialog when it opens.
   const descriptionElementRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (open) {

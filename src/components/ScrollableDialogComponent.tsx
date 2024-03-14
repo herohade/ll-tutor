@@ -22,6 +22,8 @@ interface Props {
   ariaDescription?: string;
 }
 
+// This is a custom Transition component that uses lets something
+// appear by zooming in on it (= it gets larger)
 const Transition = forwardRef(function Transition(
   props: TransitionProps & {
     children: React.ReactElement<
@@ -35,6 +37,19 @@ const Transition = forwardRef(function Transition(
   return <Zoom ref={ref} {...props} />;
 });
 
+/**
+ * A dialog that can be opened by clicking a button.
+ * 
+ * @remarks
+ * 
+ * When opening the dialog, the content pops up in the center of the screen by zooming in.
+ * 
+ * @param DisplayButton - The button that opens the dialog.
+ * @param title - The title of the dialog.
+ * @param content - The content of the dialog.
+ * @param ariaTitle - The title of the dialog for screen readers. (Default: title)
+ * @param ariaDescription - The description of the dialog for screen readers. (Default: undefined)
+ */
 export default function ScrollableDialogComponent({
   DisplayButton,
   title,
@@ -45,6 +60,18 @@ export default function ScrollableDialogComponent({
   const [open, setOpen] = useState(false);
   const [scroll, setScroll] = useState<DialogProps["scroll"]>("paper");
 
+  /**
+   * This function opens the dialog.
+   * It also accepts a {@link DialogProps | scrollType}, which can be "paper", "body" or undefined.
+   * 
+   * @remarks
+   * 
+   * The scrollType determines how the dialog container looks.
+   * 
+   * @privateremarks
+   * 
+   * Currently only paper is ever used, so we could technically remove this.
+   */
   const handleClickOpen = (scrollType: DialogProps["scroll"]) => () => {
     setOpen(true);
     setScroll(scrollType);
@@ -54,6 +81,7 @@ export default function ScrollableDialogComponent({
     setOpen(false);
   };
 
+  // This is used to move the browser's focus on the dialog when it opens.
   const descriptionElementRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     if (open) {

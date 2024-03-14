@@ -17,6 +17,11 @@ import { getEdgeParams } from "../utils";
 
 type Props = EdgeProps<EdgeData>;
 
+/**
+ * This is the edge connecting nodes in this tutor.
+ * 
+ * @param props - default ReactFlow {@link EdgeProps} with the custom {@link EdgeData}.
+ */
 function FloatingEdge(props: Props) {
   const {
     id,
@@ -32,6 +37,7 @@ function FloatingEdge(props: Props) {
     style,
     data,
   } = props;
+  // how wide the edge is for interaction purposes (clicking it for deletion)
   const interactionWidth = props.interactionWidth || 20;
 
   const sourceNode: Node<NodeData> | undefined = useStore(
@@ -45,11 +51,10 @@ function FloatingEdge(props: Props) {
     return null;
   }
 
-  // TODO: maybe add bidirectional edges, e.g. by giving nodes a
-  // bidirectional array and checking here if the edge is in the array
+  // TODO: maybe add bidirectional edges, to make it look cleaner
   // Inspiration: https://reactflow.dev/docs/examples/edges/custom-edge/
 
-  // This returns a special self-loop edge if source and target are the same
+  // This returns the special self-loop edge if source and target are the same
   if (sourceNode.id === targetNode.id) {
     if (
       (sourcePosition === Position.Top && targetPosition === Position.Bottom) ||
@@ -96,11 +101,16 @@ function FloatingEdge(props: Props) {
     }
   }
 
+  // This is the "normal" edge between two nodes
   const { sx, sy, tx, ty, sourcePos, targetPos } = getEdgeParams(
     sourceNode,
     targetNode
   );
 
+  // Technically we allow different edge path types here
+  // (bezier, smoothstep, straight), which can be chosen when
+  // creating edges, but we don't use any other nodes then
+  // straight at the moment.
   const [edgePath] = (function () {
     switch (data?.pathType) {
       case EdgePathType.Bezier:

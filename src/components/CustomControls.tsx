@@ -25,9 +25,18 @@ import {
 import { useLayoutedElements } from "../utils";
 import { useMemo } from "react";
 
+/**
+ * Tomponent that provides custom buttons for the ReactFlow
+ * graph canvas.
+ * 
+ * @remarks
+ * 
+ * The custom buttons are the layout-button and the add-node-button.
+ * 
+ */
 function CustomControls() {
-  // Since ReactFlows Controls component already has a few buttons,
-  // we need to style them to match out custom buttons. This is done
+  // Since ReactFlow's Controls component already has a few buttons,
+  // we need to style them to match our custom buttons. This is done
   // by simply styling all child buttons of the Controls component at once.
   const StyledControls = useMemo(() => {
     return styled(Controls)<ControlProps>(({ theme }) => {
@@ -116,6 +125,7 @@ function CustomControls() {
     page,
   } = useBoundStore(emptyNodeSelector, shallow);
 
+  // with this we can directly access ReactFlow's internal state
   const store = useStoreApi();
 
   const { layoutElements } = useLayoutedElements(
@@ -133,6 +143,9 @@ function CustomControls() {
     setFollowEdges,
   );
 
+  /**
+   * Adds a new EmptyNode to the empty-graph.
+   */
   const addEmptyNode = () => {
     // Add the node in the center of the viewport.
     // computation of center copied and modified from: https://stackoverflow.com/a/76394786
@@ -183,6 +196,9 @@ function CustomControls() {
     setEmptyNodes([...emptyNodes, newNode]);
   };
 
+  /**
+   * Adds a new FirstGroupNode to the first-graph.
+   */
   const addFirstGroupNode = () => {
     // Add the node in the center of the viewport.
     // computation of center copied and modified from: https://stackoverflow.com/a/76394786
@@ -234,6 +250,9 @@ function CustomControls() {
     setFirstNodes([...firstNodes, newNode]);
   };
 
+  /**
+   * Adds a new FollowGroupNode to the follow-graph.
+   */
   const addFollowGroupNode = () => {
     // Add the node in the center of the viewport.
     // computation of center copied and modified from: https://stackoverflow.com/a/76394786
@@ -291,14 +310,7 @@ function CustomControls() {
         onClick={() => {
           const whichNodes = page < 5 ? "empty" : page < 7 ? "first" : "follow";
           layoutElements(whichNodes, {
-            // "elk.algorithm": "layered",
-            // "elk.algorithm": "stress",
-            // "elk.algorithm": "force",
-            // "elk.edgeRouting": "SPLINES",
-            // "elk.edgeRouting": "POLYLINE",
-            // "elk.edgeRouting": "ORTHOGONAL",
-            // "elk.direction": "RIGHT",
-            // "elk.nodeLabels.placement": "[INSIDE, H_LEFT, V_TOP]",
+            // custom layouting options would go here
           });
         }}
         title="apply layout"

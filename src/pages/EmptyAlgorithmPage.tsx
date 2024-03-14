@@ -292,8 +292,11 @@ function EmptyAlgorithmPage({ graphCanvas }: Props) {
     let newEmptyFixpoint = emptyFixpoint;
     if (!emptyFixpoint) {
       newEmptyFixpoint = true;
+      // remove all new empty productions
       newEmptyWorkList = newEmptyWorkList.filter((p) => !p.empty);
       const newEmptyProductions = [];
+      // if right side is empty, set left side and production to empty
+      // also set fixpoint to false since there are new empty nonterminals
       for (const production of newEmptyWorkList) {
         if (!production.rightSide.some((s) => !s.empty)) {
           newEmptyProductions.push(production);

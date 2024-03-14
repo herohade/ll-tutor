@@ -17,17 +17,19 @@ interface Props {
   sx?: SxProps<Theme>;
 }
 
+// This creates a styled version of the MuiListItemButton component
+// It is an arrow button (^ or v) that rotates when pressed.
+// This indicates wheter the content is expanded or not.
 interface ExpandMoreProps extends ListItemButtonProps {
   expand: boolean;
 }
-
 const ExpandMore = styled((props: ExpandMoreProps) => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { expand, ...other } = props;
   return <ListItemButton {...other} />;
 })(({ theme, expand }) => ({
   // by default, the ListItemButton is indistinguishable from normal text
-  // (same background color). By setting the background color, we should
+  // (same background color). When changing the background color, we should
   // also adjust hover and focus-visible colors to keep a good contrast
   backgroundColor:
     theme.palette.mode === "dark"
@@ -61,6 +63,15 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   },
 }));
 
+/**
+ * A component that can be expanded to show more content.
+ * 
+ * @param expanded - Whether the content is expanded or not
+ * @param setExpanded - A function to set the expanded state
+ * @param title - The title of the expander
+ * @param children - The content to be shown when expanded
+ * @param sx - The style of the component
+ */
 export default function ExpanderComponent({
   expanded,
   setExpanded,

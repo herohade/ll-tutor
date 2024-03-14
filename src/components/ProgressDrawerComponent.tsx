@@ -26,8 +26,12 @@ import { NavigationSlice } from "../types";
 interface Props {
   setTutorialOpen: Dispatch<SetStateAction<boolean>>;
 }
+
+// how big the drawer (=progress bar) is when open, in px
 const drawerWidth: number = 240;
 
+// This creates a styled version of the MuiDrawer component
+// that can shrink and expand, and has a transition animation for it
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
@@ -54,6 +58,8 @@ const Drawer = styled(MuiDrawer, {
   },
 }));
 
+// The step's names and their description displayed by the progress
+// bar when expanded
 const steps: { label: string; content: JSX.Element[] }[] = [
   {
     label: "Select Grammar",
@@ -91,6 +97,11 @@ const steps: { label: string; content: JSX.Element[] }[] = [
   },
 ];
 
+/**
+ * The progress bar (drawer) that shows the current progress of the user
+ * 
+ * @param setTutorialOpen - The react state setter function for the tutorial open state, needed as the help button top open it is in the progress bar
+ */
 function ProgressDrawerComponent({ setTutorialOpen }: Props) {
   const selector = (state: NavigationSlice) => ({
     // NavigationSlice
@@ -118,17 +129,11 @@ function ProgressDrawerComponent({ setTutorialOpen }: Props) {
         <Stepper
           // Math.floor(page / 2) is the same as page >> 1. We can do this since
           // there are always two pages per step. So we only need to dynamically
-          // change the Task description (StepContent) between the two pages.
+          // change the Task description (StepContent) every the two pages.
           // We exclude the StartPage (page 0) from this computation (page - 1).
           activeStep={(page - 1) >> 1}
           orientation="vertical"
-          // TODO: fix padding, don't forget to change HeaderComponent, too
-          // 1. not centered (weird on small screens because buttons below are)
           className="pl-3 pt-3 sm:pl-5 sm:pt-5"
-          // 2. centered (weird on big screen, looks not centered?)
-          // className="pl-[15.6px] pt-3 sm:pl-[23.6px] sm:pt-5"
-          // 3. centered on small, but not on big screen (xl)
-          // className="pl-[15.6px] pt-3 sm:pl-[23.6px] sm:pt-5 xl:pl-5"
         >
           {steps.map(({ label, content }, index) => (
             <Step key={label + index}>

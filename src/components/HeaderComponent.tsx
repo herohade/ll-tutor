@@ -44,12 +44,16 @@ interface Props {
   setTutorialOpen: Dispatch<SetStateAction<boolean>>;
 }
 
+// how big the drawer (=progress bar) is when open, in px
+// This is needed, as the drawer extends into the AppBar
+// so it has to shrink
 const drawerWidth: number = 240;
 
+// This creates a styled version of the AppBar component from MUI
+// that can shrink and expand, and has a transition animation for it
 interface AppBarProps extends MuiAppBarProps {
   open: boolean;
 }
-
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })<AppBarProps>(({ theme, open }) => ({
@@ -68,6 +72,12 @@ const AppBar = styled(MuiAppBar, {
   }),
 }));
 
+/**
+ * The header displays the name of the tutor, lets the user expand
+ * the progress bar and contains the buttons (and logic) for page navigation
+ * 
+ * @param setTutorialOpen - The react state setter function for the tutorial open state, needed as the header may open the tutorial after navigation
+ */
 function HeaderComponent({ setTutorialOpen }: Props) {
   const selector = (
     state: NavigationSlice &
@@ -251,7 +261,13 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   } = useBoundStore(selector, shallow);
 
   const { enqueueSnackbar } = useSnackbar();
-
+  /**
+   * Function to display a notification to the user.
+   * 
+   * @param message - The message to be displayed.
+   * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
+   * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
+   */
   const showSnackbar = (
     message: string,
     variant: VariantType,
@@ -264,7 +280,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     });
   };
 
-  // Function to convert a number to a superscript
+  /**
+   * Function to convert a number to its superscript version
+   * 
+   * @param n - The number to be converted
+   */
   const convertToSuperscript = (n: number) => {
     return n
       .toString()
@@ -298,7 +318,17 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       .join("");
   };
 
-  // Comparison function for sorting the grammar rules
+  /**
+   * Comparison function for sorting the grammar rules
+   * 
+   * @remarks
+   * 
+   * sorts the start symbol first, then by rule name (left side),
+   * and then by rule value (right side)
+   * 
+   * @param a - The first production to be compared
+   * @param b - The second production to be compared
+   */
   const grammarRuleSort = (a: Production, b: Production) => {
     // start symbol is always first
     if (a.leftSide.name === startSymbol.name) {
@@ -330,7 +360,9 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return 0;
   };
 
-  // Function to sort the Productions, Nonterminals and Terminals of the grammar
+  /**
+   * Function to sort the Productions, Nonterminals and Terminals of the grammar
+   */
   const sortGrammar = () => {
     if (sorted) {
       if (import.meta.env.DEV) {
@@ -356,9 +388,12 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Function to reduce the grammar and repare/reset the canvas
-  // (before empty attribute algorithm)
+  /**
+   * Function to reduce the grammar and repare/reset the canvas
+   * before the empty attribute algorithm
+   */
   const reduceGrammar = () => {
+    // no need to reduce if the grammar is already reduced
     if (reduced) {
       if (import.meta.env.DEV) {
         console.log("Grammar is already reduced!");
@@ -369,6 +404,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         console.log("Reducing grammar...");
       }
       setReduced(true);
+      // we know that the grammar must have changed if it is not reduced, so
+      // we reset all following steps because the whole algorithm begins anew
       setEmptySetupComplete(false);
       setFirstSetupComplete(false);
       setFollowSetupComplete(false);
@@ -670,9 +707,19 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Set up the first step of the empty attribute algorithm
-  // WARNING: When changing the empty attribute algorithm, this part
-  // needs to be updated accordingly!
+  /**
+   * Function to prepare the empty attribute algorithm
+   * 
+   * @remarks
+   * 
+   * It prepares the first step of the fixpoint iteration for
+   * the empty attribute algorithm.
+   * 
+   * @privateremarks
+   * 
+   * WARNING: When changing the empty attribute algorithm, this part
+   * needs to be updated accordingly!
+   */
   const prepareEmptyAlgorithm = () => {
     if (preparedEmpty) {
       if (import.meta.env.DEV) {
@@ -724,8 +771,11 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   */
     let newEmptyWorkList = [...productions];
     let newEmptyFixpoint = true;
+    // remove all empty productions
     newEmptyWorkList = newEmptyWorkList.filter((p) => !p.empty);
     const newEmptyProductions = [];
+    // if right side is empty, set left side and production to empty
+    // also set fixpoint to false since there are new empty nonterminals
     for (const production of newEmptyWorkList) {
       if (!production.rightSide.some((s) => !s.empty)) {
         newEmptyProductions.push(production);
@@ -753,10 +803,16 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Set up the canvas for the first set algorithm.
-  // We add a new FirstNode for each (Non)terminal,
-  // a FirstNode {t}, as well as an Edge {t} -> t for each terminal t.
-  // Also we reset the first set algorithm.
+  /**
+   * Function to prepare the first set algorithm
+   * 
+   * @remarks
+   * 
+   * It prepares the canvas for the first set algorithm.
+   * It adds a new FirstNode for each (Non)terminal,
+   * a FirstNode \{t\}, as well as an Edge \{t\} -\> t for each terminal t.
+   * 
+   */
   const prepareFirstAlgorithm = () => {
     if (preparedFirst) {
       if (import.meta.env.DEV) {
@@ -858,8 +914,14 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Set up the first set map.
-  // Required for the reactflow nodes to keep track of their first set.
+  /**
+   * Function to prepare the firstSetMap
+   * 
+   * @remarks
+   * 
+   * It prepares the firstSetMap for the first set algorithm, which
+   * resets it.
+   */
   const prepareFirstMap = () => {
     if (preparedFirstMap) {
       if (import.meta.env.DEV) {
@@ -931,10 +993,16 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Set up the canvas for the follow set algorithm.
-  // We add a new FollowNode for each Nonterminal.
-  // We also add FollowNodes and edges to replicate the F_epsilon graph
-  // and a FollowNode {$}, as well as an Edge {$} -> S' for the start symbol S'.
+  /**
+   * Function to prepare the follow set algorithm
+   * 
+   * @remarks
+   * 
+   * It prepares the canvas for the follow set algorithm.
+   * It adds a new FollowNode for each Nonterminal.
+   * It also adds FollowNodes and edges to replicate the F_epsilon graph
+   * and a FollowNode \{\$\}, as well as an Edge \{\$\} -\> S' for the start symbol S'.
+   */
   const prepareFollowAlgorithm = () => {
     if (preparedFollow) {
       if (import.meta.env.DEV) {
@@ -948,6 +1016,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
       setPreparedFollow(true);
     }
 
+    // reset the canvas
     const newFollowNodes: Node<NodeData>[] = [];
     const newFollowEdges: Edge<EdgeData>[] = [];
 
@@ -1193,8 +1262,13 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     return true;
   };
 
-  // Set up the follow set map.
-  // Required for the reactflow nodes to keep track of their follow set.
+  /**
+   * Function to prepare the follow set map
+   * 
+   * @remarks
+   * 
+   * It prepares the followSetMap for the follow set algorithm by copying the firstSetMap.
+   */
   const prepareFollowMap = (newFollowNodes: Node<NodeData>[]) => {
     if (import.meta.env.DEV) {
       console.log("Preparing follow set map...");
@@ -1310,6 +1384,17 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   };
 
   // Update the follow set map after the user has finished the set up step.
+
+  /**
+   * Function to update the follow set map
+   * 
+   * @remarks
+   * 
+   * It updates the followSetMap for the follow set algorithm, which
+   * resets it.
+   * 
+   * It does so by copying the firstSetMap.
+   */
   const updateFollowMap = () => {
     if (preparedFollowMap) {
       if (import.meta.env.DEV) {
@@ -1405,8 +1490,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   };
 
   // Functions that are invoked when changing between pages
-  // Indexed by current page - minimum page (=0)
-  // What to do when leaving a page to go to the previous one:
+  // Indexed by current page - minimum page (=0):
+  // 1. What to do when leaving a page to go to the previous one:
   const leaveToPrevious = (page: number): ((cb: () => boolean) => boolean) => {
     switch (page) {
       case 1: // page 0 <- (1)
@@ -1440,7 +1525,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
     }
   };
-  // What to do when leaving a page to go to the next one:
+  // 2. What to do when leaving a page to go to the next one:
   const leaveToNext = (page: number): ((cb: () => boolean) => boolean) => {
     switch (page) {
       case 0: // page (0) -> 1
@@ -1449,6 +1534,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 1: // page (1) -> 2
         return (cb) => {
+          // Only allow the user ot proceed if there are any productive productions
           if (terminals.length > 0 || epsilon.references > 0) {
             return cb();
           } else {
@@ -1462,6 +1548,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 2: // page (2) -> 3
         return (cb) => {
+          // Only allow the user to proceed if a start symbol was selected
           if (start.some(([, start]) => start)) {
             return cb();
           } else {
@@ -1555,7 +1642,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
     }
   };
-  // What to do when arriving at a page from the next one:
+  // 3. What to do when arriving at a page from the next one:
   const arriveToPrevious = (page: number): (() => boolean) => {
     switch (page) {
       case 0: // page (0) <- 1
@@ -1568,6 +1655,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 5: // page (5) <- 6
         return () => {
+          // show the edges between the FirstNodes (=children) again
           setFirstNodeEdgesHidden(false);
           return true;
         };
@@ -1577,6 +1665,8 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
       case 7: // page (7) <- 8
         return () => {
+          // hide the edges between the FollowNodes (=children)
+          // to reduce visual clutter
           setFollowNodeEdgesHidden(false);
           return true;
         };
@@ -1592,7 +1682,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
         };
     }
   };
-  // What to do when arriving at a page from the previous one:
+  // 4. What to do when arriving at a page from the previous one:
   const arriveToNext = (page: number): (() => boolean) => {
     switch (page) {
       case 1: // page 0 -> (1)
@@ -1640,11 +1730,17 @@ function HeaderComponent({ setTutorialOpen }: Props) {
     }
   };
 
+  /**
+   * Function to handle the navigation to the previous page.
+   */
   const handlePreviousNavigation = () => {
     if (leaveToPrevious(page)(arriveToPrevious(page - 1))) {
       previousPage();
     }
   };
+  /**
+   * Function to handle the navigation to the next page.
+   */
   const handleNextNavigation = () => {
     if (leaveToNext(page)(arriveToNext(page + 1))) {
       nextPage();
@@ -1667,7 +1763,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
   return (
     <AppBar position="fixed" open={open}>
       <Toolbar>
-        {/* 1st part (progress button) is as big as progress-sidebar */}
+        {/* 1st part (open progress bar button) is as big as actual sidebar */}
         <IconButton
           edge="start"
           color="inherit"
@@ -1676,13 +1772,7 @@ function HeaderComponent({ setTutorialOpen }: Props) {
           sx={{
             ...(open && { display: "none" }),
           }}
-          // TODO: fix padding, don't forget to change ProgressDrawerComponent, too
-          // 1. not centered (weird on small screens because buttons below are)
           className="mr-3 sm:mr-5"
-          // 2. centered (weird on big screen, looks not centered?)
-          // className="mr-3 sm:mr-5 ml-[-8px]"
-          // 3. centered on small, but not on big screen (xl)
-          // className="mr-3 sm:mr-5 ml-[-8px] xl:ml-[-12px]"
         >
           <MenuIcon />
         </IconButton>

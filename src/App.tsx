@@ -49,7 +49,7 @@ import {
 
 /**
  * The main component of the application (the actual "page" shown to the user).
- * It renders the header, the progress drawer, and the page content.
+ * It renders the {@link HeaderComponent | header}, the {@link ProgressDrawerComponent | progress drawer}, and the page content.
  *
  * @returns The main component of the application containing the page layout.
  */

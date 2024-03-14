@@ -17,7 +17,16 @@ import { shallow } from "zustand/shallow";
 
 import { EdgeData, FollowNodeSlice, NodeData } from "../types";
 
-type Props = NodeProps<NodeData>;
+/**
+ * The props for the {@link FollowNode} component
+ * 
+ * @param id - The id of the node
+ * @param xPos - The x position of the node, required for computing the new position if detached from its parent node
+ * @param yPos - The y position of the node, required for computing the new position if detached from its parent node
+ * @param data - The {@link NodeData | data} of the node
+ * @param isConnectable - Whether the node is connectable, disabled once the graph is set up
+ */
+export type Props = NodeProps<NodeData>;
 
 /**
  * The node type representing symbols used for computing the

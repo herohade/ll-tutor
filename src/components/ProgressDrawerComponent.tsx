@@ -23,7 +23,12 @@ import { SettingsComponent } from ".";
 
 import { NavigationSlice } from "../types";
 
-interface Props {
+/**
+ * The props for the {@link ProgressDrawerComponent} component
+ * 
+ * @param setTutorialOpen - The react state setter function for the tutorial open state, needed as the help button top open it is in the progress bar
+ */
+export interface Props {
   setTutorialOpen: Dispatch<SetStateAction<boolean>>;
 }
 

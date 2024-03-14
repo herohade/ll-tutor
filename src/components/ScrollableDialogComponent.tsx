@@ -14,7 +14,16 @@ import {
   useState,
 } from "react";
 
-interface Props {
+/**
+ * The props for the {@link ScrollableDialogComponent} component.
+ * 
+ * @param DisplayButton - The button that opens the dialog.
+ * @param title - The title of the dialog.
+ * @param content - The content of the dialog.
+ * @param ariaTitle - The title of the dialog for screen readers. (Default: title)
+ * @param ariaDescription - The description of the dialog for screen readers. (Default: undefined)
+ */
+export interface Props {
   DisplayButton: React.FC<{ onClick: () => void }>;
   title: string;
   content: JSX.Element;

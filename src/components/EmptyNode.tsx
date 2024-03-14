@@ -17,7 +17,14 @@ import {
   NodeData,
 } from "../types";
 
-type Props = NodeProps<NodeData>;
+/**
+ * The props for the {@link EmptyNode} component
+ * 
+ * @param id - The id of the node
+ * @param data - The {@link NodeData | data} of the node
+ * @param isConnectable - Whether the node is connectable, disabled once the 
+ */
+export type Props = NodeProps<NodeData>;
 
 /**
  * The node type used for computing the empty sets

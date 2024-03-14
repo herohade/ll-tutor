@@ -29,7 +29,16 @@ import {
   Terminal,
 } from "../types";
 
-type Props = NodeProps<NodeData>;
+/**
+ * The props for the {@link FollowGroupNode | FollowGroupNode component}
+ * 
+ * @param id - The id of the node
+ * @param xPos - The x position of the node, required for computing the new position if detaching the children
+ * @param yPos - The y position of the node, required for computing the new position if detaching the children
+ * @param data - The {@link NodeData | data} of the node
+ * @param isConnectable - Whether the node is connectable, disabled once the graph is set up
+ */
+export type Props = NodeProps<NodeData>;
 
 // this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});

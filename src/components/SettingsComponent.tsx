@@ -32,7 +32,12 @@ import { shallow } from "zustand/shallow";
 
 import { NavigationSlice } from "../types";
 
-interface Props {
+/**
+ * The props for the {@link SettingsComponent}.
+ * 
+ * @param DisplayButton - The button that opens the dialog.
+ */
+export interface Props {
   DisplayButton: React.FC<{ onClick: () => void }>;
 }
 

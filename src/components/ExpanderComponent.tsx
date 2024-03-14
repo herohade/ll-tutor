@@ -9,7 +9,16 @@ import ListItemButton, {
 
 import { Dispatch, ReactNode, SetStateAction } from "react";
 
-interface Props {
+/**
+ * The props for the {@link ExpanderComponent} component.
+ * 
+ * @param expanded - Whether the content is expanded or not
+ * @param setExpanded - A function to set the expanded state
+ * @param title - The title of the expander
+ * @param children - The content to be shown when expanded
+ * @param sx - The style of the component
+ */
+export interface Props {
   expanded: boolean;
   setExpanded: Dispatch<SetStateAction<boolean>>;
   title: ReactNode;

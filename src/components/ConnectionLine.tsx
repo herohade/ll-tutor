@@ -9,7 +9,11 @@ import { NodeColor } from "../types";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { FloatingEdge } from "../components";
 
-type Props = ConnectionLineComponentProps;
+/**
+ * The props for the {@link ConnectionLine} component4
+ * It is the default ReactFlow {@link ConnectionLineComponentProps}.
+ */
+export type Props = ConnectionLineComponentProps;
 
 // This is a disgusting hack to get the arrowheads to work.
 // Reactflow dynamically generates the arrowheads for edges.

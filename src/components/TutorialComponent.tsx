@@ -24,7 +24,14 @@ import { ExpanderComponent } from ".";
 
 import OneConcatDef from "../assets/OneConcatDef.svg?react";
 
-interface Props {
+/**
+ * The props for the {@link TutorialComponent}.
+ * 
+ * @param page - The page for which the tutorial should be displayed.
+ * @param open - A boolean that indicates whether the dialog is open.
+ * @param setOpen - A function to set the open state of the dialog.
+ */
+export interface Props {
   page: number;
   open: boolean;
   setOpen: Dispatch<SetStateAction<boolean>>;

@@ -21,9 +21,14 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { HeaderComponent } from "../components";
 
-type Props = {
+/**
+ * The props for the {@link FollowAlgorithmPage} component.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
+export interface Props {
   graphCanvas: JSX.Element;
-};
+}
 
 // this creates a span component that has the sx prop (for styling)
 const StyledSpan = styled("span")({});

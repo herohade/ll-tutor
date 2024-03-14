@@ -40,7 +40,12 @@ import {
   Terminal,
 } from "../types";
 
-interface Props {
+/**
+ * The props for the {@link HeaderComponent}
+ * 
+ * @param setTutorialOpen - The react state setter function for the tutorial open state, needed as the header may open the tutorial after navigation
+ */
+export interface Props {
   setTutorialOpen: Dispatch<SetStateAction<boolean>>;
 }
 

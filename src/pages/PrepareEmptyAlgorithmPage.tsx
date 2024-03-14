@@ -21,9 +21,14 @@ import { shallow } from "zustand/shallow";
 
 import { useLayoutedElements } from "../utils";
 
-type Props = {
+/**
+ * The props for the {@link PrepareEmptyAlgorithmPage} component.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
+export interface Props {
   graphCanvas: JSX.Element;
-};
+}
 
 /**
  * This is the fourth page of the webtutor.

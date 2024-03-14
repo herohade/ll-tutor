@@ -15,7 +15,12 @@ import { EdgeData, EdgePathType, NodeData } from "../types";
 
 import { getEdgeParams } from "../utils";
 
-type Props = EdgeProps<EdgeData>;
+/**
+ * The props for the {@link FloatingEdge} component.
+ * 
+ * It is the default ReactFlow {@link EdgeProps} with the custom {@link EdgeData}.
+ */
+export type Props = EdgeProps<EdgeData>;
 
 /**
  * This is the edge connecting nodes in this tutor.

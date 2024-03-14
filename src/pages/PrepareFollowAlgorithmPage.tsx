@@ -35,9 +35,14 @@ import {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { HeaderComponent } from "../components";
 
-type Props = {
+/**
+ * The props for the {@link PrepareFollowAlgorithmPage} component.
+ * 
+ * @param graphCanvas - The reactflow canvas to display the grammar.
+ */
+export interface Props {
   graphCanvas: JSX.Element;
-};
+}
 
 // The minimum time a loading indicator should be shown in ms
 // We need this since it would look weird if it just flashes for a few ms,

@@ -31,7 +31,7 @@ import {
 
 /**
  * The props for the {@link FollowGroupNode | FollowGroupNode component}
- * 
+ *
  * @param id - The id of the node
  * @param xPos - The x position of the node, required for computing the new position if detaching the children
  * @param yPos - The y position of the node, required for computing the new position if detaching the children
@@ -45,11 +45,11 @@ const StyledSpan = styled("span")({});
 
 /**
  * The node for grouping follow-nodes into strongly connected components
- * 
+ *
  * @remarks
  * It displays the F_e/follow sets as text in the setup step and
  * turns into a button during the computation step
- * 
+ *
  * @param id - The id of the node
  * @param xPos - The x position of the node, required for computing the new position if detaching the children
  * @param yPos - The y position of the node, required for computing the new position if detaching the children
@@ -160,7 +160,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   const { enqueueSnackbar } = useSnackbar();
   /**
    * Function to display a notification to the user.
-   * 
+   *
    * @param message - The message to be displayed.
    * @param variant - The variant of the notification. Could be success, error, warning, info, or default.
    * @param preventDuplicate - If true, the notification will not be displayed if it is already displayed.
@@ -219,7 +219,7 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
       });
       return outgoingNodeMaps;
     }, [followEdges, followNodeMap, id, page, showSnackbar]);
-    // this nodes followAlgorithmMaps
+  // this nodes followAlgorithmMaps
   const thisFollowNodeMap: FollowAlgorithmNodeMap | undefined = useMemo(() => {
     return followNodeMap.get(id);
   }, [followNodeMap, id]);
@@ -471,10 +471,10 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
   }, [terminals.length]);
 
   const content =
-  // on page 7 (setup) we display the sets as text
-  // on page 8 we make it a button
+    // on page 7 (setup) we display the sets as text
+    // on page 8 we make it a button
     page === 7 ? (
-      <p className="m-0 whitespace-pre px-3">
+      <p className="m-0 h-fit whitespace-pre px-3">
         {isFollow ? (
           <b>
             Follow<sub>1</sub>:
@@ -532,9 +532,9 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             bgcolor: thisFollowNodeMap?.active
               ? "follow.selected"
               : someIncoming
-               // if some were recieved, we want a different color then if none
-                // were recieved
-                ? "follow.charging"
+                ? // if some were recieved, we want a different color then if none
+                  // were recieved
+                  "follow.charging"
                 : "background.paper",
             color: thisFollowNodeMap?.active
               ? "follow.disabledText"
@@ -638,7 +638,10 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
             sx={
               page === 7
                 ? {
-                    padding: "0.5rem",
+                    // padding: "0.5rem",
+                    padding: isFollow ? "1px" : "3px",
+                    display: "flex",
+                    alignItems: "center",
                     bgcolor: isFollow ? "" : "background.paper",
                     ":hover": {
                       bgcolor:
@@ -673,9 +676,9 @@ function FollowGroupNode({ id, xPos, yPos, data, isConnectable }: Props) {
           source and target, but why fix what isn't broken.*/}
           {!isConnecting && (
             <Handle
-            // The source and target handle cover the entire node (except the
-            // notch for dragging and the content of the node)
-            // This allows users to click almost anywhere to connect nodes
+              // The source and target handle cover the entire node (except the
+              // notch for dragging and the content of the node)
+              // This allows users to click almost anywhere to connect nodes
               className="absolute left-0 top-0 size-full transform-none cursor-cell rounded-none border-0 opacity-0"
               type="source"
               position={Position.Bottom}

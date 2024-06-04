@@ -211,7 +211,8 @@ export default function SettingsComponent({ DisplayButton }: Props) {
             }}
           >
             <Slider
-              value={settings.snackbarDuration || 5000}
+              value={settings.snackbarDuration ||
+                    (settings.snackbarDuration === null ? 14000 : 5000)}
               min={5000}
               max={14000}
               marks={snackbarDurationMarks}

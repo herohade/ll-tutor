@@ -1,7 +1,7 @@
 {
   "name": "ll-tutor",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -54,7 +54,7 @@
     "typedoc": "^0.25.9",
     "typedoc-plugin-rename-defaults": "^0.7.0",
     "typescript": "^5.3.3",
-    "vite": "^5.0.12",
+    "vite": "^5.0.13",
     "web-worker": "^1.3.0"
   }
 }

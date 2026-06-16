@@ -1,7 +1,7 @@
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { indigo, pink } from "@mui/material/colors";
 import CssBaseline from "@mui/material/CssBaseline";
-import StyledEngineProvider from "@mui/material/StyledEngineProvider";
+import { StyledEngineProvider } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
